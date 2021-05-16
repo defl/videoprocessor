@@ -74,16 +74,13 @@ My take is that if anything VideoPlayer will reduce piracy as people are now not
 
 
 
-# Dev stuff
+# Developing and building
 
 Get the source from https://github.com/defl/videoprocessor
 
  * MSVC 2019 community edition
-
  * Install MFC libraries
-
  * Debug builds require the [Visual Leak Detector](https://kinddragon.github.io/vld/) Visual C++ plugin
-
    
 
 **Debugging**
