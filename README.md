@@ -64,7 +64,7 @@ In most, but not all, jurisdictions you are not allowed to remove effective encr
 
 However there are some interesting notes to be placed here:
 
-- A device such is allowed to downgrade HDCP 2+ to HDCP 1.4 ([see legendsky case](https://torrentfreak.com/4k-content-protection-stripper-beats-warner-bros-in-court-1605xx/)). HDCP 1.4 can be considered a broken encoding and in some jurisdictions the removal of a broken encryption is not illegal.
+- A device is allowed to downgrade HDCP 2+ to HDCP 1.4 ([see legendsky case](https://torrentfreak.com/4k-content-protection-stripper-beats-warner-bros-in-court-1605xx/)). HDCP 1.4 can be considered a broken encoding and in some jurisdictions the removal of a broken encryption is not illegal.
 - In some jurisdictions the encryption is at odds with the right for a self-copy of the material.
 - So far I've not seen anyone ever convicted of this as the *intent* here is not to pirate, but merely to display from a legal source to a display for private use.
 
