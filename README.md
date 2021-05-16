@@ -70,7 +70,7 @@ However there are some interesting notes to be placed here:
 
 VideoPlayer does not support storage of the data, it can merely push it to madVR. VideoPlayer cannot strip HDCP, you are responsible for providing a HDCP free stream, either because there is no HDCP on the material or because you have removed it by using a device which can do so.
 
-My take is that if anything VideoPlayer will reduce piracy as people are now not required anymore to "rip" Blue-rays so they can be file-played through rendered like madVR. (Ripping is a similar legal gray zone.) With VideoPlayer all can stay on the original disk/streamer and hence less chance that it gets distributed.
+My take is that if anything VideoPlayer will reduce piracy as people are now not required anymore to "rip" Blue-rays so they can be file-played through a renderer like madVR. (Ripping is a similar, if not darker, legal gray zone.) With VideoPlayer all can stay on the original disk/streamer and hence less chance that it gets distributed.
 
 
 
