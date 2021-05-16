@@ -1,0 +1,104 @@
+SOFTWARE LICENSE AGREEMENT
+--------------------------
+You should carefully read the following terms and conditions before using this
+software. Unless you have a different license agreement signed by Systemsoftware
+Mathias Rauen, your use of this software indicates your acceptance of this
+license agreement and warranty.
+-------------------------------
+
+
+USAGE DESCRIPTION
+-----------------
+The software "madVR" may be freely used as an end user application by both
+non-commercial and commercial end users, without buying a license, without
+even notifying the author about the use.
+----------------------------------------
+
+
+REVERSE ENGINEERING
+-------------------
+Licensee will not reverse engineer, decompile, disassemble or otherwise
+attempt to derive the source code, techniques, processes, algorithms, know-how
+or other information from the binary code portions of the "madVR" software
+(collectively, "Reverse Engineering") or permit or induce the foregoing.
+If however, directly applicable law prohibits enforcement of the foregoing,
+Licensee may engage in Reverse Engineering solely for purposes of obtaining
+such information as is necessary to achieve interoperability of independently
+created software with the "madVR" software, or as otherwise and to the limited
+extent permitted by directly applicable law, but only if:
+(a) Reverse Engineering is strictly necessary to obtain such information; and
+(b) Licensee has first requested such information from Systemsoftware Mathias
+    Rauen and Systemsoftware Mathias Rauen failed to make such information
+    available (for a fee or otherwise) under reasonable terms and conditions.
+Any information supplied to or obtained by Licensee under this section is
+confidential information of Systemsoftware Mathias Rauen, and may only be used
+by Licensee for the purpose described in this section, and will not be disclosed
+to any third party or used to create any software which is substantially
+similar to the expression of the "madVR" software.
+--------------------------------------------------
+
+
+DISTRIBUTION
+------------
+The software "madVR" may be distributed freely, provided that the following
+files are left in their original state with none of these files deleted or
+modified:
+- madVR.ax
+- madHcCtrl.exe
+- madHcNet.dll
+- mvrSettings.dll
+- license.txt
+------------------------------------
+
+
+3RD PARTY SOFTWARE RESTRICTIONS
+-------------------------------
+The software "madVR" may not be distributed together with any 3rd party
+software without the written consent of the "madVR" author. However, the
+"madVR" author hereby grants the right to distribute "madVR" with any such
+3rd party software which is released as freeware and which is not available
+in any commercial form.
+-----------------------
+
+
+DISCLAIMER
+----------
+The author's products and the accompanying files and documentation are
+distributed / sold "as is" and without warranties as to performance or
+merchantability or any other warranties whether expressed or implied. The
+licensee assumes the entire risk as to the use of the author's products. In no
+event will the author be liable for additional direct or indirect damages
+including any lost profits, lost savings, or other incidental or consequential
+damages arising from any defects, or the use or inability to use this product,
+even if the author has been advised of the possibility of such damages.
+-----------------------------------------------------------------------
+
+
+TITLE
+-----
+Title, ownership rights, and intellectual property rights in and to the software
+shall remain in the author. The software is protected by the copyright laws of
+Germany and international copyright treaties.
+---------------------------------------------
+
+
+CONTENT
+-------
+Title, ownership rights, and intellectual property rights in and to the content
+accessed through the software is the property of the applicable content owner
+and may be protected by applicable copyright or other law. This license gives
+you no rights to such content.
+------------------------------
+
+
+TERMINATION
+-----------
+This agreement shall automatically terminate upon failure by you to comply with
+its terms, in which case you shall immediately discontinue the use of the
+software and shall within ten (10) days destroy all copies of the software.
+You may also terminate this agreement at any time by destroying the software
+and all copies thereof.
+-----------------------
+
+
+Copyright (C) 2009-2012 Mathias Rauen, www.madshi.net, All Rights Reserved
