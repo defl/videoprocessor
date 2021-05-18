@@ -196,7 +196,9 @@ void CLiveSourceVideoOutputPin::OnVideoState(VideoStateComPtr& videoState)
 
 	m_mediaSubType = TranslateToMediaSubType(videoState->pixelFormat);
 	m_bytesPerFrame = videoState->BytesPerFrame();
-	OnHDRData(videoState->hdrData);
+
+	if (videoState->hdrData)
+		OnHDRData(videoState->hdrData);
 }
 
 

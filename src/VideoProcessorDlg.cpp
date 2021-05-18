@@ -153,6 +153,9 @@ void CVideoProcessorDlg::OnBnClickedFullScreenButton()
 
 void CVideoProcessorDlg::OnBnClickedRendererRestart()
 {
+	if (m_rendererState == RendererState::RENDERSTATE_FAILED)
+		m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
+
 	m_wantToRestartRenderer = true;
 	UpdateState();
 }
@@ -381,7 +384,15 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 	// TODO: This causes an interesting loop and double lock but is vital to auto switching...
 	// 	     Maybe post the updatestate so it gets decoupled?
 	if (!rendererAcceptedState)
+	{
 		m_wantToRestartRenderer = true;
+	}
+
+	// New round, new chances, reset state here
+	if (m_rendererState == RendererState::RENDERSTATE_FAILED)
+	{
+		m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
+	}
 
 	UpdateState();
 
@@ -747,10 +758,17 @@ void CVideoProcessorDlg::StartRender()
 
 		m_rendererStateText.SetWindowText(TEXT("Starting"));
 	}
+	catch (std::runtime_error e)
+	{
+		m_rendererState = RendererState::RENDERSTATE_FAILED;
+		m_rendererStateText.SetWindowText(TEXT("Failed"));
+
+		// TODO m_rendererBox.SetWindowText(e.c_str());
+	}
 	catch (...)
 	{
 		m_rendererState = RendererState::RENDERSTATE_FAILED;
-		m_rendererStateText.SetWindowText(TEXT("Failed "));
+		m_rendererStateText.SetWindowText(TEXT("Failed"));
 	}
 }
 
