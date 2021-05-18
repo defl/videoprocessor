@@ -1,0 +1,14 @@
+High:
+- once in fullscreen can't exit
+- if the renderer fails to start throw a nice error message and ensure it doesn't try to keep on starting
+
+Later:
+- support r210 coming out of the Blackmagic card (10 bit RGB, but this format is not supported by madVR so needs conversion)
+- use hardware timestamps from capture card for frame timing
+- interlaced formats
+- CaptureInput as a first-class citizen rather than a POD (rename to capture device input?)
+- support audio
+
+Probably never:
+- Capture bits should be DirectShow source filters so that they are also usable in other programs. These other programs then also need to implement 
+  custom interfaces to (re-) build graphs on demand and use the extracted metadata in the right way.

@@ -1,0 +1,290 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include <VideoProcessor.rc2>  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "..\\images\\VideoProcessor.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_VIDEOPROCESSOR_DIALOG DIALOGEX 0, 0, 765, 272
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Video Processor"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_CAPTURE_DEVICE_COMBO,12,18,126,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_CAPTURE_INPUT_COMBO,12,36,126,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Color space",IDC_VIDEO_DATA_GROUP,150,0,204,222
+    GROUPBOX        "Renderer",IDC_RENDERER_GROUP,360,0,402,270
+    LTEXT           "<renderer output>",IDC_RENDERER_BOX,366,42,390,222
+    LTEXT           "R",IDC_STATIC,157,233,11,8
+    LTEXT           "G",IDC_STATIC,228,234,8,8
+    LTEXT           "B",IDC_STATIC,294,234,8,8
+    LTEXT           "WP",IDC_STATIC,156,246,17,8
+    LTEXT           "Disp.Mstr.",IDC_STATIC,245,246,30,8
+    LTEXT           "MaxCLL",IDC_STATIC,156,258,24,8
+    LTEXT           "MaxFALL",IDC_STATIC,270,258,30,8
+    LTEXT           "black=video, white=HDR",IDC_STATIC,156,210,174,8
+    LTEXT           "<etof>",IDC_VIDEO_EOTF_STATIC,12,234,126,8
+    LTEXT           "",IDC_HDR_DP_RED_STATIC,174,233,42,8
+    LTEXT           "",IDC_HDR_DP_GREEN_STATIC,240,234,42,8
+    LTEXT           "",IDC_HDR_DP_BLUE_STATIC,306,234,42,8
+    LTEXT           "",IDC_HDR_WHITE_POINT_STATIC,174,246,66,8
+    LTEXT           "",IDC_HDR_DML_STATIC,281,246,67,8
+    LTEXT           "",IDC_HDR_MAX_CLL_STATIC,186,258,36,8
+    LTEXT           "",IDC_HDR_MAX_FALL_STATIC,312,258,36,8
+    LTEXT           "<color space>",IDC_VIDEO_COLORSPACE_STATIC,12,246,126,8
+    GROUPBOX        "Captured video",IDC_VIDEO_SIGNAL_GROUP,6,186,138,84
+    GROUPBOX        "HDR",IDC_STATIC_HDR_DATA_GROUP,150,222,204,48
+    LISTBOX         IDC_CAPTURE_DEVICE_OTHER_LIST,12,78,126,30,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Locked:",IDC_STATIC,12,132,30,8
+    LTEXT           "",IDC_INPUT_LOCKED_STATIC,42,132,96,8
+    LTEXT           "<display mode>",IDC_INPUT_DISPLAY_MODE_STATIC,12,144,126,8
+    LTEXT           "<encoding>",IDC_INPUT_ENCODING_STATIC,12,156,126,8
+    LTEXT           "<display mode>",IDC_VIDEO_DISPLAY_MODE_STATIC,12,210,126,8
+    LTEXT           "<pixel format>",IDC_VIDEO_PIXEL_FORMAT_STATIC,12,222,126,8
+    GROUPBOX        "Input",IDC_HDMI_GROUP,6,120,138,66
+    GROUPBOX        "Capture device",IDC_CAPTURE_DEVICE_OTHER_GROUP,6,0,138,114
+    PUSHBUTTON      "Full screen",IDC_FULL_SCREEN_BUTTON,702,6,54,12
+    LTEXT           "<CIE 1931 XY diagram>",IDC_CIE1931XY_GRAPH,156,12,192,192
+    LTEXT           "<bit depth>",IDC_INPUT_BIT_DEPTH_STATIC,12,168,126,8
+    LTEXT           "State:",IDC_STATIC,12,54,24,8
+    LTEXT           "",IDC_CAPTURE_STATE_STATIC,42,54,96,8
+    LTEXT           "Other properties:",IDC_STATIC,12,66,66,8
+    LTEXT           "Valid:",IDC_STATIC,12,198,30,8
+    LTEXT           "",IDC_VIDEO_VALID_STATIC,42,198,96,8
+    LTEXT           "State:",IDC_STATIC,366,12,24,8
+    LTEXT           "",IDC_RENDERER_STATE_STATIC,366,24,66,8
+    COMBOBOX        IDC_RENDERER_PIXEL_VALUE_RANGE_COMBO,444,18,84,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Pixel value range",IDC_STATIC,444,6,60,8
+    PUSHBUTTON      "Restart",IDC_RENDERER_RESTART_BUTTON,642,6,54,12
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "Blackmagic Design"
+            VALUE "FileDescription", "Capture Preview"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "CapturePreview.exe"
+            VALUE "LegalCopyright", "Copyright © 2013-2019 Blackmagic Design.  All rights reserved."
+            VALUE "OriginalFilename", "CapturePreview.exe"
+            VALUE "ProductName", "CapturePreview"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_VIDEOPROCESSOR_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 757
+        BOTTOMMARGIN, 265
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_VIDEOPROCESSOR_DIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 100,
+    0, 0, 100, 100,
+    0, 0, 100, 100,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 0, 100,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 0, 100,
+    100, 0, 0, 0,
+    0, 0, 0, 100,
+    0, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    100, 0, 0, 0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_CIE1931XY           BITMAP                  "..\\images\\cie1932xy.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_ACCELERATOR1 ACCELERATORS
+BEGIN
+    "X",            ID_COMMAND_FULLSCREEN,  VIRTKEY, NOINVERT
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include <VideoProcessor.rc2>  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

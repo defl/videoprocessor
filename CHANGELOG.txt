@@ -1,0 +1,5 @@
+0.0.1
+ - First release, very very alpha, will blow up, probably eats your homework - be warned!
+ - Known issue: can't return from full screen mode
+ - Known issue: Only supports BlackMagic cards and only support v210 input
+ 
