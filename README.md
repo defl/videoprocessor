@@ -54,6 +54,8 @@ VideoProcessor has a wide range of applications. You can do as little as just so
 The following cards have capable hardware but are not supported; getting them work is most likely possible but might involve high procurement and/or engineering costs. The rules for getting them added are simple: it needs a published API (either vendor-provided or reverse engineered) and I need the hardware or you send a pull-request.
 
 - [AVerMedia CL511HN](https://www.avermedia.com/professional/product/cl511hn/overview) (4k60, pass-through) - There is an SDK available which looks usable
+- [Magewell Pro Capture HDMI 4K Plus](https://www.magewell.com/products/pro-capture-hdmi-4k-plus) (4k60) - There is an SDK available
+- [Magewell Pro Capture HDMI 4K Plus LT](https://www.magewell.com/products/pro-capture-hdmi-4k-plus) (4k60, pass-through) - There is an SDK available
 - [AVerMedia Live Gamer 4K (GC573)](https://www.avermedia.com/us/product-detail/GC573) (4k60, pass-through) - No publicly available API/SDK
 - [Elgato 4K60 pro](https://www.elgato.com/en/game-capture-4k60-pro) (4k60, pass-through) - No publicly available API/SDK
 
