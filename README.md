@@ -76,12 +76,8 @@ Luckily if you tone it down a bit it works well with quite modest hardware. Ther
 Get the source from https://github.com/defl/videoprocessor
 
  * MSVC 2019 community edition
-
  * Install MFC libraries
-
  * Debug builds require the [Visual Leak Detector](https://kinddragon.github.io/vld/) Visual C++ plugin
-
-   
 
 **Debugging**
 
