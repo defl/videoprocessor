@@ -6,6 +6,7 @@ Video Processor
 Video Processor is a Windows application which couples a capture card to a high quality video renderer ([madVR](http://madvr.com/)) and takes care of all the plumbing in such a way the metadata stays intact. This allows the renderer to do things like 3d LUT, HDR tone mapping, scaling, deinterlacing and much more which can significantly improve image quality on the majority of displays. It is especially useful for accurate color-correction and HDR-like display on low lumen devices like projectors.
 
 **Background**
+
 The madVR renderer is legendary for it's video processing prowess, but its not a complete solution - it is only  a DirectShow renderer not a full player. A variety of players and sources are available, but as it stands only file-based sources (ripped Blue-rays etc) have the HDR metadata which allows madVR to determine what it is actually displaying. To date, none of the capture card vendors have implemented the required metadata in their sources and hence none of the players works correctly out of the box as the data simply is not there.
 
 A solution for this problem already exists in the form of the [directshow_metadata_injector_filter](https://github.com/defl/directshow_metadata_injector_filter), which is a DirectShow filter that can inject the correct metadata between the source and the renderer. It is significantly less user-friendly than this application as it requires manual configuration or external hardware and scripting. 
@@ -13,11 +14,13 @@ A solution for this problem already exists in the form of the [directshow_metada
 VideoProcessor is a one-click solution for this problem allowing live streaming, processing and glorious rendering of anything from low-end PAL to high end 4k HDR sources.
 
 **HDCP**
+
 There is one snag through, all high quality copyright protected video is protected with High-bandwidth Digital Content Protection (HDCP). No retail capture card is allowed to forward unprotected video data to it's clients. Therefore, if you connect a HDCP source to a capture card the video output will be disabled or blank. VideoProcessor is a just a client of your capture card and hence if your capture card does not output video because of HDCP, there is no video to process. VideoProcessor cannot strip, circumvent or work around HDCP in any way, shape or form, it can only process what it is given.
 
 Devices which can remove this protection are available, allowing for HDCP protected sources being captured by your capture card, but their legality depends on your jurisdiction and use. Ensuring compliance with your local laws, and feeding your capture card data it can forward to VideoProcessor, is <u>your</u> responsibility. 
 
 **Showtime!**
+
 With all that out of the way, get the latest release at http://www.videoprocessor.org/ or the code at https://github.com/defl/videoprocessor.
 
 
@@ -98,6 +101,7 @@ The people behind madVR also have a commercial offering called [MadVR Envy](http
 *If you have the means I would recommend you buy their product and support madVR development*
 
 **Partial solutions**
+
 madVR is unique in it's abilities and quality, nothing else comes close. For those of you who don't want everything and are on a budget (relatively speaking) the following might be of interest:
 
 - Lumagen makes a device called the [Radiance Pro](http://www.lumagen.com/testindex.php?module=radiancepro_details) which can also do HDR tonemapping.
