@@ -49,7 +49,7 @@ ULONG VideoState::Release(void)
 
 uint32_t VideoState::BytesPerRow() const
 {
-	// See docs/bmd_pixel_formats.pdf for details
+	// See docs/bmd_pixel_formats.pdf also in "Blackmagic DeckLink SDK.pdf" from v 12.0
 	switch (pixelFormat)
 	{
 	case PixelFormat::YUV_8BIT:
@@ -58,8 +58,18 @@ uint32_t VideoState::BytesPerRow() const
 	case PixelFormat::YUV_10BIT:
 		return ((displayMode->FrameWidth() + 47) / 48) * 128;
 
+	case PixelFormat::ARGB_8BIT:
+	case PixelFormat::BGRA_8BIT:
+		return ((displayMode->FrameWidth() + 32) / 8);
+
 	case PixelFormat::RGB_10BIT:
-		return  ((displayMode->FrameWidth() + 63) / 64) * 256;
+	case PixelFormat::RGB_BE_10BIT:
+	case PixelFormat::RGB_LE_10BIT:
+		return ((displayMode->FrameWidth() + 63) / 64) * 256;
+
+	case PixelFormat::RGB_BE_12BIT:
+	case PixelFormat::RGB_LE_12BIT:
+		return ((displayMode->FrameWidth() * 36) / 8);
 	}
 
 	throw std::runtime_error("Don't know how to calculate row bytes for given format");

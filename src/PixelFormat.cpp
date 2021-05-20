@@ -68,14 +68,22 @@ uint32_t PixelFormatBitsPerPixel(PixelFormat pixelFormat)
 	case PixelFormat::YUV_10BIT:
 		return 20;
 
+	case PixelFormat::ARGB_8BIT:
+	case PixelFormat::BGRA_8BIT:
+		return 32;
+
 	case PixelFormat::RGB_10BIT:
 		return 30;
+
+	case PixelFormat::RGB_BE_12BIT:
+		return 36/8;  // Guess
 	}
 
 	throw std::runtime_error("Don't know how to bits per pixel for given format");
 }
 
 
+// ffmpeg riff.c is great for this
 uint32_t PixelFormatFourCC(PixelFormat pixelFormat)
 {
 	switch (pixelFormat)
@@ -86,8 +94,14 @@ uint32_t PixelFormatFourCC(PixelFormat pixelFormat)
 	case PixelFormat::YUV_10BIT:
 		return FCC('v210');
 
+	case PixelFormat::BGRA_8BIT:
+		return FCC('BGRA');  // Guess
+
 	case PixelFormat::RGB_10BIT:
 		return FCC('r210');
+
+	case PixelFormat::RGB_BE_12BIT:
+		return FCC('r12b');
 	}
 
 	throw std::runtime_error("Don't know fourCC for given format");

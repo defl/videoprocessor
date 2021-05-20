@@ -19,6 +19,7 @@ const GUID TranslateToMediaSubType(PixelFormat pixelFormat)
 	switch (pixelFormat)
 	{
 	case PixelFormat::YUV_8BIT:
+		// TODO: Can also be HDYC if color space is rec709, see https://www.fourcc.org/yuv.php
 		return MEDIASUBTYPE_UYVY;
 
 	case PixelFormat::YUV_10BIT:
@@ -26,6 +27,9 @@ const GUID TranslateToMediaSubType(PixelFormat pixelFormat)
 
 	case PixelFormat::RGB_10BIT:
 		return MEDIASUBTYPE_r210;
+
+	case PixelFormat::RGB_BE_12BIT:
+		break;
 	}
 
 	throw std::runtime_error("Cannot translate pixelformat");

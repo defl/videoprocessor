@@ -90,6 +90,9 @@ bool DirectShowMadVRRenderer::OnVideoState(VideoStateComPtr& videoState)
 
 void DirectShowMadVRRenderer::OnVideoFrame(VideoFrame& videoFrame)
 {
+	if (m_state != RendererState::RENDERSTATE_RENDERING)
+		return;
+
 	if (FAILED(m_LiveSource->OnVideoFrame(videoFrame)))
 		throw std::runtime_error("Failed to add frame");
 }
@@ -200,10 +203,10 @@ void DirectShowMadVRRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PT
 	case 64023:  // TODO: WTF is this?
 		break;
 
-	// Should cause stop, never occur
+	// Aborted, happens when exiting from full-screen
 	case EC_USERABORT:
 	case EC_ERRORABORT:
-		throw std::runtime_error("Graph notified us of abort/error");
+		GraphStop();
 		break;
 
 	// Complete is called by renderer as a response to an end-of-stream which we trigger
@@ -311,7 +314,12 @@ void DirectShowMadVRRenderer::GraphBuild()
 	AM_MEDIA_TYPE pmt;
 	ZeroMemory(&pmt, sizeof(AM_MEDIA_TYPE));
 
+	pmt.formattype = FORMAT_VIDEOINFO2;
+	pmt.cbFormat = sizeof(VIDEOINFOHEADER2);
 	pmt.majortype = MEDIATYPE_Video;
+	pmt.subtype = TranslateToMediaSubType(m_videoState->pixelFormat);
+	pmt.bFixedSizeSamples = TRUE;
+	pmt.bTemporalCompression = FALSE;
 
 	pmt.pbFormat = (BYTE*)CoTaskMemAlloc(sizeof(VIDEOINFOHEADER2));
 	if (!pmt.pbFormat)
@@ -321,21 +329,18 @@ void DirectShowMadVRRenderer::GraphBuild()
 	ZeroMemory(pvi2, sizeof(VIDEOINFOHEADER2));
 
 	// Figure out pixel format and send as directshow type
-	pmt.subtype = TranslateToMediaSubType(m_videoState->pixelFormat);
 
 	pvi2->bmiHeader.biSizeImage = m_videoState->BytesPerFrame();
 	pvi2->bmiHeader.biBitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);
 	pvi2->bmiHeader.biCompression = PixelFormatFourCC(m_videoState->pixelFormat);
-
-	pvi2->AvgTimePerFrame = (REFERENCE_TIME)(UNITS / m_videoState->displayMode->RefreshRateHz());
-
 	pvi2->bmiHeader.biWidth = m_videoState->displayMode->FrameWidth();
 	pvi2->bmiHeader.biHeight = m_videoState->displayMode->FrameHeight();
-
 	pvi2->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	pvi2->bmiHeader.biPlanes = 1;
 	pvi2->bmiHeader.biClrImportant = 0;
 	pvi2->bmiHeader.biClrUsed = 0;
+
+	pvi2->AvgTimePerFrame = (REFERENCE_TIME)(UNITS / m_videoState->displayMode->RefreshRateHz());
 
 	//// dwControlFlags is a 32bit int. With AMCONTROL_COLORINFO_PRESENT the upper 24 bits are used by DXVA_ExtendedFormat.
 	//// That struct is 32 bits so it's lower member (SampleFormat) is actually overbooked with the value of dwConotrolFlags
@@ -411,10 +416,6 @@ void DirectShowMadVRRenderer::GraphBuild()
 	pvi2->dwControlFlags += AMCONTROL_USED;
 	pvi2->dwControlFlags += AMCONTROL_COLORINFO_PRESENT;
 
-	pmt.formattype = FORMAT_VIDEOINFO2;
-	pmt.cbFormat = sizeof(VIDEOINFOHEADER2);
-	pmt.bFixedSizeSamples = TRUE;
-	pmt.bTemporalCompression = FALSE;
 	pmt.lSampleSize = DIBSIZE(pvi2->bmiHeader);
 
 	CoTaskMemFree(pmt.pbFormat);
@@ -486,11 +487,9 @@ void DirectShowMadVRRenderer::GraphTeardown()
 	if (!m_pVideoWindow)
 		throw std::runtime_error("Video window was null");
 
-	if (FAILED(m_pVideoWindow->put_Visible(OAFALSE)))
-		throw std::runtime_error("Failed to set set window invisible");
-
-	if (FAILED(m_pVideoWindow->put_Owner(NULL)))
-		throw std::runtime_error("Failed to remove owner");
+	// These can fail if we are terminating and there is no visible window anymore, no problem
+	m_pVideoWindow->put_Visible(OAFALSE);
+	m_pVideoWindow->put_Owner(NULL);
 
 	// Stop sending event messages
 	// https://docs.microsoft.com/en-us/windows/win32/directshow/responding-to-events for notes on cleanup
@@ -565,48 +564,26 @@ void DirectShowMadVRRenderer::GraphStop()
 	if (FAILED(m_pControl->Stop()))
 		throw std::runtime_error("Failed to Stop() graph");
 
-	// Wait-lock until madVR is stopped
+	// Check if madVR is stopped
 	CComQIPtr<IMadVRInfo> pMVRI = m_pMVR;
 	if (!pMVRI)
 		throw std::runtime_error("Failed to get IMadVRInfo");
 
-	int madVrPlaybastState = -1; // Invalid state we hope
-	while (madVrPlaybastState != FILTER_STATE::State_Stopped)
-	{
-		if (FAILED(pMVRI->GetInt("playbackState", &madVrPlaybastState)))
-			throw std::runtime_error("Failed to get filter state");
+	int madVrPlaybastState = -1;  // Invalid state we hope
+	if (FAILED(pMVRI->GetInt("playbackState", &madVrPlaybastState)))
+		throw std::runtime_error("Failed to get filter state");
 
-		switch ((FILTER_STATE)madVrPlaybastState)
-		{
-		case FILTER_STATE::State_Running:
-		case FILTER_STATE::State_Stopped:
-			break;
-
-		case  FILTER_STATE::State_Paused:
-		default:
-			throw std::runtime_error("Madvr in unexpected state");
-		}
-	}
+	if ((FILTER_STATE)madVrPlaybastState != FILTER_STATE::State_Stopped)
+		throw std::runtime_error("Madvr was not stopped");
 
 	// Wait-lock until state is ok
 	// TODO: There still is some sort os async component to stopping but no callback handler. No idea how to check if the graph has really stopped
 	OAFilterState filterState = -1; // Invalid state
-	while (filterState != FILTER_STATE::State_Stopped)
-	{
-		if (FAILED(m_pControl->GetState(500, &filterState)))
-			throw std::runtime_error("Failed to get filter state");
+	if (FAILED(m_pControl->GetState(500, &filterState)))
+		throw std::runtime_error("Failed to get filter state");
 
-		switch ((FILTER_STATE)filterState)
-		{
-		case FILTER_STATE::State_Running:
-		case FILTER_STATE::State_Stopped:
-			break;
-
-		case  FILTER_STATE::State_Paused:
-		default:
-			throw std::runtime_error("Stream in unexpected state");
-		}
-	}
+	if((FILTER_STATE)filterState != FILTER_STATE::State_Stopped)
+		throw std::runtime_error("Filter graph was not stopped");
 
 	SetState(RendererState::RENDERSTATE_STOPPED);
 }

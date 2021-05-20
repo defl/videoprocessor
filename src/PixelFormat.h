@@ -15,15 +15,42 @@
 enum class PixelFormat
 {
 	UNKNOWN,
-	YUV_8BIT,  // UYVY
-	YUV_10BIT,  // v210
+
+	// UYVY 4:2:2
+	// Four 8-bit unsigned components(CCIR 601) are packed into one 32-bit little-endian word.
+	YUV_8BIT,
+
+	// v210 4:2:2
+	// Twelve 10-bit unsigned components are packed into four 32-bit little-endian words
+	YUV_10BIT,
+
+	// ARGB (or ARGB32) 4:4:4:4 raw
+	// Four 8-bit unsigned components are packed into one 32-bit little-endian word. Alpha channel is valid.
 	ARGB_8BIT,
+
+	// BGRA (or RGB32) 4:4:4:x raw
+	// Four 8-bit unsigned components are packed into one 32-bit little-endian word. The alpha channel may be valid.
 	BGRA_8BIT,
-	RGB_10BIT,  // r210
-	RGB_BE_10BIT,  // R10b
-	RGB_LE_10BIT,  // R10l
-	RGB_BE_12BIT,  // R12B
-	RGB_LE_12BIT,  // R12L
+
+	// r210 4:4:4 raw
+	// Three 10-bit unsigned components are packed into one 32-bit big-endian word.
+	RGB_10BIT,
+
+	// R10b 4:4:4 raw
+	// Three 10-bit unsigned components are packed into one 32-bit big-endian word.
+	RGB_BE_10BIT,
+
+	// R10l 4:4:4 raw
+	// Three 10-bit unsigned components are packed into one 32-bit little-endian word.
+	RGB_LE_10BIT,
+
+	// R12B Big-endian RGB 12-bit per component with full range (0-4095). Packed as 12-bit per component.
+	// (SMPTE 268M Digital Moving-Picture Exchange version 1, Annex C, Method C4 packing.)
+	RGB_BE_12BIT,
+
+	// R12L Little-endian RGB 12-bit per component with full range (0-4095). Packed as 12-bit per component.
+	// (SMPTE 268M Digital Moving-Picture Exchange version 1, Annex C, Method C4 packing.)
+	RGB_LE_12BIT,
 	H265,
 	DNxHR
 };

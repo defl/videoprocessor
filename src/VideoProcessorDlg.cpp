@@ -763,7 +763,13 @@ void CVideoProcessorDlg::StartRender()
 		m_rendererState = RendererState::RENDERSTATE_FAILED;
 		m_rendererStateText.SetWindowText(TEXT("Failed"));
 
-		// TODO m_rendererBox.SetWindowText(e.c_str());
+		size_t size = strlen(e.what()) + 1;
+		wchar_t* wtext = new wchar_t[size];
+		size_t outSize;
+		mbstowcs_s(&outSize, wtext, size, e.what(), size-1);
+		m_rendererBox.SetWindowText(wtext);
+
+		delete wtext;
 	}
 	catch (...)
 	{
