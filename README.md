@@ -74,13 +74,13 @@ The following cards have capable hardware but are not supported; getting them wo
 
 VideoProcessor itself takes very little CPU. The capture card drivers often just take a decent amount of memory up (gigs) and the rest is madVR. MadVR can be a massive resource drain; at maximum settings when working on a 4K high frame rate feed there simply is no available hardware which can sustain it (RTX3090 included).
 
-Luckily if you tone it down a bit it works well with quite modest hardware. There are tons of threads like [Building a 4K HTPC for madVR](https://www.avsforum.com/threads/guide-building-a-4k-htpc-for-madvr.2364113/) on this so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops on recent intel GPUs.
+Luckily if you tone it down a bit it works well with quite modest hardware. There are tons of threads like [Building a 4K HTPC for madVR](https://www.avsforum.com/threads/guide-building-a-4k-htpc-for-madvr.2364113/) on this so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements.
 
 For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX 1660 + BlackMagic DeckLink Mini Recorder 4k which is enough for my purposes which is 4K HDR input, 1080p tone mapped output plus some minor enhancements.
 
 
 
-# Dev stuff
+# For developers
 
 Get the source from https://github.com/defl/videoprocessor
 
