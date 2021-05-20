@@ -1,5 +1,8 @@
+0.0.2
+- Fix for SDR handling which would stop the renderer
+- In renderer stops with a failure it will now be restarted by either pressing the restart button or when a new mode comes along
+
 0.0.1
- - First release, very very alpha, will blow up, probably eats your homework - be warned!
- - Known issue: can't return from full screen mode
- - Known issue: Only supports BlackMagic cards and only support v210 input
- 
+- First release, very very alpha, will blow up, probably eats your homework - be warned!
+- Known issue: can't return from full screen mode
+- Known issue: Only supports BlackMagic cards and only support v210 input
