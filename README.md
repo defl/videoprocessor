@@ -45,15 +45,17 @@ VideoProcessor has a wide range of applications. You can do as little as just so
 
 **Tested and confirmed working**
 
-If you can spare it the BlackMagic DeckLink Quad HDMI can do 4k60, which makes your life easier as many GUIs and menus are in this format. The Mini Recorder is significantly cheaper but can cause some confusion to your systems as it is max 30fps at 4K, which isn't perfectly recognized by all systems leading to some more manual work in some cases to get it working.
+If you can spare it, the BlackMagic DeckLink Quad HDMI can do 4k60, which makes your life easier as many GUIs and menus are in this format. The Mini Recorder 4K is significantly cheaper but can cause some confusion to your systems as it is max 30fps at 4K, which isn't perfectly recognized by all systems which potentially will require fiddling to get it working. For >99.9% of the movies out there the value choice is as good as the best choice.
 
- * [BlackMagic DeckLink Quad HDMI Recorder](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-36) (4k60) (€~500)
- * [BlackMagic DeckLink Mini Recorder 4k](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-33) (4k30) (€~200)
+ * [BlackMagic DeckLink Quad HDMI Recorder](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-36) (4k60) (€~500) <-- best choice
+ * [BlackMagic DeckLink Mini Recorder 4k](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-33) (4k30) (€~200) <-- value choice
+
 
 
 **Might work, but untested**
 
 - [DeckLink 4K Extreme 12G](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-25) (4k60) (€~750)
+
 
 
 **Won't work** **(*yet*)**
