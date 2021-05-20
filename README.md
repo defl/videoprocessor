@@ -41,16 +41,24 @@ With all that out of the way, get the latest release at http://www.videoprocesso
 
 VideoProcessor has a wide range of applications. You can do as little as just some color correction on low end inputs like NTSC all the way up to HDR tone mapping a 4k HDR source. As such there is a very wide variety of cards it can potentially work with. The following list provides cards which provide HDMI 2.0 or up, 4K or up, HDR or better and >=10bits - which covers the most common use case of processing a HDR stream and polishing + tone mapping it to your display.
 
+
+
 **Tested and confirmed working**
 
+If you can spare it the Quad HDMI can do 4k60, which makes your life easier as many GUI's and menus are in this format. The Mini Recorder is significantly cheaper but can cause some confusion to your systems as it is max 30fps at 4K, which isn't perfectly recognized by all systems leading to some more manual work in some cases to get it working.
+
  * [BlackMagic DeckLink Mini Recorder 4k](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-33) (4k30) (€~200)
+ * [DeckLink Quad HDMI Recorder](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-36) (4k60) (€~500)
+
+
 
 **Might work, but untested**
 
-- [DeckLink Quad HDMI Recorder](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-36) (4k60) (€~500)
 - [DeckLink 4K Extreme 12G](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-25) (4k60) (€~750)
 
-**Won't work**
+
+
+**Won't work** **(*yet*)**
 
 The following cards have capable hardware but are not supported; getting them work is most likely possible but might involve high procurement and/or engineering costs. The rules for getting them added are simple: it needs a published API (either vendor-provided or reverse engineered) and I need the hardware or you send a pull-request.
 
