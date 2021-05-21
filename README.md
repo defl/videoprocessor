@@ -45,15 +45,17 @@ VideoProcessor has a wide range of applications. You can do as little as just so
 
 **Tested and confirmed working**
 
-If you can spare it the BlackMagic DeckLink Quad HDMI can do 4k60, which makes your life easier as many GUIs and menus are in this format. The Mini Recorder is significantly cheaper but can cause some confusion to your systems as it is max 30fps at 4K, which isn't perfectly recognized by all systems leading to some more manual work in some cases to get it working.
+If you can spare it, the BlackMagic DeckLink Quad HDMI can do 4k60, which makes your life easier as many GUIs and menus are in this format. The Mini Recorder 4K is significantly cheaper but can cause some confusion to your systems as it is max 30fps at 4K, this isn't perfectly recognized by all systems which potentially will require fiddling to get it working. For >99.9% of the movies out there the value choice is as good as the best choice.
 
- * [BlackMagic DeckLink Quad HDMI Recorder](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-36) (4k60) (€~500)
- * [BlackMagic DeckLink Mini Recorder 4k](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-33) (4k30) (€~200)
+ * [BlackMagic DeckLink Quad HDMI Recorder](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-36) (4k60) (€~500) <-- best choice
+ * [BlackMagic DeckLink Mini Recorder 4k](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-33) (4k30) (€~200) <-- value choice
+
 
 
 **Might work, but untested**
 
 - [DeckLink 4K Extreme 12G](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-25) (4k60) (€~750)
+
 
 
 **Won't work** **(*yet*)**
@@ -72,13 +74,13 @@ The following cards have capable hardware but are not supported; getting them wo
 
 VideoProcessor itself takes very little CPU. The capture card drivers often just take a decent amount of memory up (gigs) and the rest is madVR. MadVR can be a massive resource drain; at maximum settings when working on a 4K high frame rate feed there simply is no available hardware which can sustain it (RTX3090 included).
 
-Luckily if you tone it down a bit it works well with quite modest hardware. There are tons of threads like [Building a 4K HTPC for madVR](https://www.avsforum.com/threads/guide-building-a-4k-htpc-for-madvr.2364113/) on this so a bit of research will get you a long way.
+Luckily if you tone it down a bit it works well with quite modest hardware. There are tons of threads like [Building a 4K HTPC for madVR](https://www.avsforum.com/threads/guide-building-a-4k-htpc-for-madvr.2364113/) on this so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements.
 
-(For reference, I'm developing/using it on Intel 11400 + 16GB ram + GTX 1660 +[BlackMagic DeckLink Mini Recorder 4k](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-33)  which is enough for my purposes which is 4K HDR input, 1080p tone mapped output.)
+For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX 1660 + BlackMagic DeckLink Mini Recorder 4k which is enough for my purposes which is 4K HDR input, 1080p tone mapped output plus some minor enhancements.
 
 
 
-# Dev stuff
+# For developers
 
 Get the source from https://github.com/defl/videoprocessor
 
