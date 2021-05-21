@@ -50,7 +50,10 @@ public:
 	// UI-related handlers
 	afx_msg void OnCaptureDeviceSelected();
 	afx_msg void OnCaptureInputSelected();
-	afx_msg void OnRendererPixelValueRangeSelected();
+	afx_msg void OnRendererNominalRangeSelected();
+	afx_msg void OnRendererTransferFunctionSelected();
+	afx_msg void OnRendererTransferMatrixSelected();
+	afx_msg void OnRendererPrimariesSelected();
 	afx_msg void OnClose();
 	afx_msg void OnBnClickedFullScreenButton();
 	afx_msg void OnBnClickedRendererRestart();
@@ -119,7 +122,10 @@ protected:
 
 	// Renderer group
 	CStatic m_rendererStateText;
-	CComboBox m_rendererPixelValueRangeCombo;
+	CComboBox m_rendererNominalRangeCombo;
+	CComboBox m_rendererTransferFunctionCombo;
+	CComboBox m_rendererTransferMatrixCombo;
+	CComboBox m_rendererPrimariesCombo;
 	CStatic	m_rendererBox;
 
 	CSize m_minDialogSize;
@@ -148,7 +154,7 @@ protected:
 	// at various points which will work towards our desired state
 	CComPtr<ACaptureDevice>	m_desiredCaptureDevice = nullptr;
 	CaptureInputId m_desiredCaptureInputId = INVALID_CAPTURE_INPUT_ID;
-	PixelValueRange m_desiredRendererPixelValueRange = PixelValueRange::PIXELVALUERANGE_UNKNOWN;  // = let render decide
+	//PixelValueRange m_desiredRendererPixelValueRange = PixelValueRange::PIXELVALUERANGE_UNKNOWN;  // = let render decide
 	bool m_wantToRestartRenderer = false;
 	bool m_wantToTerminate = false;
 	void UpdateState();

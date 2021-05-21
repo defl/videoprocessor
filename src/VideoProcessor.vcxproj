@@ -212,6 +212,7 @@
     <ClInclude Include="guid.h" />
     <ClInclude Include="InputLocked.h" />
     <ClInclude Include="IRenderer.h" />
+    <ClInclude Include="microsoft_directshow\DirectShowDefines.h" />
     <ClInclude Include="microsoft_directshow\DirectShowTranslations.h" />
     <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSource.h" />
     <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.h" />
@@ -258,7 +259,7 @@
     <ClCompile Include="guid.cpp" />
     <ClCompile Include="HDRData.cpp" />
     <ClCompile Include="InputLocked.cpp" />
-    <ClCompile Include="microsoft_directshow\DIrectShowTranslations.cpp" />
+    <ClCompile Include="microsoft_directshow\DirectShowTranslations.cpp" />
     <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSource.cpp" />
     <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.cpp" />
     <ClCompile Include="microsoft_directshow\madvr_renderer\DirectShowMadVRRenderer.cpp" />

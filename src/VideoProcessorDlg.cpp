@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright(C) 2021 Dennis Fleurbaaij <mail@dennisfleurbaaij.com>
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
@@ -11,11 +11,13 @@
 #include <atlstr.h>
 #include <algorithm>
 #include <vector>
+#include <dxva.h>
 
 #include <cie.h>
 #include <resource.h>
 #include <VideoProcessorApp.h>
 #include <microsoft_directshow/madvr_renderer/DirectShowMadVRRenderer.h>
+#include <microsoft_directshow/DirectShowDefines.h>
 
 #include "VideoProcessorDlg.h"
 
@@ -25,7 +27,6 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	// Pre-baked callbacks
 	ON_WM_PAINT()
 	ON_WM_SIZE()
-	ON_WM_KEYDOWN()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_GETMINMAXINFO()
 	ON_WM_CLOSE()
@@ -42,13 +43,76 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	// UI element messages
 	ON_CBN_SELCHANGE(IDC_CAPTURE_DEVICE_COMBO, &CVideoProcessorDlg::OnCaptureDeviceSelected)
 	ON_CBN_SELCHANGE(IDC_CAPTURE_INPUT_COMBO, &CVideoProcessorDlg::OnCaptureInputSelected)
-	ON_CBN_SELCHANGE(IDC_RENDERER_PIXEL_VALUE_RANGE_COMBO, &CVideoProcessorDlg::OnRendererPixelValueRangeSelected)
+	ON_CBN_SELCHANGE(IDC_RENDERER_NOMINAL_RANGE_COMBO, &CVideoProcessorDlg::OnRendererNominalRangeSelected)
+	ON_CBN_SELCHANGE(IDC_RENDERER_TRANSFER_FUNCTION_COMBO, &CVideoProcessorDlg::OnRendererTransferFunctionSelected)
+	ON_CBN_SELCHANGE(IDC_RENDERER_TRANSFER_MATRIX_COMBO, &CVideoProcessorDlg::OnRendererTransferMatrixSelected)
+	ON_CBN_SELCHANGE(IDC_RENDERER_PRIMARIES_COMBO, &CVideoProcessorDlg::OnRendererPrimariesSelected)
 	ON_BN_CLICKED(IDC_FULL_SCREEN_BUTTON, &CVideoProcessorDlg::OnBnClickedFullScreenButton)
 	ON_BN_CLICKED(IDC_RENDERER_RESTART_BUTTON, &CVideoProcessorDlg::OnBnClickedRendererRestart)
 
 	// Command handlers
 	ON_COMMAND(ID_COMMAND_FULLSCREEN, &CVideoProcessorDlg::OnCommandFullScreen)
 END_MESSAGE_MAP()
+
+
+static const std::vector<std::pair<LPCTSTR, DXVA_NominalRange>> DIRECTSHOW_NOMINAL_RANGE_OPTIONS =
+{
+	std::make_pair(TEXT("Auto"),             DXVA_NominalRange_Unknown),
+	std::make_pair(TEXT("Full (0-255)"),     DXVA_NominalRange_0_255),
+	std::make_pair(TEXT("Limited (16-235)"), DXVA_NominalRange_16_235),
+	std::make_pair(TEXT("Small (48-208)"),   DXVA_NominalRange_48_208)
+};
+
+
+static const std::vector<std::pair<LPCTSTR, DXVA_VideoTransferFunction>> DIRECTSHOW_TRANSFER_FUNCTION_OPTIONS =
+{
+	std::make_pair(TEXT("Auto"),                      DXVA_VideoTransFunc_Unknown),
+	std::make_pair(TEXT("PQ"),                        DIRECTSHOW_VIDEOTRANSFUNC_2084),
+	std::make_pair(TEXT("Rec 709 (γ=2.2)"),           DXVA_VideoTransFunc_22_709),
+	std::make_pair(TEXT("Bt.2020 constant"),          DIRECTSHOW_VIDEOTRANSFUNC_2020_const),
+
+	std::make_pair(TEXT("True gamma 1.8"),            DXVA_VideoTransFunc_18),
+	std::make_pair(TEXT("True gamma 2.0"),            DXVA_VideoTransFunc_20),
+	std::make_pair(TEXT("True gamma 2.2"),            DXVA_VideoTransFunc_22),
+	std::make_pair(TEXT("True gamma 2.6"),            DIRECTSHOW_VIDEOTRANSFUNC_26),
+	std::make_pair(TEXT("True gamma 2.8"),            DXVA_VideoTransFunc_28),
+
+	std::make_pair(TEXT("Linear RGB (γ=1.0)"),        DXVA_VideoTransFunc_10),
+	std::make_pair(TEXT("204M (γ=2.2)"),              DXVA_VideoTransFunc_22_240M),
+	std::make_pair(TEXT("8-bit gamma 2.2"),           DXVA_VideoTransFunc_22_8bit_sRGB),
+	std::make_pair(TEXT("Log 100:1 H.264"),           DIRECTSHOW_VIDEOTRANSFUNC_Log_100),
+	std::make_pair(TEXT("Log 316:1 H.264"),           DIRECTSHOW_VIDEOTRANSFUNC_Log_316),
+	std::make_pair(TEXT("Rec 709 (γ=2.2) symmetric"), DIRECTSHOW_VIDEOTRANSFUNC_709_sym),
+	std::make_pair(TEXT("Bt.2020 non-const"),         DIRECTSHOW_VIDEOTRANSFUNC_2020),
+	std::make_pair(TEXT("Hybrid log"),                DIRECTSHOW_VIDEOTRANSFUNC_HLG)
+};
+
+
+static const std::vector<std::pair<LPCTSTR, DXVA_VideoTransferMatrix>> DIRECTSHOW_TRANSFER_MATRIX_OPTIONS =
+{
+	std::make_pair(TEXT("Auto"),       DXVA_VideoTransferMatrix_Unknown),
+	std::make_pair(TEXT("BT.2020 10"), DIRECTSHOW_VIDEOTRANSFERMATRIX_BT2020_10),
+	std::make_pair(TEXT("BT.2020 12"), DIRECTSHOW_VIDEOTRANSFERMATRIX_BT2020_12),
+	std::make_pair(TEXT("BT.709"),     DXVA_VideoTransferMatrix_BT709),
+	std::make_pair(TEXT("BT.601"),     DXVA_VideoTransferMatrix_BT601),
+	std::make_pair(TEXT("240M"),       DXVA_VideoTransferMatrix_SMPTE240M),
+	std::make_pair(TEXT("FCC"),        DIRECTSHOW_VIDEOTRANSFERMATRIX_FCC),
+	std::make_pair(TEXT("YCgCo"),      DIRECTSHOW_VIDEOTRANSFERMATRIX_YCgCo)
+};
+
+
+static const std::vector<std::pair<LPCTSTR, DXVA_VideoPrimaries>> DIRECTSHOW_PRIMARIES_OPTIONS =
+{
+	std::make_pair(TEXT("Auto"),         DXVA_VideoPrimaries_Unknown),
+	std::make_pair(TEXT("BT.2020"),      DIRECTSHOW_VIDEOPRIMARIES_BT2020),
+	std::make_pair(TEXT("DCI-P3"),       DIRECTSHOW_VIDEOPRIMARIES_DCI_P3),
+	std::make_pair(TEXT("BT.709"),       DXVA_VideoPrimaries_BT709),
+
+	std::make_pair(TEXT("NTSC SysM"),    DXVA_VideoPrimaries_BT470_2_SysM),
+	std::make_pair(TEXT("NTSC SysBG"),   DXVA_VideoPrimaries_BT470_2_SysBG),
+	std::make_pair(TEXT("CIE 1931 XYZ"), DIRECTSHOW_VIDEOPRIMARIES_XYZ),
+	std::make_pair(TEXT("ACES"),         DIRECTSHOW_VIDEOPRIMARIES_ACES),
+};
 
 
 //
@@ -112,17 +176,27 @@ void CVideoProcessorDlg::OnCaptureInputSelected()
 }
 
 
-void CVideoProcessorDlg::OnRendererPixelValueRangeSelected()
+void CVideoProcessorDlg::OnRendererNominalRangeSelected()
 {
-	const int rendererPixelValueRangeIndex = m_rendererPixelValueRangeCombo.GetCurSel();
-	if (rendererPixelValueRangeIndex < 0)
-		return;
+	OnBnClickedRendererRestart();
+}
 
-	const PixelValueRange pixelValueRange = (PixelValueRange)m_rendererPixelValueRangeCombo.GetItemData(rendererPixelValueRangeIndex);
 
-	m_desiredRendererPixelValueRange = pixelValueRange;
+void CVideoProcessorDlg::OnRendererTransferFunctionSelected()
+{
+	OnBnClickedRendererRestart();
+}
 
-	UpdateState();
+
+void CVideoProcessorDlg::OnRendererTransferMatrixSelected()
+{
+	OnBnClickedRendererRestart();
+}
+
+
+void CVideoProcessorDlg::OnRendererPrimariesSelected()
+{
+	OnBnClickedRendererRestart();
 }
 
 
@@ -638,8 +712,9 @@ void CVideoProcessorDlg::RefreshInputConnectionCombo()
 		index = m_captureInputCombo.AddString(captureInput.name);
 		m_captureInputCombo.SetItemData(index, captureInput.id);
 
-		// If input connection is the active connection set combo to this item
-		if (captureInput.id == currentCaptureInputId)
+		// If we're in a known state keep current selection
+		if(m_captureDeviceState != CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN &&
+			captureInput.id == currentCaptureInputId)
 		{
 			m_captureInputCombo.SetCurSel(index);
 			OnCaptureInputSelected();
@@ -734,13 +809,35 @@ void CVideoProcessorDlg::StartRender()
 	assert(!m_renderer);
 	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
 
+	int i;
+
 	// Update internal state before call to StartCapture as that might be synchronous
 	// TODO: Call should always be posted and never sync
 	m_rendererState = RendererState::RENDERSTATE_STARTING;
 
+	// Get currently selected forced overrides
+	DXVA_NominalRange forceNominalRange = DXVA_NominalRange::DXVA_NominalRange_Unknown;
+	DXVA_VideoTransferFunction forceVideoTransferFunction = DXVA_VideoTransferFunction::DXVA_VideoTransFunc_Unknown;
+	DXVA_VideoTransferMatrix forceVideoTransferMatrix = DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_Unknown;
+	DXVA_VideoPrimaries forceVideoPrimaries = DXVA_VideoPrimaries::DXVA_VideoPrimaries_Unknown;
+
+	i = m_rendererNominalRangeCombo.GetCurSel();
+	if (i >= 0)
+		forceNominalRange = (DXVA_NominalRange)m_rendererNominalRangeCombo.GetItemData(i);
+
+	i = m_rendererTransferFunctionCombo.GetCurSel();
+	if (i >= 0)
+		forceVideoTransferFunction = (DXVA_VideoTransferFunction)m_rendererTransferFunctionCombo.GetItemData(i);
+
+	i = m_rendererTransferMatrixCombo.GetCurSel();
+	if (i >= 0)
+		forceVideoTransferMatrix = (DXVA_VideoTransferMatrix)m_rendererTransferMatrixCombo.GetItemData(i);
+
+	i = m_rendererPrimariesCombo.GetCurSel();
+	if (i >= 0)
+		forceVideoPrimaries = (DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
 
 	// Renderer
-	// TODO: Should always be called from OnMessageCaptureDeviceVideoStateChange so that it can be constructed with the right info
 	try
 	{
 		m_renderer = new DirectShowMadVRRenderer(
@@ -749,10 +846,15 @@ void CVideoProcessorDlg::StartRender()
 			this->GetSafeHwnd(),
 			WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
 			m_captureDeviceVideoState,
-			m_desiredRendererPixelValueRange);
+			forceNominalRange,
+			forceVideoTransferFunction,
+			forceVideoTransferMatrix,
+			forceVideoPrimaries);
 
 		if (!m_renderer)
 			throw std::runtime_error("Failed to build DirectShowMadVRRenderer");
+
+		m_rendererBox.SetFocus();
 
 		m_renderer->Start();
 
@@ -822,6 +924,9 @@ void CVideoProcessorDlg::RemoveRenderLocked()
 	m_renderer = nullptr;
 
 	m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
+
+	// Focus back to us
+	SetFocus();
 }
 
 
@@ -1025,7 +1130,10 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 
 	// Renderer group
 	DDX_Control(pDX, IDC_RENDERER_STATE_STATIC, m_rendererStateText);
-	DDX_Control(pDX, IDC_RENDERER_PIXEL_VALUE_RANGE_COMBO, m_rendererPixelValueRangeCombo);
+	DDX_Control(pDX, IDC_RENDERER_NOMINAL_RANGE_COMBO, m_rendererNominalRangeCombo);
+	DDX_Control(pDX, IDC_RENDERER_TRANSFER_FUNCTION_COMBO, m_rendererTransferFunctionCombo);
+	DDX_Control(pDX, IDC_RENDERER_TRANSFER_MATRIX_COMBO, m_rendererTransferMatrixCombo);
+	DDX_Control(pDX, IDC_RENDERER_PRIMARIES_COMBO, m_rendererPrimariesCombo);
 	DDX_Control(pDX, IDC_RENDERER_BOX, m_rendererBox);
 }
 
@@ -1055,17 +1163,34 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	m_captureDeviceCombo.EnableWindow(FALSE);
 	m_captureInputCombo.EnableWindow(FALSE);
 
+	// Fill renderer selection boxes
+	for (const auto& p : DIRECTSHOW_NOMINAL_RANGE_OPTIONS)
 	{
-		int index = m_rendererPixelValueRangeCombo.AddString(TEXT("Let renderer decide"));
-		m_rendererPixelValueRangeCombo.SetItemData(index, PixelValueRange::PIXELVALUERANGE_UNKNOWN);
-		m_rendererPixelValueRangeCombo.SetCurSel(0);  // Select this by default
-
-		index = m_rendererPixelValueRangeCombo.AddString(TEXT("Force full (0-255)"));
-		m_rendererPixelValueRangeCombo.SetItemData(index, PixelValueRange::PIXELVALUERANGE_0_255);
-
-		index = m_rendererPixelValueRangeCombo.AddString(TEXT("Force limited (16-235)"));
-		m_rendererPixelValueRangeCombo.SetItemData(index, PixelValueRange::PIXELVALUERANGE_16_235);
+		int index = m_rendererNominalRangeCombo.AddString(p.first);
+		m_rendererNominalRangeCombo.SetItemData(index, p.second);
 	}
+	m_rendererNominalRangeCombo.SetCurSel(0);
+
+	for (const auto& p : DIRECTSHOW_TRANSFER_FUNCTION_OPTIONS)
+	{
+		int index = m_rendererTransferFunctionCombo.AddString(p.first);
+		m_rendererTransferFunctionCombo.SetItemData(index, (int)p.second);
+	}
+	m_rendererTransferFunctionCombo.SetCurSel(0);
+
+	for (const auto& p : DIRECTSHOW_TRANSFER_MATRIX_OPTIONS)
+	{
+		int index = m_rendererTransferMatrixCombo.AddString(p.first);
+		m_rendererTransferMatrixCombo.SetItemData(index, (int)p.second);
+	}
+	m_rendererTransferMatrixCombo.SetCurSel(0);
+
+	for (const auto& p : DIRECTSHOW_PRIMARIES_OPTIONS)
+	{
+		int index = m_rendererPrimariesCombo.AddString(p.first);
+		m_rendererPrimariesCombo.SetItemData(index, (int)p.second);
+	}
+	m_rendererPrimariesCombo.SetCurSel(0);
 
 	// Start discovery services
 	m_blackMagicDeviceDiscoverer = new BlackMagicDeckLinkCaptureDeviceDiscoverer(*this);
@@ -1086,6 +1211,8 @@ BOOL CVideoProcessorDlg::PreTranslateMessage(MSG* pMsg)
 		if (::TranslateAccelerator(m_hWnd, m_accelerator, pMsg))
 			return(TRUE);
 	}
+
+	//if (pMsg->message == WM_KEYDOWN) {}
 
 	return CDialog::PreTranslateMessage(pMsg);
 }

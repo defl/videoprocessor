@@ -102,6 +102,9 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="microsoft_directshow\DirectShowDefines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -173,7 +176,7 @@
     <ClCompile Include="HDRData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="microsoft_directshow\DIrectShowTranslations.cpp">
+    <ClCompile Include="microsoft_directshow\DirectShowTranslations.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="microsoft_directshow\madvr_renderer\DirectShowMadVRRenderer.cpp">

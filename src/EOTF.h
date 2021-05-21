@@ -13,12 +13,20 @@
 
 
 // Electical-Optical Transfer Function
-enum class EOTF
+enum EOTF
 {
 	UNKNOWN,
+
+	// Traditional gamma, SDR luminance range (max typically 100 cd/m2)
 	SDR,
+
+	// Traditional gamma, HDR luminance range (max depends on device)
 	HDR,
-	PQ,  // (ST2084)
+
+	// SMPTE ST 2084
+	PQ,
+
+	// Hybrid Log-Gamma, ITU-R BT.2100-0
 	HLG
 };
 

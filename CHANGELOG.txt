@@ -1,3 +1,10 @@
+0.0.4
+- Overridable DirectShow inputs to madVR
+
+0.0.3
+- If the renderer throws this is now shown in the GUI and properly handled.
+- You can actually get out of full-screen with alt-f4
+
 0.0.2
 - Fix for SDR handling which would stop the renderer
 - In renderer stops with a failure it will now be restarted by either pressing the restart button or when a new mode comes along

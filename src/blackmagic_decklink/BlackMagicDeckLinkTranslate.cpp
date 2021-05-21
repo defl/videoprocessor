@@ -84,6 +84,8 @@ PixelFormat Translate(BMDPixelFormat pixelFormat)
 
 EOTF TranslateEOTF(LONGLONG electroOpticalTransferFuncValue)
 {
+	// Comments in the SDK 12 docs: "EOTF in range 0-7 as per CEA 861.3",
+	// which is "A2016 HDR STATIC METADATA EXTENSIONS".
 
 	switch (electroOpticalTransferFuncValue)
 	{
@@ -98,6 +100,9 @@ EOTF TranslateEOTF(LONGLONG electroOpticalTransferFuncValue)
 
 	case 3:
 		return EOTF::HLG;
+
+	// 4-7 are reserved for future use
+	// Higher values not possible, spec only has 3 bits
 	}
 
 	throw std::runtime_error("Failed to translate EOTF");

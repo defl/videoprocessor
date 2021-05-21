@@ -26,13 +26,17 @@ class DirectShowMadVRRenderer:
 {
 public:
 
+	// For the force_* params, the _unknown define means don't force but auto-select
 	DirectShowMadVRRenderer(
 		IRendererCallback& callback,
 		HWND videoHwnd,
 		HWND eventHwnd,
 		UINT eventMsg,
 		VideoStateComPtr& videoState,
-		PixelValueRange forcePixelValueRange);
+		DXVA_NominalRange forceNominalRange,
+		DXVA_VideoTransferFunction forceVideoTransferFunction,
+		DXVA_VideoTransferMatrix forceVideoTransferMatrix,
+		DXVA_VideoPrimaries forceVideoPrimaries);
 
 	virtual ~DirectShowMadVRRenderer();
 
@@ -52,7 +56,10 @@ private:
 	HWND m_eventHwnd;
 	UINT m_eventMsg;
 	VideoStateComPtr m_videoState;
-	PixelValueRange m_forcePixelValueRange;
+	DXVA_NominalRange m_forceNominalRange = DXVA_NominalRange_Unknown;  // Unknown means not force
+	DXVA_VideoTransferFunction m_forceVideoTransferFunction = DXVA_VideoTransFunc_Unknown;  // Unknown means not force
+	DXVA_VideoTransferMatrix m_forceVideoTransferMatrix = DXVA_VideoTransferMatrix_Unknown;  // Unknown means not force
+	DXVA_VideoPrimaries m_forceVideoPrimaries = DXVA_VideoPrimaries_Unknown;  // Unknown means not force
 
 	LONG m_renderBoxWidth = 0;
 	LONG m_renderBoxHeight = 0;

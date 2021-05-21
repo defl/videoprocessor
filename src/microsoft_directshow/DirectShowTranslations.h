@@ -10,8 +10,20 @@
 
 
 #include <guiddef.h>
+#include <dxva.h>
 
 #include <PixelFormat.h>
+#include <ColorSpace.h>
+#include <EOTF.h>
+#include <PixelValueRange.h>
 
 
 const GUID TranslateToMediaSubType(PixelFormat);
+
+DXVA_NominalRange TranslatePixelValueRange(PixelValueRange);
+
+DXVA_VideoTransferMatrix TranslateVideoTransferMatrix(ColorSpace);
+
+DXVA_VideoPrimaries TranslateVideoPrimaries(ColorSpace);
+
+DXVA_VideoTransferFunction TranslateVideoTranferFunction(EOTF, ColorSpace);

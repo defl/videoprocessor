@@ -28,13 +28,19 @@ DirectShowMadVRRenderer::DirectShowMadVRRenderer(
 	HWND eventHwnd,
 	UINT eventMsg,
 	VideoStateComPtr& videoState,
-	PixelValueRange forcePixelValueRange):
+	DXVA_NominalRange forceNominalRange,
+	DXVA_VideoTransferFunction forceVideoTransferFunction,
+	DXVA_VideoTransferMatrix forceVideoTransferMatrix,
+	DXVA_VideoPrimaries forceVideoPrimaries):
 	m_callback(callback),
 	m_videoHwnd(videoHwnd),
 	m_eventHwnd(eventHwnd),
 	m_eventMsg(eventMsg),
 	m_videoState(videoState),
-	m_forcePixelValueRange(forcePixelValueRange)
+	m_forceNominalRange(forceNominalRange),
+	m_forceVideoTransferFunction(forceVideoTransferFunction),
+	m_forceVideoTransferMatrix(forceVideoTransferMatrix),
+	m_forceVideoPrimaries(forceVideoPrimaries)
 {
 	if (!videoHwnd)
 		throw std::runtime_error("Invalid videoHwnd");
@@ -350,68 +356,25 @@ void DirectShowMadVRRenderer::GraphBuild()
 
 	DXVA_ExtendedFormat* colorimetry = (DXVA_ExtendedFormat*)&(pvi2->dwControlFlags);
 
-	switch (m_videoState->colorspace)
-	{
-	case ColorSpace::REC_601_525:
-		colorimetry->VideoTransferMatrix = DXVA_VideoTransferMatrix_BT601;
-		colorimetry->VideoPrimaries = DXVA_VideoPrimaries_BT470_2_SysM;  // NTSC - TODO I'm not sure these are the correct primaries
-		break;
+	colorimetry->VideoPrimaries =
+		(m_forceVideoPrimaries != DXVA_VideoPrimaries::DXVA_VideoPrimaries_Unknown) ?
+		m_forceVideoPrimaries :
+		TranslateVideoPrimaries(m_videoState->colorspace);
 
-	case ColorSpace::REC_601_625:
-		colorimetry->VideoTransferMatrix = DXVA_VideoTransferMatrix_BT601;
-		colorimetry->VideoPrimaries = DXVA_VideoPrimaries_BT470_2_SysBG;  // PAL/SECAM - TODO I'm not sure these are the correct primaries
-		break;
+	colorimetry->VideoTransferMatrix =
+		(m_forceVideoTransferMatrix != DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_Unknown) ?
+		m_forceVideoTransferMatrix :
+		TranslateVideoTransferMatrix(m_videoState->colorspace);
 
-	case ColorSpace::REC_709:
-		colorimetry->VideoTransferMatrix = DXVA_VideoTransferMatrix_BT709;
-		colorimetry->VideoPrimaries = DXVA_VideoPrimaries_BT709;
-		break;
+	colorimetry->VideoTransferFunction =
+		(m_forceVideoTransferFunction != DXVA_VideoTransferFunction::DXVA_VideoTransFunc_Unknown) ?
+		m_forceVideoTransferFunction :
+		TranslateVideoTranferFunction(m_videoState->eotf, m_videoState->colorspace);
 
-	case ColorSpace::BT_2020:
-		colorimetry->VideoPrimaries = (DXVA_VideoPrimaries)9;
-		colorimetry->VideoTransferMatrix = (DXVA_VideoTransferMatrix)4;
-		break;
-
-	default:
-		throw std::runtime_error("Unknown color space");
-	}
-
-	switch (m_videoState->eotf)
-	{
-	case EOTF::PQ:
-		colorimetry->VideoTransferFunction = (DXVA_VideoTransferFunction)15;  // SMPTE ST 2084 (PQ)
-		break;
-
-	case EOTF::SDR:
-		if (m_videoState->colorspace == ColorSpace::REC_709)
-			colorimetry->VideoTransferFunction = DXVA_VideoTransFunc_22_709;
-		else
-			throw std::runtime_error("Don't know video transfer function for SDR outside of REC 709");
-		break;
-
-	case EOTF::UNKNOWN:
-	default:
-		throw std::runtime_error("Unhandled EOTF");
-	}
-
-	// colorimetry->NominalRange
-	switch (m_forcePixelValueRange)
-	{
-	case PixelValueRange::PIXELVALUERANGE_UNKNOWN:
-		colorimetry->NominalRange = DXVA_NominalRange::DXVA_NominalRange_Unknown;  // = Let madVR decide
-		break;
-
-	case PixelValueRange::PIXELVALUERANGE_0_255:
-		colorimetry->NominalRange = DXVA_NominalRange::DXVA_NominalRange_0_255;
-		break;
-
-	case PixelValueRange::PIXELVALUERANGE_16_235:
-		colorimetry->NominalRange = DXVA_NominalRange::DXVA_NominalRange_16_235;
-		break;
-
-	default:
-		throw std::runtime_error("Unhandled PixelValueRange");
-	}
+	colorimetry->NominalRange =
+		(m_forceNominalRange != DXVA_NominalRange::DXVA_NominalRange_Unknown) ?
+		m_forceNominalRange :
+		DXVA_NominalRange::DXVA_NominalRange_Unknown;  // = Let madVR guess
 
 	pvi2->dwControlFlags += AMCONTROL_USED;
 	pvi2->dwControlFlags += AMCONTROL_COLORINFO_PRESENT;
