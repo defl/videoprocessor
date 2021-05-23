@@ -1,14 +1,18 @@
-High:
-- once in fullscreen can't exit
+TODO:
+- Recognition of monitors, be able to direct full-screen to a specific one
+  - Forward key presses and mouse to renderer even in full-screen
+  - Alt-enter entry/exit of full screen mode
 - if the renderer fails to start throw a nice error message and ensure it doesn't try to keep on starting
-
-Later:
-- support r210 coming out of the Blackmagic card (10 bit RGB, but this format is not supported by madVR so needs conversion)
-- use hardware timestamps from capture card for frame timing
-- interlaced formats
+- Convert RGB formats which madVR cannot handle natively
+  - r210 coming out of the Blackmagic card (10 bit RGB)
+- Timing improvements
+  - Use hardware timestamps from capture card for frame timing
+  - Determine baseline latency with external meter
+  - Investigate truely constant rendering times so audio can be in sync with fixed offset in remote audio device
+  - See if we can get the egress timestamp from the nvidia so we can build a feedback system gogin
+- Audio
+  - Directshow rendered
+  - Passthrough high end audio (see what's supported)
+- Support for interlaced formats (only the ones which madVR can handle)
+- Toggelable HDCP on video output through the win32 Output Protection Manager
 - CaptureInput as a first-class citizen rather than a POD (rename to capture device input?)
-- support audio
-
-Probably never:
-- Capture bits should be DirectShow source filters so that they are also usable in other programs. These other programs then also need to implement 
-  custom interfaces to (re-) build graphs on demand and use the extracted metadata in the right way.
