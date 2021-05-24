@@ -54,7 +54,6 @@ public:
 	afx_msg void OnRendererTransferFunctionSelected();
 	afx_msg void OnRendererTransferMatrixSelected();
 	afx_msg void OnRendererPrimariesSelected();
-	afx_msg void OnClose();
 	afx_msg void OnBnClickedFullScreenButton();
 	afx_msg void OnBnClickedRendererRestart();
 
@@ -68,7 +67,8 @@ public:
 	afx_msg LRESULT OnMessageRendererStateChange(WPARAM wParam, LPARAM lParam);
 
 	// Command handlers
-	void OnCommandFullScreen();
+	void OnCommandFullScreenToggle();
+	void OnCommandFullScreenExit();
 
 	// ICaptureDeviceDiscovererCallback
 	void OnCaptureDeviceFound(ACaptureDeviceComPtr& captureDevice) override;
@@ -126,11 +126,14 @@ protected:
 	CComboBox m_rendererTransferFunctionCombo;
 	CComboBox m_rendererTransferMatrixCombo;
 	CComboBox m_rendererPrimariesCombo;
-	CStatic	m_rendererBox;
+	CStatic	m_rendererBox;  // This is the small renderer window
 
 	CSize m_minDialogSize;
 	HICON m_hIcon;
 	HACCEL m_accelerator;
+
+	bool m_rendererfullScreen = false;
+	HWND m_fullScreenRenderWindow = NULL;
 
 	//
 	// Program data
@@ -162,13 +165,16 @@ protected:
 	// Helpers
 	void RefreshCaptureDeviceList();
 	void RefreshInputConnectionCombo();
-	void StartCapture();
-	void StopCapture();
-	void RemoveCapture();
-	void StartRender();
-	void StopRender();
-	void RemoveRender();
-	void RemoveRenderLocked();  // Execute while holding the m_rendererMutex
+	void CaptureStart();
+	void CaptureStop();
+	void CaptureRemove();
+	void RenderStart();
+	void RenderStop();
+	void RenderRemove();
+	void RenderRemoveLocked();  // Execute while holding the m_rendererMutex
+	void FullScreenWindowConstruct();
+	void FullScreenWindowDestroy();
+	HWND GetRenderWindow();
 
 	// CDialog
 	virtual void DoDataExchange(CDataExchange* pDX) override;
@@ -178,6 +184,8 @@ protected:
 	virtual BOOL PreTranslateMessage(MSG* pMsg) override;
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg void OnClose();
 	afx_msg HCURSOR	OnQueryDragIcon();
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
 	DECLARE_MESSAGE_MAP()

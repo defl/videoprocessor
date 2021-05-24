@@ -171,26 +171,15 @@ void DirectShowMadVRRenderer::OnSize()
 }
 
 
-void DirectShowMadVRRenderer::GoFullScreen(bool fullScreen)
+void DirectShowMadVRRenderer::PostMessageToRenderer(long uMsg, LONG_PTR wParam, LONG_PTR lParam)
 {
-	// Read current state
-	LONG lMode;
-	if (FAILED((m_videoWindow->get_FullScreenMode(&lMode))))
-		throw std::runtime_error("Failed to get_FullScreenMode");
+	SetFocus(m_videoHwnd);
 
-	// Go to fullscreen
-	if (lMode == OAFALSE && fullScreen)
-	{
-		if(FAILED(m_videoWindow->put_FullScreenMode(OATRUE)))
-			throw std::runtime_error("Failed to put_FullScreenMode true");
-	}
+	// Doesn't do anything
+	//m_videoWindow->NotifyOwnerMessage((OAHWND)m_videoHwnd, uMsg, wParam, lParam);
 
-	// Go to windowed
-	else if (lMode == OATRUE && !fullScreen)
-	{
-		if (FAILED(m_videoWindow->put_FullScreenMode(OAFALSE)))
-			throw std::runtime_error("Failed to put_FullScreenMode false");
-	}
+	//// Doesn't do anything
+	//::PostMessage(m_videoHwnd, uMsg, wParam, lParam);
 }
 
 
@@ -209,19 +198,13 @@ void DirectShowMadVRRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PT
 	case 64023:  // TODO: WTF is this?
 		break;
 
-	// Aborted, happens when exiting from full-screen
 	case EC_USERABORT:
 	case EC_ERRORABORT:
-		GraphStop();
-		break;
-
-	// Complete is called by renderer as a response to an end-of-stream which we trigger
-	// when we want to stop rendering.
 	case EC_COMPLETE:
 		GraphStop();
 		break;
 
-	// Catch for unknowns
+	// Catch for unknowns in debug
 	default:
 		assert(false);
 	}

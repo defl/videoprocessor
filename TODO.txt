@@ -1,18 +1,21 @@
 TODO:
-- Recognition of monitors, be able to direct full-screen to a specific one
-  - Forward key presses and mouse to renderer even in full-screen
-  - Alt-enter entry/exit of full screen mode
+- Forward key presses to renderer
+
 - if the renderer fails to start throw a nice error message and ensure it doesn't try to keep on starting
 - Convert RGB formats which madVR cannot handle natively
   - r210 coming out of the Blackmagic card (10 bit RGB)
+  - whatever the psp4pro does in terms of HDR output from games which seems some 12-bit RGB.
 - Timing improvements
-  - Use hardware timestamps from capture card for frame timing
+  - Use hardware timestamps from capture card for frame timing in directshow
   - Determine baseline latency with external meter
   - Investigate truely constant rendering times so audio can be in sync with fixed offset in remote audio device
-  - See if we can get the egress timestamp from the nvidia so we can build a feedback system gogin
+  - Use NVIDIA GRID to get the rendered frame and get the egress timestamp it so that we can build a feedback system going.
+    This actually seems possible to get us timestamps of point of frame-render. If the egress delay from there is reasonably
+	constant we can probably get a near constant-time renderer going.
 - Audio
   - Directshow rendered
   - Passthrough high end audio (see what's supported)
-- Support for interlaced formats (only the ones which madVR can handle)
 - Toggelable HDCP on video output through the win32 Output Protection Manager
+  (This will lead to problems with NVIDIA GRID as it's not allowed to capture, and hence we can't get RTT if this is enabled)
+- Support for interlaced formats (only the ones which madVR can handle)
 - CaptureInput as a first-class citizen rather than a POD (rename to capture device input?)

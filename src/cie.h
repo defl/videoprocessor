@@ -17,3 +17,7 @@ bool CieValidColor(double color);
 
 // Returns true if 2 values are indisinguishable in CIE color space
 bool CieEquals(double color1, double color2);
+
+
+// Return the string representation of an XY coordinate
+CString CieXYToString(double x, double y);

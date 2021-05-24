@@ -56,7 +56,7 @@ public:
 	// Draw the current buffer as frame
 	virtual void OnVideoFrame(VideoFrame&) = 0;
 
-	// Handler for windows events.
+	// Handler for windows events for the graph's pEvent
 	virtual HRESULT OnWindowsEvent(LONG_PTR param1, LONG_PTR param2) = 0;
 
 	// Ask the renderer to start, this can take some time and you'll get notified
@@ -73,6 +73,6 @@ public:
 	// Handle window resize event
 	virtual void OnSize() = 0;
 
-	// Handle fullscreen event
-	virtual void GoFullScreen(bool fullScreen) = 0;
+	// Send message to the renderer
+	virtual void PostMessageToRenderer(long uMsg, LONG_PTR wParam, LONG_PTR lParam) = 0;
 };

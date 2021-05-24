@@ -29,6 +29,7 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	ON_WM_SIZE()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_GETMINMAXINFO()
+	ON_WM_SETFOCUS()
 	ON_WM_CLOSE()
 
 	// Custom messages
@@ -51,7 +52,8 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	ON_BN_CLICKED(IDC_RENDERER_RESTART_BUTTON, &CVideoProcessorDlg::OnBnClickedRendererRestart)
 
 	// Command handlers
-	ON_COMMAND(ID_COMMAND_FULLSCREEN, &CVideoProcessorDlg::OnCommandFullScreen)
+	ON_COMMAND(ID_COMMAND_FULLSCREEN_TOGGLE, &CVideoProcessorDlg::OnCommandFullScreenToggle)
+	ON_COMMAND(ID_COMMAND_FULLSCREEN_EXIT, &CVideoProcessorDlg::OnCommandFullScreenExit)
 END_MESSAGE_MAP()
 
 
@@ -220,8 +222,11 @@ void CVideoProcessorDlg::OnClose()
 
 void CVideoProcessorDlg::OnBnClickedFullScreenButton()
 {
-	if (m_renderer)
-		m_renderer->GoFullScreen(true);
+	assert(!m_rendererfullScreen);
+	m_rendererfullScreen = true;
+
+	m_wantToRestartRenderer = true;
+	UpdateState();
 }
 
 
@@ -265,7 +270,7 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceLost(WPARAM wParam, LPARAM lPa
 	// Device being removed is the one we're using
 	if (m_captureDevice == captureDevice)
 	{
-		RemoveCapture();
+		CaptureRemove();
 	}
 
 	m_captureDevices.erase(it);
@@ -389,47 +394,13 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 	{
 		const HDRData hdrData = *(videoState->hdrData);
 
+		m_hdrDpRed.SetWindowText(CieXYToString(hdrData.displayPrimaryRedX, hdrData.displayPrimaryRedY));
+		m_hdrDpGreen.SetWindowText(CieXYToString(hdrData.displayPrimaryGreenX, hdrData.displayPrimaryGreenY));
+		m_hdrDpBlue.SetWindowText(CieXYToString(hdrData.displayPrimaryBlueX, hdrData.displayPrimaryBlueY));
+
+		m_hdrWhitePoint.SetWindowText(CieXYToString(hdrData.whitePointX, hdrData.whitePointY));
+
 		CString cstring;
-		cstring.Format(
-			_T("%.03f,%.03f"),
-			hdrData.displayPrimaryRedX,
-			hdrData.displayPrimaryRedY);
-		m_hdrDpRed.SetWindowText(cstring);
-
-		cstring.Format(
-			_T("%.03f,%.03f"),
-			hdrData.displayPrimaryGreenX,
-			hdrData.displayPrimaryGreenY);
-		m_hdrDpGreen.SetWindowText(cstring);
-
-		cstring.Format(
-			_T("%.03f,%.03f"),
-			hdrData.displayPrimaryBlueX,
-			hdrData.displayPrimaryBlueY);
-		m_hdrDpBlue.SetWindowText(cstring);
-
-		// Whitepoint (name known ones)
-		// https://en.wikipedia.org/wiki/Standard_illuminant
-		cstring.Format(
-			_T("%.03f,%.03f"),
-			hdrData.whitePointX,
-			hdrData.whitePointY);
-
-		if (CieEquals(0.34567, hdrData.whitePointX) &&
-			CieEquals(0.35850, hdrData.whitePointY))
-			cstring = TEXT(" (D50)");
-		if (CieEquals(0.33242, hdrData.whitePointX) &&
-			CieEquals(0.34743, hdrData.whitePointY))
-			cstring = TEXT(" (D55)");
-		if (CieEquals(0.31271, hdrData.whitePointX) &&
-			CieEquals(0.32902, hdrData.whitePointY))
-			cstring = TEXT(" (D65)");
-		if (CieEquals(0.29902, hdrData.whitePointX) &&
-			CieEquals(0.31485, hdrData.whitePointY))
-			cstring = TEXT(" (D75)");
-
-		m_hdrWhitePoint.SetWindowText(cstring);
-
 		cstring.Format(
 			_T("%.03f-%.01f"),
 			hdrData.masteringDisplayMinLuminance,
@@ -441,7 +412,6 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 
 		cstring.Format(_T("%.01f"), hdrData.maxFall);
 		m_hdrMaxFall.SetWindowText(cstring);
-
 	}
 	else
 	{
@@ -515,7 +485,7 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 
 		// Stopped rendering, can be cleaned up
 		case RendererState::RENDERSTATE_STOPPED:
-			RemoveRenderLocked();
+			RenderRemoveLocked();
 			m_rendererStateText.SetWindowText(TEXT("Stopped"));
 			break;
 
@@ -535,10 +505,20 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 //
 
 
-void CVideoProcessorDlg::OnCommandFullScreen()
+void CVideoProcessorDlg::OnCommandFullScreenToggle()
 {
-	if (m_renderer)
-		m_renderer->GoFullScreen(true);
+	m_rendererfullScreen = !m_rendererfullScreen;
+
+	m_wantToRestartRenderer = true;
+	UpdateState();
+}
+
+
+void CVideoProcessorDlg::OnCommandFullScreenExit()
+{
+	// If fullscreen toggle off, else do nothing
+	if (m_rendererfullScreen)
+		OnCommandFullScreenToggle();
 }
 
 
@@ -652,6 +632,173 @@ void CVideoProcessorDlg::OnRendererState(RendererState rendererState)
 }
 
 
+void CVideoProcessorDlg::UpdateState()
+{
+	// Want to change cards
+	if (m_desiredCaptureDevice != m_captureDevice)
+	{
+		// TODO: m_rendererMutex??
+
+		m_captureInputCombo.EnableWindow(FALSE);
+
+		// Have a render and it's rendering, stop it
+		if (m_renderer &&
+			m_rendererState == RendererState::RENDERSTATE_RENDERING)
+			RenderStop();
+
+		// Have a capture and it's capturing, stop it
+		if (m_captureDevice &&
+			m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
+			CaptureStop();
+
+		// Waiting for render to go away
+		if (m_renderer)
+			return;
+
+		// If capture device is stopped we're happy to remove it
+		if (m_captureDevice && m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_READY)
+			CaptureRemove();
+
+		// We're waiting for the capture device to go away
+		if (m_captureDevice)
+			return;
+
+		// From this point on we should be clean, set up new card if so desired
+		assert(!m_renderer);
+		assert(!m_captureDevice);
+
+		if (m_desiredCaptureDevice)
+		{
+			assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
+
+			m_captureDevice = m_desiredCaptureDevice;
+			m_captureDevice->SetCallbackHandler(this);
+
+			RefreshInputConnectionCombo();
+
+			m_captureInputCombo.EnableWindow(TRUE);
+		}
+	}
+
+	// Capture card gone, but still have renderer, can't live for much longer
+	if (!m_captureDevice && m_renderer)
+	{
+		assert(m_rendererState != RendererState::RENDERSTATE_RENDERING);
+		return;
+	}
+
+	// If we want to terminate at this point we should be good to do so
+	if (m_wantToTerminate)
+	{
+		assert(!m_captureDevice);
+		assert(!m_desiredCaptureDevice);
+		assert(!m_renderer);
+		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
+		assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
+			m_rendererState == RendererState::RENDERSTATE_STOPPED);
+
+		CDialog::EndDialog(S_OK);
+		return;
+	}
+
+	// If we don't have a capture card here we don't want to.
+	if (!m_captureDevice)
+	{
+		assert(!m_desiredCaptureDevice);
+		return;
+	}
+
+	assert(m_desiredCaptureDevice == m_captureDevice);
+
+	// Capture device still starting up
+	if (m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN)
+		return;
+
+	assert(m_captureDeviceState != CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
+
+	// Have the right capture device, but want different input
+	if (m_desiredCaptureInputId != INVALID_CAPTURE_INPUT_ID &&
+		m_desiredCaptureInputId != m_currentCaptureInputId)
+	{
+		// Have a render and it's rendering, stop it
+		if (m_renderer &&
+			m_rendererState == RendererState::RENDERSTATE_RENDERING)
+			RenderStop();
+
+		// Have a capture and it's capturing, stop it
+		if (m_captureDevice &&
+			m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
+			CaptureStop();
+
+		// Waiting for render to go away and for the capture to be stopped
+		if (m_renderer ||
+			m_captureDeviceState != CaptureDeviceState::CAPTUREDEVICESTATE_READY)
+			return;
+
+		// From this point on we should be clean, set up new card
+		assert(!m_renderer);
+
+		m_captureDevice->SetCaptureInput(m_desiredCaptureInputId);
+		m_currentCaptureInputId = m_desiredCaptureInputId;
+
+		CaptureStart();
+		return;
+	}
+
+	// Have the right card and the right input
+	assert(m_captureDevice);
+	assert(m_desiredCaptureDevice == m_captureDevice);
+	assert(m_desiredCaptureInputId == m_currentCaptureInputId);
+
+	// No render, start one if the current state is not failed and we have a valid video state
+	if (!m_renderer)
+	{
+		// If we still have a full screen window and don't want to be full screen anymore clean it up
+		if (!m_rendererfullScreen && m_fullScreenRenderWindow)
+		{
+			FullScreenWindowDestroy();
+
+			m_fullScreenRenderWindow = NULL;
+		}
+
+		// If the renderer failed we don't auto-start it again but wait for something to happen
+		if (m_rendererState == RendererState::RENDERSTATE_FAILED)
+			return;
+
+		if (m_captureDeviceVideoState &&
+			m_captureDeviceVideoState->valid)
+			RenderStart();
+
+		return;
+	}
+
+	assert(m_renderer);
+
+	// If we have a renderer but the video state is invalid stop if rendering
+	if (m_rendererState == RendererState::RENDERSTATE_RENDERING &&
+		(!m_captureDeviceVideoState ||
+			!m_captureDeviceVideoState->valid))
+	{
+		RenderStop();
+		return;
+	}
+
+	// Somebody wants to restart rendering, allrighty then
+	if (m_rendererState == RendererState::RENDERSTATE_RENDERING &&
+		m_wantToRestartRenderer)
+	{
+		m_wantToRestartRenderer = false;
+
+		RenderStop();
+		return;
+	}
+
+	// We have a renderer and a valid video state, relax and enjoy the show
+	assert(m_captureDeviceVideoState);
+	//assert(m_captureDeviceVideoState->valid);
+}
+
+
 //
 // Helpers
 //
@@ -692,7 +839,7 @@ void CVideoProcessorDlg::RefreshCaptureDeviceList()
 		m_captureDeviceCombo.EnableWindow(FALSE);
 
 		if (m_captureDevice)
-			RemoveCapture();
+			CaptureRemove();
 	}
 }
 
@@ -757,7 +904,7 @@ void CVideoProcessorDlg::RefreshInputConnectionCombo()
 }
 
 
-void CVideoProcessorDlg::StartCapture()
+void CVideoProcessorDlg::CaptureStart()
 {
 	assert(m_captureDevice);
 	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_READY);
@@ -774,7 +921,7 @@ void CVideoProcessorDlg::StartCapture()
 }
 
 
-void CVideoProcessorDlg::StopCapture()
+void CVideoProcessorDlg::CaptureStop()
 {
 	assert(m_captureDevice);
 	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
@@ -791,7 +938,7 @@ void CVideoProcessorDlg::StopCapture()
 }
 
 
-void CVideoProcessorDlg::RemoveCapture()
+void CVideoProcessorDlg::CaptureRemove()
 {
 	m_captureDevice->SetCallbackHandler(nullptr);
 
@@ -804,10 +951,11 @@ void CVideoProcessorDlg::RemoveCapture()
 }
 
 
-void CVideoProcessorDlg::StartRender()
+void CVideoProcessorDlg::RenderStart()
 {
 	assert(!m_renderer);
-	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
+	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
+		   m_rendererState == RendererState::RENDERSTATE_STOPPED);
 
 	int i;
 
@@ -842,7 +990,7 @@ void CVideoProcessorDlg::StartRender()
 	{
 		m_renderer = new DirectShowMadVRRenderer(
 			*this,
-			m_rendererBox,
+			GetRenderWindow(),
 			this->GetSafeHwnd(),
 			WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
 			m_captureDeviceVideoState,
@@ -853,8 +1001,6 @@ void CVideoProcessorDlg::StartRender()
 
 		if (!m_renderer)
 			throw std::runtime_error("Failed to build DirectShowMadVRRenderer");
-
-		m_rendererBox.SetFocus();
 
 		m_renderer->Start();
 
@@ -881,7 +1027,7 @@ void CVideoProcessorDlg::StartRender()
 }
 
 
-void CVideoProcessorDlg::StopRender()
+void CVideoProcessorDlg::RenderStop()
 {
 	{
 		std::lock_guard<std::mutex> lock(m_rendererMutex);
@@ -903,16 +1049,16 @@ void CVideoProcessorDlg::StopRender()
 }
 
 
-void CVideoProcessorDlg::RemoveRender()
+void CVideoProcessorDlg::RenderRemove()
 {
 	{
 		std::lock_guard<std::mutex> lock(m_rendererMutex);
-		RemoveRenderLocked();
+		RenderRemoveLocked();
 	}
 }
 
 
-void CVideoProcessorDlg::RemoveRenderLocked()
+void CVideoProcessorDlg::RenderRemoveLocked()
 {
 	// WARNING: You need to own the m_rendererMutex at this point
 
@@ -922,169 +1068,61 @@ void CVideoProcessorDlg::RemoveRenderLocked()
 
 	delete m_renderer;
 	m_renderer = nullptr;
-
-	m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
-
-	// Focus back to us
-	SetFocus();
 }
 
 
-void CVideoProcessorDlg::UpdateState()
+void CVideoProcessorDlg::FullScreenWindowConstruct()
 {
-	// Want to change cards
-	if (m_desiredCaptureDevice != m_captureDevice)
+	assert(!m_fullScreenRenderWindow);
+
+	HMONITOR hmon = MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
+	MONITORINFO mi = { sizeof(mi) };
+	if (!GetMonitorInfo(hmon, &mi))
+		throw std::runtime_error("Failed to get monitor info");
+
+	m_fullScreenRenderWindow = CreateWindowEx(
+		WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_ACCEPTFILES | WS_EX_NOPARENTNOTIFY,
+		TEXT("static"),
+		TEXT("Waiting for renderer to start."),
+		WS_POPUP | WS_VISIBLE,
+		mi.rcMonitor.left,
+		mi.rcMonitor.top,
+		mi.rcMonitor.right - mi.rcMonitor.left,
+		mi.rcMonitor.bottom - mi.rcMonitor.top,
+		this->GetSafeHwnd(),  // Parent window
+		NULL,
+		NULL,  // Parent process
+		0);
+
+	if (!m_fullScreenRenderWindow)
+		throw std::runtime_error("Failed to create full screen renderer window");
+}
+
+
+void CVideoProcessorDlg::FullScreenWindowDestroy()
+{
+	assert(m_fullScreenRenderWindow);
+
+	if (!::DestroyWindow(m_fullScreenRenderWindow))
+		throw std::runtime_error("Failed to destroy full screen render window");
+}
+
+
+HWND CVideoProcessorDlg::GetRenderWindow()
+{
+	if (m_rendererfullScreen)
 	{
-		// TODO: m_rendererMutex??
+		// If we don't have a full screen window yet make one
+		if (!m_fullScreenRenderWindow)
+			FullScreenWindowConstruct();
 
-		m_captureInputCombo.EnableWindow(FALSE);
-
-		// Have a render and it's rendering, stop it
-		if (m_renderer &&
-			m_rendererState == RendererState::RENDERSTATE_RENDERING)
-			StopRender();
-
-		// Have a capture and it's capturing, stop it
-		if (m_captureDevice &&
-			m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
-			StopCapture();
-
-		// Waiting for render to go away
-		if (m_renderer)
-			return;
-
-		// If capture device is stopped we're happy to remove it
-		if (m_captureDevice && m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_READY)
-			RemoveCapture();
-
-		// We're waiting for the capture device to go away
-		if (m_captureDevice)
-			return;
-
-		// From this point on we should be clean, set up new card if so desired
-		assert(!m_renderer);
-		assert(!m_captureDevice);
-
-		if (m_desiredCaptureDevice)
-		{
-			assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
-
-			m_captureDevice = m_desiredCaptureDevice;
-			m_captureDevice->SetCallbackHandler(this);
-
-			RefreshInputConnectionCombo();
-
-			m_captureInputCombo.EnableWindow(TRUE);
-		}
+		assert(IsWindow(m_fullScreenRenderWindow));
+		return m_fullScreenRenderWindow;
 	}
 
-	// Capture card gone, but still have renderer, can't live for much longer
-	if (!m_captureDevice && m_renderer)
-	{
-		assert(m_rendererState != RendererState::RENDERSTATE_RENDERING);
-		return;
-	}
-
-	// If we want to terminate at this point we should be good to do so
-	if (m_wantToTerminate)
-	{
-		assert(!m_captureDevice);
-		assert(!m_desiredCaptureDevice);
-		assert(!m_renderer);
-		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
-		assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
-
-		CDialog::EndDialog(S_OK);
-		return;
-	}
-
-	// If we don't have a capture card here we don't want to.
-	if (!m_captureDevice)
-	{
-		assert(!m_desiredCaptureDevice);
-		return;
-	}
-
-	assert(m_desiredCaptureDevice == m_captureDevice);
-
-	// Capture device still starting up
-	if (m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN)
-		return;
-
-	assert(m_captureDeviceState != CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
-
-	// Have the right capture device, but want different input
-	if (m_desiredCaptureInputId != INVALID_CAPTURE_INPUT_ID &&
-		m_desiredCaptureInputId != m_currentCaptureInputId)
-	{
-		// Have a render and it's rendering, stop it
-		if (m_renderer &&
-			m_rendererState == RendererState::RENDERSTATE_RENDERING)
-			StopRender();
-
-		// Have a capture and it's capturing, stop it
-		if (m_captureDevice &&
-			m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
-			StopCapture();
-
-		// Waiting for render to go away and for the capture to be stopped
-		if (m_renderer ||
-			m_captureDeviceState != CaptureDeviceState::CAPTUREDEVICESTATE_READY)
-			return;
-
-		// From this point on we should be clean, set up new card
-		assert(!m_renderer);
-
-		m_captureDevice->SetCaptureInput(m_desiredCaptureInputId);
-		m_currentCaptureInputId = m_desiredCaptureInputId;
-
-		StartCapture();
-		return;
-	}
-
-	// Have the right card and the right input
-	assert(m_captureDevice);
-	assert(m_desiredCaptureDevice == m_captureDevice);
-	assert(m_desiredCaptureInputId == m_currentCaptureInputId);
-
-	// No render yet, start one if the current state is not failed and we have a valid video state
-	if (!m_renderer)
-	{
-		// If the renderer failed we don't auto-start it again but wait for something to happen
-		if (m_rendererState == RendererState::RENDERSTATE_FAILED)
-			return;
-
-		if (m_captureDeviceVideoState &&
-			m_captureDeviceVideoState->valid)
-			StartRender();
-
-		return;
-	}
-
-	assert(m_renderer);
-
-	// If we have a renderer but the video state is invalid stop if rendering
-	if (m_rendererState == RendererState::RENDERSTATE_RENDERING &&
-		(!m_captureDeviceVideoState ||
-		 !m_captureDeviceVideoState->valid))
-	{
-		StopRender();
-		return;
-	}
-
-	// Somebody wants to restart rendering, allrighty then
-	if (m_rendererState == RendererState::RENDERSTATE_RENDERING &&
-		m_wantToRestartRenderer)
-	{
-		m_wantToRestartRenderer = false;
-
-		StopRender();
-		return;
-	}
-
-	// We have a renderer and a valid video state, relax and enjoy the show
-	assert(m_captureDeviceVideoState);
-	//assert(m_captureDeviceVideoState->valid);
+	assert(!m_fullScreenRenderWindow);
+	assert(IsWindow(m_rendererBox));
+	return m_rendererBox;
 }
 
 
@@ -1163,7 +1201,7 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	m_captureDeviceCombo.EnableWindow(FALSE);
 	m_captureInputCombo.EnableWindow(FALSE);
 
-	// Fill renderer selection boxes
+	// Fill renderer directshow selection boxes
 	for (const auto& p : DIRECTSHOW_NOMINAL_RANGE_OPTIONS)
 	{
 		int index = m_rendererNominalRangeCombo.AddString(p.first);
@@ -1193,6 +1231,7 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	m_rendererPrimariesCombo.SetCurSel(0);
 
 	// Start discovery services
+	// TODO: Construct this at construction time, no need to do this here later
 	m_blackMagicDeviceDiscoverer = new BlackMagicDeckLinkCaptureDeviceDiscoverer(*this);
 	m_blackMagicDeviceDiscoverer->Start();
 
@@ -1206,13 +1245,23 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 
 BOOL CVideoProcessorDlg::PreTranslateMessage(MSG* pMsg)
 {
+	// Handle accelerator combinations
 	if (m_accelerator)
 	{
 		if (::TranslateAccelerator(m_hWnd, m_accelerator, pMsg))
-			return(TRUE);
+			return TRUE;
 	}
 
-	//if (pMsg->message == WM_KEYDOWN) {}
+	// Handle individual keys
+	if (pMsg->message == WM_KEYDOWN ||
+		pMsg->message == WM_KEYLAST ||
+		pMsg->message == WM_INPUT )
+	{
+		if (m_renderer)
+		{
+			m_renderer->PostMessageToRenderer(pMsg->message, pMsg->wParam, pMsg->lParam);
+		}
+	}
 
 	return CDialog::PreTranslateMessage(pMsg);
 }
@@ -1254,6 +1303,12 @@ void CVideoProcessorDlg::OnSize(UINT nType, int cx, int cy)
 		m_renderer->OnSize();
 
 	CDialog::OnSize(nType, cx, cy);
+}
+
+
+void CVideoProcessorDlg::OnSetFocus(CWnd* pOldWnd)
+{
+	::SetFocus(GetRenderWindow());
 }
 
 
