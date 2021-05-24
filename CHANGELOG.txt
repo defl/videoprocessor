@@ -1,3 +1,9 @@
+0.0.5
+- Full screen now works and remains full even when modeswitching. 
+  Will full-screen to current monitor. 
+  Toggle with alt-enter, exit with escape.
+- Tested with madVR beta 132
+
 0.0.4
 - Overridable DirectShow inputs to madVR
 
