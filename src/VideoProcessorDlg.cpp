@@ -122,8 +122,9 @@ static const std::vector<std::pair<LPCTSTR, DXVA_VideoPrimaries>> DIRECTSHOW_PRI
 //
 
 
-CVideoProcessorDlg::CVideoProcessorDlg(CWnd* pParent) :
-	CDialog(CVideoProcessorDlg::IDD, pParent)
+CVideoProcessorDlg::CVideoProcessorDlg(bool startstartFullscreen):
+	CDialog(CVideoProcessorDlg::IDD, NULL),
+	m_rendererfullScreen(startstartFullscreen)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -1076,35 +1077,20 @@ void CVideoProcessorDlg::FullScreenWindowConstruct()
 	assert(!m_fullScreenRenderWindow);
 
 	HMONITOR hmon = MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-	MONITORINFO mi = { sizeof(mi) };
-	if (!GetMonitorInfo(hmon, &mi))
-		throw std::runtime_error("Failed to get monitor info");
 
-	m_fullScreenRenderWindow = CreateWindowEx(
-		WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_ACCEPTFILES | WS_EX_NOPARENTNOTIFY,
-		TEXT("static"),
-		TEXT("Waiting for renderer to start."),
-		WS_POPUP | WS_VISIBLE,
-		mi.rcMonitor.left,
-		mi.rcMonitor.top,
-		mi.rcMonitor.right - mi.rcMonitor.left,
-		mi.rcMonitor.bottom - mi.rcMonitor.top,
-		this->GetSafeHwnd(),  // Parent window
-		NULL,
-		NULL,  // Parent process
-		0);
 
+	m_fullScreenRenderWindow = new FullscreenWindow();
 	if (!m_fullScreenRenderWindow)
 		throw std::runtime_error("Failed to create full screen renderer window");
+
+	m_fullScreenRenderWindow->Create(hmon, this->GetSafeHwnd());
 }
 
 
 void CVideoProcessorDlg::FullScreenWindowDestroy()
 {
 	assert(m_fullScreenRenderWindow);
-
-	if (!::DestroyWindow(m_fullScreenRenderWindow))
-		throw std::runtime_error("Failed to destroy full screen render window");
+	delete m_fullScreenRenderWindow;
 }
 
 
@@ -1116,8 +1102,8 @@ HWND CVideoProcessorDlg::GetRenderWindow()
 		if (!m_fullScreenRenderWindow)
 			FullScreenWindowConstruct();
 
-		assert(IsWindow(m_fullScreenRenderWindow));
-		return m_fullScreenRenderWindow;
+		assert(IsWindow(m_fullScreenRenderWindow->GetHWND()));
+		return m_fullScreenRenderWindow->GetHWND();
 	}
 
 	assert(!m_fullScreenRenderWindow);
@@ -1250,17 +1236,6 @@ BOOL CVideoProcessorDlg::PreTranslateMessage(MSG* pMsg)
 	{
 		if (::TranslateAccelerator(m_hWnd, m_accelerator, pMsg))
 			return TRUE;
-	}
-
-	// Handle individual keys
-	if (pMsg->message == WM_KEYDOWN ||
-		pMsg->message == WM_KEYLAST ||
-		pMsg->message == WM_INPUT )
-	{
-		if (m_renderer)
-		{
-			m_renderer->PostMessageToRenderer(pMsg->message, pMsg->wParam, pMsg->lParam);
-		}
 	}
 
 	return CDialog::PreTranslateMessage(pMsg);

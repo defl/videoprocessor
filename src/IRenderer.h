@@ -72,7 +72,4 @@ public:
 
 	// Handle window resize event
 	virtual void OnSize() = 0;
-
-	// Send message to the renderer
-	virtual void PostMessageToRenderer(long uMsg, LONG_PTR wParam, LONG_PTR lParam) = 0;
 };

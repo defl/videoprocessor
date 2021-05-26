@@ -105,6 +105,9 @@
     <ClInclude Include="microsoft_directshow\DirectShowDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FullscreenWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -186,6 +189,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FullscreenWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -48,7 +48,6 @@ public:
 	void Stop() override;
 	void OnPaint() override;
 	void OnSize() override;
-	void PostMessageToRenderer(long uMsg, LONG_PTR wParam, LONG_PTR lParam) override;
 
 private:
 	IRendererCallback& m_callback;

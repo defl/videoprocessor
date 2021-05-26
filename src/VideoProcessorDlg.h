@@ -17,6 +17,7 @@
 #include <CCie1931Control.h>
 #include <IRenderer.h>
 #include <VideoFrame.h>
+#include <FullscreenWindow.h>
 
 #include "resource.h"
 
@@ -41,7 +42,7 @@ class CVideoProcessorDlg:
 	public IRendererCallback
 {
 public:
-	CVideoProcessorDlg(CWnd* pParent = NULL);
+	CVideoProcessorDlg(bool startFullscreen);
 	virtual ~CVideoProcessorDlg();
 
 	// Dialog Data
@@ -133,7 +134,7 @@ protected:
 	HACCEL m_accelerator;
 
 	bool m_rendererfullScreen = false;
-	HWND m_fullScreenRenderWindow = NULL;
+	FullscreenWindow* m_fullScreenRenderWindow = NULL;
 
 	//
 	// Program data

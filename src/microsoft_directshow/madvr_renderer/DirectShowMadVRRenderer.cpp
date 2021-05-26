@@ -171,18 +171,6 @@ void DirectShowMadVRRenderer::OnSize()
 }
 
 
-void DirectShowMadVRRenderer::PostMessageToRenderer(long uMsg, LONG_PTR wParam, LONG_PTR lParam)
-{
-	SetFocus(m_videoHwnd);
-
-	// Doesn't do anything
-	//m_videoWindow->NotifyOwnerMessage((OAHWND)m_videoHwnd, uMsg, wParam, lParam);
-
-	//// Doesn't do anything
-	//::PostMessage(m_videoHwnd, uMsg, wParam, lParam);
-}
-
-
 void DirectShowMadVRRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PTR param2)
 {
 	// ! Do not tear down graph here
@@ -194,8 +182,7 @@ void DirectShowMadVRRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PT
 	case EC_VIDEO_SIZE_CHANGED:
 	case EC_CLOCK_CHANGED:
 	case EC_PAUSED:
-		break;
-	case 64023:  // TODO: WTF is this?
+	case 64023:  // TODO: What is this?
 		break;
 
 	case EC_USERABORT:

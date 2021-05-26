@@ -209,6 +209,7 @@
     <ClInclude Include="ColorSpace.h" />
     <ClInclude Include="Encoding.h" />
     <ClInclude Include="EOTF.h" />
+    <ClInclude Include="FullscreenWindow.h" />
     <ClInclude Include="guid.h" />
     <ClInclude Include="InputLocked.h" />
     <ClInclude Include="IRenderer.h" />
@@ -256,6 +257,7 @@
     <ClCompile Include="DisplayMode.cpp" />
     <ClCompile Include="Encoding.cpp" />
     <ClCompile Include="EOTF.cpp" />
+    <ClCompile Include="FullscreenWindow.cpp" />
     <ClCompile Include="guid.cpp" />
     <ClCompile Include="HDRData.cpp" />
     <ClCompile Include="InputLocked.cpp" />

@@ -1,4 +1,10 @@
-0.0.5
+0.1.1
+- Figured out why my keyboard commands were not working, madVR has anti-debugging protection which triggers when running inside
+  of MSVC debugger. That also disables the keyboard shortcuts. They just worked. Cleaned up the code to remove the needless paths.
+- Now has the /fullscreen command line option which can be given. As soon as the program detects a renderable input it'll change to
+  fullscreen mode
+
+0.1.0
 - Full screen now works and remains full even when modeswitching. 
   Will full-screen to current monitor. 
   Toggle with alt-enter, exit with escape.
