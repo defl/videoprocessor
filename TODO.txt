@@ -1,11 +1,5 @@
 Roadmap
 
-0.1.1
-- Make full screen window black background with centered text which shows to what mode it's start up to
-- Enable/disable buttons based on presence of renderer
-- if the renderer fails to start throw a nice error message and ensure it doesn't try to keep on starting
-  exit fullscreen mode if this happens
-
 0.1.2
 - Only force settings if none are present (LLDV case mcpherv)
 
@@ -13,11 +7,11 @@ Roadmap
 - Convert RGB formats which madVR cannot handle natively
   - r210 coming out of the Blackmagic card (10 bit RGB)
   - whatever the psp4pro does in terms of HDR output from games which seems some 12-bit RGB.
-  
+
 0.2.0
 - Timing improvements
   - Use hardware timestamps from capture card for frame timing in directshow
-  
+
 0.2.1
   - Determine baseline latency with external meter
   - Investigate truely constant rendering times so audio can be in sync with fixed offset in remote audio device

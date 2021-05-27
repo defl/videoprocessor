@@ -1063,11 +1063,13 @@ void CVideoProcessorDlg::RenderStart()
 		m_rendererBox.SetWindowText(wtext);
 
 		delete wtext;
-	}
-	catch (...)
-	{
-		m_rendererState = RendererState::RENDERSTATE_FAILED;
-		m_rendererStateText.SetWindowText(TEXT("Failed"));
+
+		// Ensure we're not full screen anymore and update state
+		m_rendererfullScreen = false;
+		UpdateState();
+
+		// Give the user a chance to try again
+		m_rendererRestartButton.EnableWindow(true);
 	}
 }
 
