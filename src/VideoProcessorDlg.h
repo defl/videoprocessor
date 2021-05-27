@@ -127,6 +127,8 @@ protected:
 	CComboBox m_rendererTransferFunctionCombo;
 	CComboBox m_rendererTransferMatrixCombo;
 	CComboBox m_rendererPrimariesCombo;
+	CButton m_rendererFullscreenButton;
+	CButton m_rendererRestartButton;
 	CStatic	m_rendererBox;  // This is the small renderer window
 
 	CSize m_minDialogSize;
@@ -169,6 +171,7 @@ protected:
 	void CaptureStart();
 	void CaptureStop();
 	void CaptureRemove();
+	void CaptureGUIClear();
 	void RenderStart();
 	void RenderStop();
 	void RenderRemove();

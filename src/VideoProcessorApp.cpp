@@ -33,12 +33,11 @@ BOOL CVideoProcessorApp::InitInstance()
 	if(FAILED(CoInitializeEx(NULL, COINIT_MULTITHREADED)))
 		throw std::runtime_error("Failed to initialize com objects");
 
-	// If the first command line arg is "fullsreen" then we forward that to the application
+	// If the first command line arg is "/fullsreen" then we notify the app of this
 	// https://docs.microsoft.com/en-us/cpp/c-runtime-library/argc-argv-wargv
 	bool startFullScreen = false;
 	int iNumOfArgs;
 	LPWSTR* pArgs = CommandLineToArgvW(GetCommandLine(), &iNumOfArgs);
-	LPWSTR arg1 = pArgs[1];
 	if (iNumOfArgs >= 2 && wcscmp(pArgs[1], L"/fullscreen") == 0)
 		startFullScreen = true;
 

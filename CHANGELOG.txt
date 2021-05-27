@@ -3,6 +3,9 @@
   of MSVC debugger. That also disables the keyboard shortcuts. They just worked. Cleaned up the code to remove the needless paths.
 - Now has the /fullscreen command line option which can be given. As soon as the program detects a renderable input it'll change to
   fullscreen mode
+- Enable/disable buttons based on presence of renderer
+- Fix: Error upon switching capture card input which remembers old state
+- Fix: GUI elements & state related to capture device were uninitialized at start and not cleared when restarting capture
 
 0.1.0
 - Full screen now works and remains full even when modeswitching. 

@@ -972,6 +972,7 @@ void BlackMagicDeckLinkCaptureDevice::OnLinkStatusBusyChange()
 	else
 	{
 		assert(m_state == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
+		ResetVideoState();
 		UpdateState(CaptureDeviceState::CAPTUREDEVICESTATE_READY);
 	}
 }

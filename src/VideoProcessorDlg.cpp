@@ -300,9 +300,11 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(WPARAM wParam, LPA
 	case CaptureDeviceState::CAPTUREDEVICESTATE_READY:
 		m_captureDeviceStateText.SetWindowText(TEXT("Ready"));
 		break;
+
 	case CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING:
 		m_captureDeviceStateText.SetWindowText(TEXT("Capturing"));
 		break;
+
 	default:
 		throw std::runtime_error("Unexpected state received from capture device");
 	}
@@ -463,6 +465,7 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 {
 	const RendererState newRendererState = (RendererState)wParam;
 	assert(newRendererState != RendererState::RENDERSTATE_UNKNOWN);
+	bool enableButtons = false;
 
 	{
 		std::lock_guard<std::mutex> lock(m_rendererMutex);
@@ -473,18 +476,19 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 
 		switch (m_rendererState)
 		{
-		// Renderer ready, can be started if wanted
+			// Renderer ready, can be started if wanted
 		case RendererState::RENDERSTATE_READY:
 			m_rendererStateText.SetWindowText(TEXT("Ready"));
 			break;
 
-		// Renderer running, ready for frames
+			// Renderer running, ready for frames
 		case RendererState::RENDERSTATE_RENDERING:
 			m_deliverFramesToRenderer = true;
+			enableButtons = true;
 			m_rendererStateText.SetWindowText(TEXT("Rendering"));
 			break;
 
-		// Stopped rendering, can be cleaned up
+			// Stopped rendering, can be cleaned up
 		case RendererState::RENDERSTATE_STOPPED:
 			RenderRemoveLocked();
 			m_rendererStateText.SetWindowText(TEXT("Stopped"));
@@ -494,6 +498,9 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 			throw std::runtime_error("Unknown renderer state");
 		}
 	}
+
+	m_rendererFullscreenButton.EnableWindow(enableButtons);
+	m_rendererRestartButton.EnableWindow(enableButtons);
 
 	UpdateState();
 
@@ -778,7 +785,7 @@ void CVideoProcessorDlg::UpdateState()
 	// If we have a renderer but the video state is invalid stop if rendering
 	if (m_rendererState == RendererState::RENDERSTATE_RENDERING &&
 		(!m_captureDeviceVideoState ||
-			!m_captureDeviceVideoState->valid))
+	  	 !m_captureDeviceVideoState->valid))
 	{
 		RenderStop();
 		return;
@@ -934,7 +941,10 @@ void CVideoProcessorDlg::CaptureStop()
 	// TODO: Check if safe to be called from other thread
 	m_captureDevice->StopCapture();
 
+	m_captureDeviceVideoState = nullptr;
+
 	// Update GUI
+	CaptureGUIClear();
 	m_captureDeviceStateText.SetWindowText(TEXT("Stopping"));
 }
 
@@ -949,6 +959,40 @@ void CVideoProcessorDlg::CaptureRemove()
 
 	m_desiredCaptureInputId = INVALID_CAPTURE_INPUT_ID;
 	m_currentCaptureInputId = INVALID_CAPTURE_INPUT_ID;
+}
+
+
+void CVideoProcessorDlg::CaptureGUIClear()
+{
+	// Capture device group
+	m_captureDeviceStateText.SetWindowText(TEXT(""));
+	m_captureDeviceOtherList.ResetContent();
+
+	// Input group
+	m_inputLockedText.SetWindowText(TEXT(""));
+	m_inputDisplayModeText.SetWindowText(TEXT(""));
+	m_inputEncodingText.SetWindowText(TEXT(""));
+	m_inputBitDepthText.SetWindowText(TEXT(""));
+
+	// Captured video group
+	m_videoValidText.SetWindowText(TEXT(""));
+	m_videoDisplayModeText.SetWindowText(TEXT(""));
+	m_videoPixelFormatText.SetWindowText(TEXT(""));
+	m_videoEotfText.SetWindowText(TEXT(""));
+	m_videoColorSpaceText.SetWindowText(TEXT(""));
+
+	// ColorSpace group
+	m_colorspaceCie1931xy.SetColorSpace(ColorSpace::UNKNOWN);
+	m_colorspaceCie1931xy.SetHDRData(nullptr);
+
+	// HDR group
+	m_hdrDpRed.SetWindowText(TEXT(""));
+	m_hdrDpGreen.SetWindowText(TEXT(""));
+	m_hdrDpBlue.SetWindowText(TEXT(""));
+	m_hdrWhitePoint.SetWindowText(TEXT(""));
+	m_hdrDml.SetWindowText(TEXT(""));
+	m_hdrMaxCll.SetWindowText(TEXT(""));
+	m_hdrMaxFall.SetWindowText(TEXT(""));
 }
 
 
@@ -1158,6 +1202,8 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_RENDERER_TRANSFER_FUNCTION_COMBO, m_rendererTransferFunctionCombo);
 	DDX_Control(pDX, IDC_RENDERER_TRANSFER_MATRIX_COMBO, m_rendererTransferMatrixCombo);
 	DDX_Control(pDX, IDC_RENDERER_PRIMARIES_COMBO, m_rendererPrimariesCombo);
+	DDX_Control(pDX, IDC_FULL_SCREEN_BUTTON, m_rendererFullscreenButton);
+	DDX_Control(pDX, IDC_RENDERER_RESTART_BUTTON, m_rendererRestartButton);
 	DDX_Control(pDX, IDC_RENDERER_BOX, m_rendererBox);
 }
 
@@ -1225,6 +1271,8 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	if (!m_accelerator)
 		throw std::runtime_error("Failed to load accelerator");
 
+	CaptureGUIClear();
+
 	return TRUE;
 }
 
@@ -1283,7 +1331,8 @@ void CVideoProcessorDlg::OnSize(UINT nType, int cx, int cy)
 
 void CVideoProcessorDlg::OnSetFocus(CWnd* pOldWnd)
 {
-	::SetFocus(GetRenderWindow());
+	//TODO: Remove?
+	// ::SetFocus(GetRenderWindow());
 }
 
 
