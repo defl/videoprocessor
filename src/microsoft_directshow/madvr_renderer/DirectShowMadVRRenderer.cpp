@@ -18,6 +18,8 @@
 #include <guid.h>
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>
 #include <microsoft_directshow/DIrectShowTranslations.h>
+#include <CNoopVideoFrameFormatter.h>
+#include <ffmpeg/CFFMpegDecoderVideoFrameFormatter.h>
 
 #include "DirectShowMadVRRenderer.h"
 
@@ -81,7 +83,7 @@ bool DirectShowMadVRRenderer::OnVideoState(VideoStateComPtr& videoState)
 		if (!m_videoState->hdrData ||
 			*(videoState->hdrData) != *(m_videoState->hdrData))
 		{
-			if (FAILED(m_LiveSource->OnHDRData(videoState->hdrData)))
+			if (FAILED(m_liveSource->OnHDRData(videoState->hdrData)))
 				throw std::runtime_error("Failed to set HDR data");
 
 			// TODO: This updating of the video state is not very nice
@@ -99,7 +101,9 @@ void DirectShowMadVRRenderer::OnVideoFrame(VideoFrame& videoFrame)
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		return;
 
-	if (FAILED(m_LiveSource->OnVideoFrame(videoFrame)))
+	assert(m_videoState);
+
+	if (FAILED(m_liveSource->OnVideoFrame(videoFrame)))
 		throw std::runtime_error("Failed to add frame");
 }
 
@@ -250,19 +254,61 @@ void DirectShowMadVRRenderer::GraphBuild()
 		throw std::runtime_error("Failed to get IID_IFilterGraph2 interface");
 
 	//
+	// Build conversion dependent stuff
+	//
+
+	GUID mediaSubType;
+	int bitCount;
+
+	switch (m_videoState->pixelFormat)
+	{
+
+	// r210 to RGB48
+	case PixelFormat::R210:
+		mediaSubType = MEDIASUBTYPE_RGB48LE;
+		bitCount = 48;
+
+		m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
+			AV_CODEC_ID_R210,
+			AV_PIX_FMT_RGB48LE);
+		break;
+
+	// RGB 12-bit to RGB48
+	case PixelFormat::RGB_BE_12BIT:
+		mediaSubType = MEDIASUBTYPE_RGB48LE;
+		bitCount = 48;
+
+		m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
+			AV_CODEC_ID_R12B,
+			AV_PIX_FMT_RGB48LE);
+		break;
+
+	// No conversion needed
+	default:
+		mediaSubType = TranslateToMediaSubType(m_videoState->pixelFormat);
+		bitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);;
+
+		m_videoFramFormatter = new CNoopVideoFrameFormatter();
+	}
+
+	m_videoFramFormatter->OnVideoState(m_videoState);
+
+	//
 	// Live source filter
 	//
-	m_LiveSource = dynamic_cast<CLiveSource*>(CLiveSource::CreateInstance(nullptr, nullptr));
-	if (m_LiveSource == nullptr)
+	m_liveSource = dynamic_cast<CLiveSource*>(CLiveSource::CreateInstance(nullptr, nullptr));
+	if (m_liveSource == nullptr)
 		throw std::runtime_error("Failed to build a CLiveSource");
 
-	m_LiveSource->OnVideoState(m_videoState);
+	m_liveSource->AddRef();
 
-	m_LiveSource->AddRef();
+	m_liveSource->Setup(m_videoFramFormatter, mediaSubType);
+	if (m_videoState->hdrData)
+		m_liveSource->OnHDRData(m_videoState->hdrData);
 
-	if (m_pGraph->AddFilter(m_LiveSource, L"LiveSource") != S_OK)
+	if (m_pGraph->AddFilter(m_liveSource, L"LiveSource") != S_OK)
 	{
-		m_LiveSource->Release();
+		m_liveSource->Release();
 		throw std::runtime_error("Failed to add LiveSource to the graph");
 	}
 
@@ -293,7 +339,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 	pmt.formattype = FORMAT_VIDEOINFO2;
 	pmt.cbFormat = sizeof(VIDEOINFOHEADER2);
 	pmt.majortype = MEDIATYPE_Video;
-	pmt.subtype = TranslateToMediaSubType(m_videoState->pixelFormat);
+	pmt.subtype = mediaSubType;
 	pmt.bFixedSizeSamples = TRUE;
 	pmt.bTemporalCompression = FALSE;
 
@@ -304,13 +350,15 @@ void DirectShowMadVRRenderer::GraphBuild()
 	VIDEOINFOHEADER2* pvi2 = (VIDEOINFOHEADER2*)pmt.pbFormat;
 	ZeroMemory(pvi2, sizeof(VIDEOINFOHEADER2));
 
-	// Figure out pixel format and send as directshow type
+	// Populate bitmap info header
+	// https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
 
-	pvi2->bmiHeader.biSizeImage = m_videoState->BytesPerFrame();
-	pvi2->bmiHeader.biBitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);
-	pvi2->bmiHeader.biCompression = PixelFormatFourCC(m_videoState->pixelFormat);
+	//pvi2->bmiHeader.biSizeImage = m_videoState->BytesPerFrame();
+	pvi2->bmiHeader.biSizeImage = m_videoFramFormatter->GetOutFrameSize();
+	pvi2->bmiHeader.biBitCount = bitCount;
+	pvi2->bmiHeader.biCompression = pmt.subtype.Data1;
 	pvi2->bmiHeader.biWidth = m_videoState->displayMode->FrameWidth();
-	pvi2->bmiHeader.biHeight = m_videoState->displayMode->FrameHeight();
+	pvi2->bmiHeader.biHeight = -((long)m_videoState->displayMode->FrameHeight());  // TODO: Always negate seems to work but that to go wrong sometime
 	pvi2->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	pvi2->bmiHeader.biPlanes = 1;
 	pvi2->bmiHeader.biClrImportant = 0;
@@ -361,7 +409,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 	IPin* pLiveSourceOutputPin = NULL;
 	IPin* pMadVRInputPin = NULL;
 
-	if (FAILED(m_LiveSource->EnumPins(&pEnum)))
+	if (FAILED(m_liveSource->EnumPins(&pEnum)))
 		throw std::runtime_error("Failed to get livesource pin enumerator");
 
 	if (pEnum->Next(1, &pLiveSourceOutputPin, NULL) != S_OK)
@@ -406,6 +454,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 	SetState(RendererState::RENDERSTATE_READY);
 }
 
+
 void DirectShowMadVRRenderer::GraphTeardown()
 {
 	// Details of how to clean up here https://docs.microsoft.com/en-us/windows/win32/directshow/using-windowed-mode
@@ -440,7 +489,7 @@ void DirectShowMadVRRenderer::GraphTeardown()
 	IEnumPins* pEnum = NULL;
 	IPin* pLiveSourceOutputPin = NULL;
 
-	if (FAILED(m_LiveSource->EnumPins(&pEnum)))
+	if (FAILED(m_liveSource->EnumPins(&pEnum)))
 		throw std::runtime_error("Failed to get livesource pin enumerator");
 
 	if (pEnum->Next(1, &pLiveSourceOutputPin, NULL) != S_OK)
@@ -467,9 +516,11 @@ void DirectShowMadVRRenderer::GraphTeardown()
 		m_pGraph2->Release();
 	if (m_videoWindow)
 		m_videoWindow->Release();
+	if (m_videoFramFormatter)
+		delete m_videoFramFormatter;
 
-	assert(m_LiveSource);
-	m_LiveSource->Release();
+	assert(m_liveSource);
+	m_liveSource->Release();
 
 	assert(m_pMVR);
 	m_pMVR->Release();

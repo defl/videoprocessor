@@ -10,15 +10,20 @@
 
 #include "CLiveSourceVideoOutputPin.h"
 
+#include <guid.h>
 #include <IMediaSideData.h>
 #include <microsoft_directshow/DirectShowTranslations.h>
 
 
+#define TARGET_AV_PIX_FMT AV_PIX_FMT_RGB48LE
+
 CLiveSourceVideoOutputPin::CLiveSourceVideoOutputPin(
-	CBaseFilter* filter,
-	CCritSec *pLock,
-	HRESULT *phr):
-	CBaseOutputPin(LIVE_SOURCE_FILTER_NAME, filter, pLock, phr, LIVE_SOURCE_FILTER_VIDEO_OUPUT_PIN_NAME)
+	CLiveSource* filter,
+	CCritSec* pLock,
+	HRESULT* phr) :
+	CBaseOutputPin(
+		LIVE_SOURCE_FILTER_NAME, filter, pLock, phr,
+		LIVE_SOURCE_FILTER_VIDEO_OUPUT_PIN_NAME)
 {
 }
 
@@ -37,7 +42,7 @@ HRESULT CLiveSourceVideoOutputPin::CheckMediaType(const CMediaType* pmt)
 		return E_INVALIDARG;
 	}
 
-	if (pmt->subtype != m_mediaSubType)
+	if (!IsEqualGUID(pmt->subtype, dynamic_cast<CLiveSource*>(m_pFilter)->GetMediaSubType()))
 	{
 		return E_INVALIDARG;
 	}
@@ -106,14 +111,11 @@ HRESULT CLiveSourceVideoOutputPin::DecideBufferSize(IMemAllocator *pAlloc, ALLOC
 	CheckPointer(pAlloc,E_POINTER);
 	CheckPointer(ppropInputRequest,E_POINTER);
 
-	if (!m_bytesPerFrame)
-		throw std::runtime_error("No known video state, call OnVideoState() before starting");
-
 	CAutoLock cAutoLock(m_pLock);
 	HRESULT hr = NOERROR;
 
 	ppropInputRequest->cBuffers = 1;
-	ppropInputRequest->cbBuffer = m_bytesPerFrame;
+	ppropInputRequest->cbBuffer = m_videoFrameFormatter->GetOutFrameSize();
 
 	ASSERT(ppropInputRequest->cbBuffer);
 
@@ -186,19 +188,12 @@ STDMETHODIMP CLiveSourceVideoOutputPin::Notify(IBaseFilter* pSender, Quality q)
 }
 
 
-void CLiveSourceVideoOutputPin::OnVideoState(VideoStateComPtr& videoState)
+void CLiveSourceVideoOutputPin::SetFormatter(IVideoFrameFormatter* videoFrameFormatter)
 {
-	if (!videoState)
-		throw std::runtime_error("Null video state not allowed");
+	if (!videoFrameFormatter)
+		throw std::runtime_error("Cannot set null IVideoFrameFormatter");
 
-	if (m_bytesPerFrame)
-		throw std::runtime_error("Setting a new video state is not allowed");
-
-	m_mediaSubType = TranslateToMediaSubType(videoState->pixelFormat);
-	m_bytesPerFrame = videoState->BytesPerFrame();
-
-	if (videoState->hdrData)
-		OnHDRData(videoState->hdrData);
+	m_videoFrameFormatter = videoFrameFormatter;
 }
 
 
@@ -233,9 +228,10 @@ HRESULT CLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 		return hr;
 	}
 
-	memcpy(pData, videoFrame.GetData(), m_bytesPerFrame);
+	assert(m_videoFrameFormatter);
+	m_videoFrameFormatter->FormatVideoFrame(videoFrame, pData);
 
-	hr = pSample->SetActualDataLength(m_bytesPerFrame);
+	hr = pSample->SetActualDataLength(m_videoFrameFormatter->GetOutFrameSize());
 	if (FAILED(hr))
 	{
 		pSample->Release();

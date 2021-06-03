@@ -14,6 +14,7 @@
 #include <IRenderer.h>
 #include <PixelValueRange.h>
 #include <VideoState.h>
+#include <IVideoFrameFormatter.h>
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>
 
 
@@ -71,8 +72,9 @@ private:
 	IVideoWindow* m_videoWindow = NULL;
 	IFilterGraph2* m_pGraph2 = NULL;
 
-	CLiveSource* m_LiveSource = NULL;
-	IBaseFilter* m_pMVR = NULL;
+	IVideoFrameFormatter* m_videoFramFormatter = nullptr;
+	CLiveSource* m_liveSource = nullptr;
+	IBaseFilter* m_pMVR = nullptr;
 
 	// Handle Directshow graph events
 	void OnGraphEvent(long evCode, LONG_PTR param1, LONG_PTR param2);

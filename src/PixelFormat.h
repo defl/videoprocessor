@@ -34,7 +34,8 @@ enum class PixelFormat
 
 	// r210 4:4:4 raw
 	// Three 10-bit unsigned components are packed into one 32-bit big-endian word.
-	RGB_10BIT,
+	// TODO: This is not really a pixel format but an encoding format, maybe rename this class?
+	R210,
 
 	// R10b 4:4:4 raw
 	// Three 10-bit unsigned components are packed into one 32-bit big-endian word.

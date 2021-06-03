@@ -69,7 +69,7 @@ typedef std::shared_ptr<DisplayMode> DisplayModeSharedPtr;
 
 // 720p
 #define DISPLAYMODE_720p_50    DisplayMode(1280, 720, 50000)
-#define DISPLAYMODE_720p_59_94 DisplayMode(1280, 720, 59904)
+#define DISPLAYMODE_720p_59_94 DisplayMode(1280, 720, 59940)
 #define DISPLAYMODE_720p_60    DisplayMode(1280, 720, 60000)
 
 // 1080p
@@ -81,7 +81,7 @@ typedef std::shared_ptr<DisplayMode> DisplayModeSharedPtr;
 #define DISPLAYMODE_1080p_47_95  DisplayMode(1920, 1080, 47950)
 #define DISPLAYMODE_1080p_48     DisplayMode(1920, 1080, 48000)
 #define DISPLAYMODE_1080p_50     DisplayMode(1920, 1080, 50000)
-#define DISPLAYMODE_1080p_59_94  DisplayMode(1920, 1080, 59950)
+#define DISPLAYMODE_1080p_59_94  DisplayMode(1920, 1080, 59940)
 #define DISPLAYMODE_1080p_60     DisplayMode(1920, 1080, 60000)
 
 // 2K 35mm full frame size
@@ -98,7 +98,7 @@ typedef std::shared_ptr<DisplayMode> DisplayModeSharedPtr;
 #define DISPLAYMODE_2KDCI_47_95  DisplayMode(2048, 1080, 47950)
 #define DISPLAYMODE_2KDCI_48     DisplayMode(2048, 1080, 48000)
 #define DISPLAYMODE_2KDCI_50     DisplayMode(2048, 1080, 50000)
-#define DISPLAYMODE_2KDCI_59_94  DisplayMode(2048, 1080, 59950)
+#define DISPLAYMODE_2KDCI_59_94  DisplayMode(2048, 1080, 59940)
 #define DISPLAYMODE_2KDCI_60     DisplayMode(2048, 1080, 60000)
 
 // 4K UDHTV, 2160p (https://en.wikipedia.org/wiki/4K_resolution)
@@ -110,17 +110,17 @@ typedef std::shared_ptr<DisplayMode> DisplayModeSharedPtr;
 #define DISPLAYMODE_4K_47_95  DisplayMode(3840, 2160, 47950)
 #define DISPLAYMODE_4K_48     DisplayMode(3840, 2160, 48000)
 #define DISPLAYMODE_4K_50     DisplayMode(3840, 2160, 50000)
-#define DISPLAYMODE_4K_59_94  DisplayMode(3840, 2160, 59950)
+#define DISPLAYMODE_4K_59_94  DisplayMode(3840, 2160, 59940)
 #define DISPLAYMODE_4K_60     DisplayMode(3840, 2160, 60000)
 
 // 4K DCI native (aka full frame) (https://en.wikipedia.org/wiki/4K_resolution)
 #define DISPLAYMODE_4KDCI_23_976 DisplayMode(4096, 2160, 23976)
 #define DISPLAYMODE_4KDCI_24     DisplayMode(4096, 2160, 24000)
 #define DISPLAYMODE_4KDCI_25     DisplayMode(4096, 2160, 25000)
-#define DISPLAYMODE_4KDCI_29_97  DisplayMode(4096, 2160, 29907)
+#define DISPLAYMODE_4KDCI_29_97  DisplayMode(4096, 2160, 29970)
 #define DISPLAYMODE_4KDCI_30     DisplayMode(4096, 2160, 30000)
 #define DISPLAYMODE_4KDCI_47_95  DisplayMode(4096, 2160, 47950)
 #define DISPLAYMODE_4KDCI_48     DisplayMode(4096, 2160, 48000)
 #define DISPLAYMODE_4KDCI_50     DisplayMode(4096, 2160, 50000)
-#define DISPLAYMODE_4KDCI_59_94  DisplayMode(4096, 2160, 59905)
+#define DISPLAYMODE_4KDCI_59_94  DisplayMode(4096, 2160, 59940)
 #define DISPLAYMODE_4KDCI_60     DisplayMode(4096, 2160, 60000)

@@ -13,6 +13,39 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Project files">
+      <UniqueIdentifier>{6fb71771-7d4f-4744-988f-f4dd47fe7176}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ffmpeg">
+      <UniqueIdentifier>{b93e7145-46a8-417b-8857-53dd88c0bfa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ffmpeg">
+      <UniqueIdentifier>{baa50189-d57c-402f-a878-3519da21e837}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\blackmagic_decklink">
+      <UniqueIdentifier>{82f518ac-3c6c-40bc-8322-80199b2cb3a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\blackmagic_decklink">
+      <UniqueIdentifier>{81d6f01b-93b3-48b2-847d-965e931c0621}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\microsoft_directshow">
+      <UniqueIdentifier>{2d4a1a4c-7001-4f99-bb63-db36ef997d64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\microsoft_directshow">
+      <UniqueIdentifier>{0e3eb404-5146-4860-bebe-bf060e4f7d54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\microsoft_directshow\live_source_filter">
+      <UniqueIdentifier>{a0b8b85f-39f8-453b-9fbe-01e57cafc24e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\microsoft_directshow\live_source_filter">
+      <UniqueIdentifier>{096b126d-0a30-4dbe-9c66-5c0d743bfb53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\microsoft_directshow\madvr_renderer">
+      <UniqueIdentifier>{9a794276-59b3-4d08-89ec-8ffdf187fda9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\microsoft_directshow\madvr_renderer">
+      <UniqueIdentifier>{7c1c5756-853b-4b7d-8bf8-c26501e7df2f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VideoProcessorDlg.h">
@@ -34,15 +67,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CaptureInput.h">
@@ -84,29 +108,53 @@
     <ClInclude Include="VideoState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="microsoft_directshow\DirectShowTranslations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="microsoft_directshow\madvr_renderer\DirectShowMadVRRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="microsoft_directshow\live_source_filter\ILiveSource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="microsoft_directshow\DirectShowDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FullscreenWindow.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DisplayMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IVideoFrameFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ffmpeg\CFFMpegDecoderVideoFrameFormatter.h">
+      <Filter>Header Files\ffmpeg</Filter>
+    </ClInclude>
+    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.h">
+      <Filter>Header Files\blackmagic_decklink</Filter>
+    </ClInclude>
+    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.h">
+      <Filter>Header Files\blackmagic_decklink</Filter>
+    </ClInclude>
+    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.h">
+      <Filter>Header Files\blackmagic_decklink</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\DirectShowDefines.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\DirectShowTranslations.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSource.h">
+      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.h">
+      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\live_source_filter\ILiveSource.h">
+      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\madvr_renderer\DirectShowMadVRRenderer.h">
+      <Filter>Header Files\microsoft_directshow\madvr_renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="CNoopVideoFrameFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ffmpeg\CFFMpegScalerVideoFrameFormatter.h">
+      <Filter>Header Files\ffmpeg</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -123,15 +171,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cie.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CaptureInput.cpp">
@@ -179,20 +218,38 @@
     <ClCompile Include="HDRData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="microsoft_directshow\DirectShowTranslations.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="microsoft_directshow\madvr_renderer\DirectShowMadVRRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSource.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FullscreenWindow.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ffmpeg\CFFMpegDecoderVideoFrameFormatter.cpp">
+      <Filter>Source Files\ffmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.cpp">
+      <Filter>Source Files\blackmagic_decklink</Filter>
+    </ClCompile>
+    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.cpp">
+      <Filter>Source Files\blackmagic_decklink</Filter>
+    </ClCompile>
+    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.cpp">
+      <Filter>Source Files\blackmagic_decklink</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\DirectShowTranslations.cpp">
+      <Filter>Source Files\microsoft_directshow</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSource.cpp">
+      <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.cpp">
+      <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\madvr_renderer\DirectShowMadVRRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow\madvr_renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="CNoopVideoFrameFormatter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ffmpeg\CFFMpegScalerVideoFrameFormatter.cpp">
+      <Filter>Source Files\ffmpeg</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -212,5 +269,16 @@
     <None Include="VideoProcessor.rc2">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\README.md">
+      <Filter>Project files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\TODO.txt">
+      <Filter>Project files</Filter>
+    </Text>
+    <Text Include="..\CHANGELOG.txt">
+      <Filter>Project files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

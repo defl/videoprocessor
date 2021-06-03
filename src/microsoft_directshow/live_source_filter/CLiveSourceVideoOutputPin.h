@@ -11,6 +11,8 @@
 
 #include <streams.h>
 
+#include <IVideoFrameFormatter.h>
+
 #include "CLiveSource.h"
 
 
@@ -22,7 +24,7 @@ public:
 
 	DECLARE_IUNKNOWN;
 
-	CLiveSourceVideoOutputPin(CBaseFilter* filter, CCritSec *pLock, HRESULT *phr);
+	CLiveSourceVideoOutputPin(CLiveSource* filter, CCritSec *pLock, HRESULT *phr);
 	virtual ~CLiveSourceVideoOutputPin();
 
 	// CBaseOutputPin overrides
@@ -43,18 +45,18 @@ public:
 	// IQualityControl
 	virtual STDMETHODIMP Notify(IBaseFilter * pSender, Quality q) override;
 
-	// ILiveSource interface replicated here
-	void OnVideoState(VideoStateComPtr&);
+	void SetFormatter(IVideoFrameFormatter* videoFrameFormatter);
+
+	// Part of ILiveSource interface replicated here
 	void OnHDRData(HDRDataSharedPtr&);
 	HRESULT OnVideoFrame(VideoFrame&);
 
 private:
+
+	IVideoFrameFormatter* m_videoFrameFormatter = nullptr;
+
 	uint32_t m_frameCounter = 0;
 
-	uint32_t m_bytesPerFrame = 0;
-	GUID m_mediaSubType;
-
-	VideoStateComPtr m_videoState = nullptr;
 	HDRDataSharedPtr m_hdrData = nullptr;
 	bool m_hdrChanged = false;
 };

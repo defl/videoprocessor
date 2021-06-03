@@ -62,7 +62,7 @@ uint32_t VideoState::BytesPerRow() const
 	case PixelFormat::BGRA_8BIT:
 		return ((displayMode->FrameWidth() + 32) / 8);
 
-	case PixelFormat::RGB_10BIT:
+	case PixelFormat::R210:
 	case PixelFormat::RGB_BE_10BIT:
 	case PixelFormat::RGB_LE_10BIT:
 		return ((displayMode->FrameWidth() + 63) / 64) * 256;

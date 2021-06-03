@@ -80,13 +80,29 @@ For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX
 
 
 
+# FAQ
+
+**Renderer shows black screen - with valid input**
+
+- Are you sure you're capturing something which is outside of what the card can pass along. 4k>30 with Blackmagic Recorder 4K mini will lead to this.?
+- Did you set the correct output display modes in madVR? (2160p23, 2160p24 etc)?
+
+**I have frame drops or similar performance problems**
+
+- You are using an Nvidia card right? Intel GPUs will not cut it and lead to all sorts of drops.
+- Ensure your capture card is not sharing it's PCIe bandwidth with something else. Specifically your graphics card.
+- Ensure that your card is getting it's full PCIe bandwidth. The BlackMagic cards will show their bandwidth in the Capture Device -> Other properties which has to be link >=2 and width >=4.
+- Do not run other high (memory) bandwidth applications at the same time. 4k30 12 bit is pushing over 13gbps and that data needs to be in RAM and processed by your CPU several times, which can load up your memory bus quite a bit
+
+
+
 # For developers
 
 Get the source from https://github.com/defl/videoprocessor
 
  * MSVC 2019 community edition
- * Install MFC libraries
- * Debug builds require the [Visual Leak Detector](https://kinddragon.github.io/vld/) Visual C++ plugin
+    * Install MFC libraries
+    * Debug builds require the [Visual Leak Detector](https://kinddragon.github.io/vld/) Visual C++ plugin
 
 **Debugging**
 

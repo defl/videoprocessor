@@ -55,10 +55,10 @@ CUnknown* WINAPI CLiveSource::CreateInstance(LPUNKNOWN pUnk, HRESULT* phr)
 	return liveSource;
 }
 
-
-STDMETHODIMP CLiveSource::OnVideoState(VideoStateComPtr& videoState)
+STDMETHODIMP CLiveSource::Setup(IVideoFrameFormatter* videoFrameFormatter, GUID mediaSubType)
 {
-	m_videoOutputPin->OnVideoState(videoState);
+	m_videoOutputPin->SetFormatter(videoFrameFormatter);
+	m_mediaSubType = mediaSubType;
 	return S_OK;
 }
 
@@ -116,4 +116,10 @@ CBasePin* CLiveSource::GetPin(int n)
 ULONG CLiveSource::GetMiscFlags()
 {
 	return AM_FILTER_MISC_FLAGS_IS_SOURCE;
+}
+
+
+GUID CLiveSource::GetMediaSubType()
+{
+	return m_mediaSubType;
 }

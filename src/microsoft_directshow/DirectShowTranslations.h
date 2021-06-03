@@ -27,3 +27,5 @@ DXVA_VideoTransferMatrix TranslateVideoTransferMatrix(ColorSpace);
 DXVA_VideoPrimaries TranslateVideoPrimaries(ColorSpace);
 
 DXVA_VideoTransferFunction TranslateVideoTranferFunction(EOTF, ColorSpace);
+
+DWORD TranslatePixelformatToBiCompression(PixelFormat);

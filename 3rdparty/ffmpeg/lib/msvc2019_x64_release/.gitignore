@@ -1,0 +1,3 @@
+libavcodec.a
+libavutil.a
+libswscale.a

@@ -12,6 +12,7 @@
 #include <streams.h>
 
 #include <VideoState.h>
+#include <IVideoFrameFormatter.h>
 
 #include "ILiveSource.h"
 
@@ -43,7 +44,7 @@ public:
 	static CUnknown* WINAPI CreateInstance(LPUNKNOWN pUnk, HRESULT* phr);
 
 	// ILiveSource
-	STDMETHODIMP OnVideoState(VideoStateComPtr&) override;
+	STDMETHODIMP Setup(IVideoFrameFormatter* videoFrameFormatter, GUID mediaSubType) override;
 	STDMETHODIMP OnHDRData(HDRDataSharedPtr&) override;
 	STDMETHODIMP OnVideoFrame(VideoFrame&) override;
 
@@ -55,8 +56,13 @@ public:
 	// IAMFilterMiscFlags
 	ULONG STDMETHODCALLTYPE GetMiscFlags(void) override;
 
+	// Get the MediaSubType the data will represent
+	GUID GetMediaSubType();
+
 private:
 	CLiveSourceVideoOutputPin* m_videoOutputPin;
+
+	GUID m_mediaSubType;
 
 	CCritSec m_critSec;
 };

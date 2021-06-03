@@ -57,7 +57,7 @@ PixelFormat Translate(BMDPixelFormat pixelFormat)
 		return PixelFormat::BGRA_8BIT;
 
 	case bmdFormat10BitRGB:
-		return PixelFormat::RGB_10BIT;
+		return PixelFormat::R210;
 
 	case bmdFormat10BitRGBX:
 		return PixelFormat::RGB_BE_10BIT;

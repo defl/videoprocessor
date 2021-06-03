@@ -11,6 +11,7 @@
 
 #include <VideoFrame.h>
 #include <VideoState.h>
+#include <IVideoFrameFormatter.h>
 #include <guiddef.h>
 
 
@@ -25,7 +26,10 @@ DECLARE_INTERFACE_(ILiveSource, IUnknown)
 {
 	// Set the VideoState which contains information about buffer sizes etc of the stream of frames
 	// Without calling this called to OnVideoFrame() will lead to exceptions being thrown.
-	STDMETHOD(OnVideoState)(VideoStateComPtr&) PURE;
+	//STDMETHOD(OnVideoState)(VideoStateComPtr&) PURE;
+
+	// Setup this source and it's output pin
+	STDMETHOD(Setup)(IVideoFrameFormatter* videoFrameFormatter, GUID mediaSubType) PURE;
 
 	// HDR data can change dynamically on a frame-by-frame basis. If you call
 	// this then the next frame sent through OnVideoFrame() will carry the information

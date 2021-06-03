@@ -1,3 +1,8 @@
+0.2.0
+- SSE2 build config, not using AVX anymore until needed
+- Integrated ffmpeg
+- Losslessly convert RGB formats which madVR cannot handle natively, right now supports r210 and r12b; both are used by PS4Pro
+
 0.1.1
 - Figured out why my keyboard commands were not working, madVR has anti-debugging protection which triggers when running inside
   of MSVC debugger. That also disables the keyboard shortcuts. They just worked. Cleaned up the code to remove the needless paths.

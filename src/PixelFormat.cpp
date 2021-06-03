@@ -32,7 +32,7 @@ const TCHAR* ToString(const PixelFormat pixelFormat)
 	case PixelFormat::BGRA_8BIT:
 		return TEXT("BGRA 8-bit");
 
-	case PixelFormat::RGB_10BIT:
+	case PixelFormat::R210:
 		return TEXT("RGB 10-bit (r210)");
 
 	case PixelFormat::RGB_BE_10BIT:
@@ -72,7 +72,7 @@ uint32_t PixelFormatBitsPerPixel(PixelFormat pixelFormat)
 	case PixelFormat::BGRA_8BIT:
 		return 32;
 
-	case PixelFormat::RGB_10BIT:
+	case PixelFormat::R210:
 		return 30;
 
 	case PixelFormat::RGB_BE_12BIT:
@@ -93,15 +93,6 @@ uint32_t PixelFormatFourCC(PixelFormat pixelFormat)
 
 	case PixelFormat::YUV_10BIT:
 		return FCC('v210');
-
-	case PixelFormat::BGRA_8BIT:
-		return FCC('BGRA');  // Guess
-
-	case PixelFormat::RGB_10BIT:
-		return FCC('r210');
-
-	case PixelFormat::RGB_BE_12BIT:
-		return FCC('r12b');
 	}
 
 	throw std::runtime_error("Don't know fourCC for given format");

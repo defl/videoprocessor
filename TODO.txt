@@ -1,23 +1,16 @@
 Roadmap
 
-0.1.2
-- Only force settings if none are present (LLDV case mcpherv)
-
-0.1.3
-- Convert RGB formats which madVR cannot handle natively
-  - r210 coming out of the Blackmagic card (10 bit RGB)
-  - whatever the psp4pro does in terms of HDR output from games which seems some 12-bit RGB.
-
-0.2.0
+0.3.0
+- Change display modes to be real frame interval and display interval
 - Timing improvements
   - Use hardware timestamps from capture card for frame timing in directshow
 
-0.2.1
-  - Determine baseline latency with external meter
-  - Investigate truely constant rendering times so audio can be in sync with fixed offset in remote audio device
-  - Use NVIDIA GRID to get the rendered frame and get the egress timestamp it so that we can build a feedback system going.
-    This actually seems possible to get us timestamps of point of frame-render. If the egress delay from there is reasonably
-	constant we can probably get a near constant-time renderer going.
+0.4.0
+- Determine baseline latency with external meter
+- Investigate truely constant rendering times so audio can be in sync with fixed offset in remote audio device
+- Use NVIDIA GRID to get the rendered frame and get the egress timestamp it so that we can build a feedback system going.
+  This actually seems possible to get us timestamps of point of frame-render. If the egress delay from there is reasonably
+  constant we can probably get a near constant-time renderer going.
 
 Later
 - Audio
@@ -27,3 +20,6 @@ Later
 - Support for interlaced formats (only the ones which madVR can handle)
 - CaptureInput as a first-class citizen rather than a POD (rename to capture device input?)
 - Cropping-zoom so that at a certain amount of crop madVR starts to remove the remaining black bars (steppi85)
+- Remove mouse pointer after going full screen
+- Only force settings if none are present (LLDV case mcpherv). Looked at this and it seems little useful without further scripting
+  or the ability to store config. Both are not yet on the radar.
