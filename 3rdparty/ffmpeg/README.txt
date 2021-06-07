@@ -18,27 +18,43 @@ Building ffmpeg libs
           * pacman -S make
           * pacman -S diffutils
           * pacman -S yasm
-          * (no need for pkg-config or gcc or any compiler as we'll use msvc)
+          * pacman -S rsync
+          * pacman -S mingw-w64-x86_64-gcc
+          * pacman -S pkg-config
 
 * Open a VS2019 x64 shell
   * C:\msys64\msys2_shell.cmd
 
-    * cd /c/Users/User/workspace/ffmpeg/
-    * mkdir -p Output/win10_x64_release
-    * cd Output/win10_x64_release
-    * ../../configure --toolchain=msvc --disable-shared --enable-static --disable-programs --arch=x86_64 --target-os=win64 --enable-asm --enable-x86asm --disable-avdevice --disable-doc --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --disable-libopus --disable-encoder=libopus --disable-decoder=libopus --disable-encoder=opus --disable-decoder=opus --disable-mediafoundation --enable-gpl --disable-network --prefix=../../Output/win10_x64_release --extra-cflags="-MD" --extra-cxxflags="-MD"
+    * cd /c/Users/User/workspace/
+    * mkdir -p ffmpeg_build_release
+    * cd ffmpeg_build_release
+    * ../ffmpeg/configure --toolchain=msvc --disable-shared --enable-static --disable-programs --arch=x86_64 --target-os=win64 --enable-asm --enable-x86asm --disable-avdevice --disable-doc --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --disable-libopus --disable-encoder=libopus --disable-decoder=libopus --disable-encoder=opus --disable-decoder=opus --disable-mediafoundation --enable-gpl --disable-network --prefix=../ffmpeg_build_release --extra-cflags="-MD" --extra-cxxflags="-MD"
     * make -j6
     * make install
 
-    * cd /c/Users/User/workspace/ffmpeg/
-    * mkdir -p Output/win10_x64_debug
-    * cd Output/win10_x64_debug
-    * ../../configure --toolchain=msvc --disable-shared --enable-static --disable-programs --arch=x86_64 --target-os=win64 --enable-asm --enable-x86asm --disable-avdevice --disable-doc --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --disable-libopus --disable-encoder=libopus --disable-decoder=libopus --disable-encoder=opus --disable-decoder=opus --disable-mediafoundation --enable-gpl --disable-network --prefix=../../Output/win10_x64_debug  --extra-cflags="-MDd" --extra-cxxflags="-MDd" --enable-debug
+    * cd /c/Users/User/workspace/
+    * mkdir -p ffmpeg_build_debug
+    * cd ffmpeg_build_debug
+    * ../ffmpeg/configure --toolchain=msvc --disable-shared --enable-static --disable-programs --arch=x86_64 --target-os=win64 --enable-asm --enable-x86asm --disable-avdevice --disable-doc --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --disable-libopus --disable-encoder=libopus --disable-decoder=libopus --disable-encoder=opus --disable-decoder=opus --disable-mediafoundation --enable-gpl --disable-network --prefix=../ffmpeg_build_debug  --extra-cflags="-MDd" --extra-cxxflags="-MDd" --enable-debug
     * make -j6
     * make install
 
-* Install libs
+    * cd /c/Users/User/workspace/
+    * mkdir -p ffmpeg_build_fate
+    * cd ffmpeg_build_fate
+    * ../ffmpeg/configure --toolchain=msvc --arch=x86_64 --target-os=win64 --enable-asm --enable-x86asm  --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --disable-libopus --disable-encoder=libopus --disable-decoder=libopus --disable-encoder=opus --disable-decoder=opus
+    * make -j6 fate
+
+  * C:\msys64\mingw64.cmd
+    * cd /c/Users/User/workspace/
+    * mkdir -p ffmpeg_build_gcc
+    * cd ffmpeg_build_gcc
+    * ../ffmpeg/configure --arch=x86_64 --enable-asm --enable-x86asm  --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --disable-libopus --disable-encoder=libopus --disable-decoder=libopus --disable-encoder=opus --disable-decoder=opus
+    * make -j6 fate
+
+
+* Install libs is just a manual copy 
   * (Note only libavutil and libswscale were used and installed)
-  * Go to build dir (C:\Users\User\workspace\ffmpeg\Output/win10_x64_debug)
-  * Copy all relevant files from lib\*
-  * Copy all relevant files from include\*
+  * in ffmpeg_build_debug (for example):
+    * Copy all relevant files from lib\* to the right lib dir in 3rdparty\ffmpeg\lib\
+    * Copy all relevant files from include\* to 3rdparty\ffmpeg\include\
