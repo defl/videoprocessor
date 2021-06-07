@@ -31,7 +31,8 @@ With all that out of the way, get the latest release at http://www.videoprocesso
 - Install capture card (see below) and drivers, verify the card and capture works by running the vendor's capture application.
 - Download VideoProcessor.exe 
 - Configure madVR
-  - TODO: Insert links to guides
+  - [KODI: Set up madVR](https://forum.kodi.tv/showthread.php?tid=259188) - very complete guide besides newer things like tonemapping
+  - [ronaldverlaan.nl/download/htpc.pdf](http://www.ronaldverlaan.nl/download/htpc.pdf) - recent and very complete but in Dutch
 - Enjoy
 - (After this there will be lots of madVR fiddling and probably ordering a bigger GPU because you've figured out that the highest settings are just a bit better. Welcome to the hobby.)
 
@@ -93,6 +94,10 @@ For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX
 - Ensure your capture card is not sharing it's PCIe bandwidth with something else. Specifically your graphics card.
 - Ensure that your card is getting it's full PCIe bandwidth. The BlackMagic cards will show their bandwidth in the Capture Device -> Other properties which has to be link >=2 and width >=4.
 - Do not run other high (memory) bandwidth applications at the same time. 4k30 12 bit is pushing over 13gbps and that data needs to be in RAM and processed by your CPU several times, which can load up your memory bus quite a bit
+
+**Can this display 10bit?**
+
+- Yes, >=10 bit capture input, >=10 bit transfer to madVR, 10 bit D3D11 into 12bit screen have all been observed working
 
 
 
