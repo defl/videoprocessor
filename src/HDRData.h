@@ -11,10 +11,12 @@
 #include <memory>
 
 /**
- * HDR primaries, whitepoint and masterting luminance
+ * HDR data like primaries, whitepoint and masterting luminance
  */
-struct HDRData
+class HDRData
 {
+public:
+
 	double displayPrimaryRedX = 0;
 	double displayPrimaryRedY = 0;
 	double displayPrimaryGreenX = 0;
@@ -33,6 +35,9 @@ struct HDRData
 
 	bool operator == (const HDRData& other) const;
 	bool operator != (const HDRData& other) const;
+
+	// Returns true if all values are populated with valid values
+	bool IsValid() const;
 };
 
 

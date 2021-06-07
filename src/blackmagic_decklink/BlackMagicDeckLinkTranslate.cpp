@@ -10,8 +10,156 @@
 
 #pragma warning(disable : 26812)  // class enum over class in BM API
 
+
+#include <map>
+
+#include <DeckLinkAPI_h.h>
+
 #include "BlackMagicDeckLinkTranslate.h"
 
+
+//
+// See "Blackmagic DeckLink SDK.pdf" version 12.0 chapter 3.3 page 207 "Display Modes"
+//
+
+struct BMDDisplayModeData
+{
+	int width;
+	int height;
+	int fieldsPerFrame;
+	BMDTimeScale timeScale;
+	BMDTimeScale frameDuration;
+};
+
+static const std::map<BMDDisplayMode, BMDDisplayModeData> BD_DISPLAY_MODE_DATA =
+{
+	{bmdModeNTSC,     {720, 486, 2, 30000, 1001}},
+	{bmdModeNTSC2398, {720, 486, 2, 24000, 1001}},
+	{bmdModeNTSCp,    {720, 486, 1, 60000, 1001}},
+	{bmdModePAL,      {720, 576, 2, 25000, 1000}},
+	{bmdModePALp,     {720, 576, 1, 50000, 1000}},
+
+	// 720 modes
+	{bmdModeHD720p50,   {1280, 720, 1, 50000, 1000}},
+	{bmdModeHD720p5994, {1280, 720, 1, 60000, 1001}},
+	{bmdModeHD720p60,   {1280, 720, 1, 60000, 1000}},
+
+	// 1080 modes
+	{bmdModeHD1080p2398,  {1920, 1080, 1,  24000, 1001}},
+	{bmdModeHD1080p24,    {1920, 1080, 1,  24000, 1000}},
+	{bmdModeHD1080p25,    {1920, 1080, 1,  25000, 1000}},
+	{bmdModeHD1080p2997,  {1920, 1080, 1,  30000, 1001}},
+	{bmdModeHD1080p30,    {1920, 1080, 1,  30000, 1000}},
+	{bmdModeHD1080p4795,  {1920, 1080, 1,  48000, 1001}},
+	{bmdModeHD1080p48,    {1920, 1080, 1,  48000, 1000}},
+	{bmdModeHD1080i50,    {1920, 1080, 2,  25000, 1000}},
+	{bmdModeHD1080i5994,  {1920, 1080, 2,  30000, 1001}},
+	{bmdModeHD1080i6000,  {1920, 1080, 2,  30000, 1000}},
+	{bmdModeHD1080p50,    {1920, 1080, 1,  50000, 1000}},
+	{bmdModeHD1080p5994,  {1920, 1080, 1,  60000, 1001}},
+	{bmdModeHD1080p6000,  {1920, 1080, 1,  60000, 1000}},
+	{bmdModeHD1080p9590,  {1920, 1080, 1,  96000, 1001}},
+	{bmdModeHD1080p96,    {1920, 1080, 1,  96000, 1000}},
+	{bmdModeHD1080p100,   {1920, 1080, 1, 100000, 1000}},
+	{bmdModeHD1080p11988, {1920, 1080, 1, 120000, 1001}},
+
+	// 2k modes
+	{bmdModeHD1080p120,{1920, 1080, 1, 120000, 1000}},
+	{bmdMode2k2398,{2048, 1556, 1, 24000, 1001}},
+	{bmdMode2k24,{2048, 1556, 1, 24000, 1000}},
+	{bmdMode2k25,{2048, 1556, 1, 25000, 1000}},
+	{bmdMode2kDCI2398,{2048, 1080, 1, 24000, 1001}},
+	{bmdMode2kDCI24,{2048, 1080, 1, 24000, 1000}},
+	{bmdMode2kDCI25,{2048, 1080, 1, 25000, 1000}},
+	{bmdMode2kDCI2997,{2048, 1080, 1, 30000, 1001}},
+	{bmdMode2kDCI30,{2048, 1080, 1, 30000, 1000}},
+	{bmdMode2kDCI4795,{2048, 1080, 1, 48000, 1001}},
+	{bmdMode2kDCI48,{2048, 1080, 1, 48000, 1000}},
+	{bmdMode2kDCI50,{2048, 1080, 1, 50000, 1000}},
+	{bmdMode2kDCI5994,{2048, 1080, 1, 60000, 1001}},
+	{bmdMode2kDCI60,{2048, 1080, 1, 60000, 1000}},
+	{bmdMode2kDCI9590,{2048, 1080, 1, 96000, 1001}},
+	{bmdMode2kDCI96,{2048, 1080, 1, 96000, 1000}},
+	{bmdMode2kDCI100,{2048, 1080, 1, 100000, 1000}},
+	{bmdMode2kDCI11988,{2048, 1080, 1, 120000, 1001}},
+	{bmdMode2kDCI120,{2048, 1080, 1, 120000, 1000}},
+
+	// 4k modes
+	{bmdMode4K2160p2398,{3840, 2160, 1, 24000, 1001}},
+	{bmdMode4K2160p24,{3840, 2160, 1, 24000, 1000}},
+	{bmdMode4K2160p25,{3840, 2160, 1, 25000, 1000}},
+	{bmdMode4K2160p2997,{3840, 2160, 1, 30000, 1001}},
+	{bmdMode4K2160p30,{3840, 2160, 1, 30000, 1000}},
+	{bmdMode4K2160p4795,{3840, 2160, 1, 48000, 1001}},
+	{bmdMode4K2160p48,{3840, 2160, 1, 48000, 1000}},
+	{bmdMode4K2160p50,{3840, 2160, 1, 50000, 1000}},
+	{bmdMode4K2160p5994,{3840, 2160, 1, 60000, 1001}},
+	{bmdMode4K2160p60,{3840, 2160, 1, 60000, 1000}},
+	{bmdMode4K2160p9590,{3840, 2160, 1, 96000, 1001}},
+	{bmdMode4K2160p96,{3840, 2160, 1, 96000, 1000}},
+	{bmdMode4K2160p100,{3840, 2160, 1, 100000, 1000}},
+	{bmdMode4K2160p11988,{3840, 2160, 1, 120000, 1001}},
+	{bmdMode4K2160p120,{3840, 2160, 1, 120000, 1000}},
+	{bmdMode4kDCI2398,{4096, 2160, 1, 24000, 1001}},
+	{bmdMode4kDCI24,{4096, 2160, 1, 24000, 1000}},
+	{bmdMode4kDCI25,{4096, 2160, 1, 25000, 1000}},
+	{bmdMode4kDCI2997,{4096, 2160, 1, 30000, 1000}},
+	{bmdMode4kDCI30,{4096, 2160, 1, 30000, 1000}},
+	{bmdMode4kDCI4795,{4096, 2160, 1, 48000, 1001}},
+	{bmdMode4kDCI48,{4096, 2160, 1, 48000, 1000}},
+	{bmdMode4kDCI50,{4096, 2160, 1, 50000, 1000}},
+	{bmdMode4kDCI5994,{4096, 2160, 1, 60000, 1001}},
+	{bmdMode4kDCI9590,{4096, 2160, 1, 96000, 1001}},
+	{bmdMode4kDCI96,{4096, 2160, 1, 96000, 1000}},
+	{bmdMode4kDCI100,{4096, 2160, 1, 100000, 1000}},
+	{bmdMode4kDCI11988,{4096, 2160, 1, 120000, 1001}},
+	{bmdMode4kDCI120,{4096, 2160, 1, 120000, 1000}},
+
+	// 8k modes
+	{bmdMode8K4320p2398,{7680, 4320, 1, 24000, 1001}},
+	{bmdMode8K4320p24,{7680, 4320, 1, 24000, 1000}},
+	{bmdMode8K4320p25,{7680, 4320, 1, 25000, 1000}},
+	{bmdMode8K4320p2997,{7680, 4320, 1, 30000, 1001}},
+	{bmdMode8K4320p30,{7680, 4320, 1, 30000, 1000}},
+	{bmdMode8K4320p4795,{7680, 4320, 1, 48000, 1001}},
+	{bmdMode8K4320p48,{7680, 4320, 1, 48000, 1000}},
+	{bmdMode8K4320p50,{7680, 4320, 1, 50000, 1000}},
+	{bmdMode8K4320p5994,{7680, 4320, 1, 60000, 1001}},
+	{bmdMode8K4320p60,{7680, 4320, 1, 60000, 1000}},
+	{bmdMode8kDCI2398,{8192, 4320, 1, 24000, 1001}},
+	{bmdMode8kDCI24,{8192, 4320, 1, 24000, 1000}},
+	{bmdMode8kDCI25,{8192, 4320, 1, 25000, 1000}},
+	{bmdMode8kDCI2997,{8192, 4320, 1, 30000, 1001}},
+	{bmdMode8kDCI30,{8192, 4320, 1, 30000, 1000}},
+	{bmdMode8kDCI4795,{8192, 4320, 1, 48000, 1001}},
+	{bmdMode8kDCI48,{8192, 4320, 1, 48000, 1000}},
+	{bmdMode8kDCI50,{8192, 4320, 1, 50000, 1000}},
+	{bmdMode8kDCI5994,{8192, 4320, 1, 60000, 1001}},
+	{bmdMode8kDCI60,{8192, 4320, 1, 60000, 1000}},
+
+	// Computer screen modes
+	{bmdMode640x480p60,   { 640,  480, 1, 60000, 1000}},
+	{bmdMode800x600p60,   { 800,  600, 1, 60000, 1000}},
+	{bmdMode1440x900p50,  {1440,  900, 1, 50000, 1000}},
+	{bmdMode1440x900p60,  {1440,  900, 1, 60000, 1000}},
+	{bmdMode1440x1080p50, {1440, 1080, 1, 50000, 1000}},
+	{bmdMode1440x1080p60, {1440, 1080, 1, 60000, 1000}},
+	{bmdMode1600x1200p50, {1600, 1200, 1, 50000, 1000}},
+	{bmdMode1600x1200p60, {1600, 1200, 1, 60000, 1000}},
+	{bmdMode1920x1200p50, {1920, 1200, 1, 50000, 1000}},
+	{bmdMode1920x1200p60, {1920, 1200, 1, 60000, 1000}},
+	{bmdMode1920x1440p50, {1920, 1440, 1, 50000, 1000}},
+	{bmdMode1920x1440p60, {1920, 1440, 1, 60000, 1000}},
+	{bmdMode2560x1440p50, {2560, 1440, 1, 50000, 1000}},
+	{bmdMode2560x1440p60, {2560, 1440, 1, 60000, 1000}},
+	{bmdMode2560x1600p50, {2560, 1600, 1, 50000, 1000}},
+	{bmdMode2560x1600p60, {2560, 1600, 1, 60000, 1000}}
+};
+
+
+//
+// Functions
+//
 
 Encoding TranslateEncoding(BMDDetectedVideoInputFormatFlags detectedVideoInputFormatFlagsValue)
 {
@@ -60,16 +208,16 @@ PixelFormat Translate(BMDPixelFormat pixelFormat)
 		return PixelFormat::R210;
 
 	case bmdFormat10BitRGBX:
-		return PixelFormat::RGB_BE_10BIT;
+		return PixelFormat::R10b;
 
 	case bmdFormat10BitRGBXLE:
-		return PixelFormat::RGB_LE_10BIT;
+		return PixelFormat::R10l;
 
 	case bmdFormat12BitRGB:
-		return PixelFormat::RGB_BE_12BIT;
+		return PixelFormat::R12B;
 
 	case bmdFormat12BitRGBLE:
-		return PixelFormat::RGB_LE_12BIT;
+		return PixelFormat::R12L;
 
 	case bmdFormatH265:
 		return PixelFormat::H265;
@@ -134,187 +282,22 @@ ColorSpace Translate(BMDColorspace colorSpace, uint32_t verticalLines)
 
 DisplayModeSharedPtr Translate(BMDDisplayMode displayMode)
 {
-	// See "Blackmagic DeckLink SDK.pdf" chater "Display Modes"
-	switch (displayMode)
-	{
-	case bmdModeHD720p50:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_720p_50);
-	case bmdModeHD720p5994:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_720p_59_94);
-	case bmdModeHD720p60:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_720p_60);
+	const auto& it = BD_DISPLAY_MODE_DATA.find(displayMode);
+	if(it == BD_DISPLAY_MODE_DATA.end())
+		throw std::runtime_error("Unknown BMDDisplayMode");
 
-	case bmdModeHD1080p2398:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_1080p_23_976);
-	case bmdModeHD1080p24:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_1080p_24);
-	case bmdModeHD1080p25:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_1080p_25);
-	case bmdModeHD1080p2997:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_1080p_29_97);
-	case bmdModeHD1080p30:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_1080p_30);
-	case bmdModeHD1080p4795:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_1080p_47_95);
-	case bmdModeHD1080p48:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_1080p_48);
-	case bmdModeHD1080p50:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_1080p_50);
-	case bmdModeHD1080p5994:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_1080p_59_94);
-	case bmdModeHD1080p6000:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_1080p_60);
+	return std::make_shared<DisplayMode>(
+		it->second.width,
+		it->second.height,
+		(unsigned int)round(((double)(it->second.timeScale) / (double)(it->second.frameDuration)) * 1000.0));
+}
 
-	case bmdMode2k2398:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KFULLFRAME_23_976);
-	case bmdMode2k24:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KFULLFRAME_24);
-	case bmdMode2k25:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KFULLFRAME_25);
 
-	case bmdMode2kDCI2398:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KDCI_23_976);
-	case bmdMode2kDCI24:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KDCI_24);
-	case bmdMode2kDCI25:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KDCI_25);
-	case bmdMode2kDCI2997:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KDCI_29_97);
-	case bmdMode2kDCI30:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KDCI_30);
-	case bmdMode2kDCI4795:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KDCI_47_95);
-	case bmdMode2kDCI48:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KDCI_48);
-	case bmdMode2kDCI50:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KDCI_50);
-	case bmdMode2kDCI5994:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KDCI_59_94);
-	case bmdMode2kDCI60:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_2KDCI_60);
+BMDTimeScale TranslateDisplayModeToTimeScale(BMDDisplayMode displayMode)
+{
+	const auto& it = BD_DISPLAY_MODE_DATA.find(displayMode);
+	if (it == BD_DISPLAY_MODE_DATA.end())
+		throw std::runtime_error("Unknown BMDDisplayMode");
 
-	case bmdMode4K2160p2398:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4K_23_976);
-	case bmdMode4K2160p24:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4K_24);
-	case bmdMode4K2160p25:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4K_25);
-	case bmdMode4K2160p2997:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4K_29_97);
-	case bmdMode4K2160p30:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4K_30);
-	case bmdMode4K2160p4795:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4K_47_95);
-	case bmdMode4K2160p48:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4K_48);
-	case bmdMode4K2160p50:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4K_50);
-	case bmdMode4K2160p5994:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4K_59_94);
-	case bmdMode4K2160p60:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4K_60);
-
-	case bmdMode4kDCI2398:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4KDCI_23_976);
-	case bmdMode4kDCI24:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4KDCI_24);
-	case bmdMode4kDCI25:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4KDCI_25);
-	case bmdMode4kDCI2997:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4KDCI_29_97);
-	case bmdMode4kDCI30:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4KDCI_30);
-	case bmdMode4kDCI4795:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4KDCI_47_95);
-	case bmdMode4kDCI48:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4KDCI_48);
-	case bmdMode4kDCI50:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4KDCI_50);
-	case bmdMode4kDCI5994:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4KDCI_59_94);
-	case bmdMode4kDCI60:
-		return std::shared_ptr< DisplayMode>(new DISPLAYMODE_4KDCI_60);
-
-	// Few screen modes
-	case bmdMode640x480p60:
-		return std::make_shared<DisplayMode>(640, 480, 60000);
-	case bmdMode800x600p60:
-		return std::make_shared<DisplayMode>(800, 600, 60000);
-	case bmdMode1440x900p50:
-		return std::make_shared<DisplayMode>(1440, 900, 50000);
-	case bmdMode1440x900p60:
-		return std::make_shared<DisplayMode>(1440, 900, 60000);
-	case bmdMode1440x1080p50:
-		return std::make_shared<DisplayMode>(1440, 1080, 50000);
-	case bmdMode1440x1080p60:
-		return std::make_shared<DisplayMode>(1440, 1080, 60000);
-	case bmdMode1600x1200p50:
-		return std::make_shared<DisplayMode>(1600, 1200, 50000);
-	case bmdMode1600x1200p60:
-		return std::make_shared<DisplayMode>(1600, 1200, 60000);
-	case bmdMode1920x1200p50:
-		return std::make_shared<DisplayMode>(1920, 1200, 50000);
-	case bmdMode1920x1200p60:
-		return std::make_shared<DisplayMode>(1920, 1200, 60000);
-	case bmdMode1920x1440p50:
-		return std::make_shared<DisplayMode>(1920, 1440, 50000);
-	case bmdMode1920x1440p60:
-		return std::make_shared<DisplayMode>(1920, 1440, 60000);
-	case bmdMode2560x1440p50:
-		return std::make_shared<DisplayMode>(2560, 1440, 50000);
-	case bmdMode2560x1440p60:
-		return std::make_shared<DisplayMode>(2560, 1440, 60000);
-	case bmdMode2560x1600p50:
-		return std::make_shared<DisplayMode>(2560, 1600, 50000);
-	case bmdMode2560x1600p60:
-		return std::make_shared<DisplayMode>(2560, 1600, 60000);
-
-	// Unhandled modes (past and future formats + interlaced)
-	case bmdModeNTSC:
-	case bmdModeNTSC2398:
-	case bmdModePAL:
-	case bmdModeNTSCp:
-	case bmdModePALp:
-	case bmdModeHD1080i50:
-	case bmdModeHD1080i5994:
-	case bmdModeHD1080i6000:
-	case bmdMode2kDCI9590:
-	case bmdMode2kDCI96:
-	case bmdMode2kDCI100:
-	case bmdMode2kDCI11988:
-	case bmdMode2kDCI120:
-	case bmdMode4K2160p9590:
-	case bmdMode4K2160p96:
-	case bmdMode4K2160p100:
-	case bmdMode4K2160p11988:
-	case bmdMode4K2160p120:
-	case bmdMode4kDCI9590:
-	case bmdMode4kDCI96:
-	case bmdMode4kDCI100:
-	case bmdMode4kDCI11988:
-	case bmdMode4kDCI120:
-	case bmdMode8K4320p2398:
-	case bmdMode8K4320p24:
-	case bmdMode8K4320p25:
-	case bmdMode8K4320p2997:
-	case bmdMode8K4320p30:
-	case bmdMode8K4320p4795:
-	case bmdMode8K4320p48:
-	case bmdMode8K4320p50:
-	case bmdMode8K4320p5994:
-	case bmdMode8K4320p60:
-	case bmdMode8kDCI2398:
-	case bmdMode8kDCI24:
-	case bmdMode8kDCI25:
-	case bmdMode8kDCI2997:
-	case bmdMode8kDCI30:
-	case bmdMode8kDCI4795:
-	case bmdMode8kDCI48:
-	case bmdMode8kDCI50:
-	case bmdMode8kDCI5994:
-	case bmdMode8kDCI60:
-		throw std::runtime_error("Known but unhandled display mode");
-	}
-
-	throw std::runtime_error("Failed to translate DisplayMode");
+	return it->second.timeScale;
 }

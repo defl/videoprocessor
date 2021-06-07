@@ -41,3 +41,21 @@ bool HDRData::operator != (const HDRData& other) const
 {
 	return !(*this == other);
 }
+
+
+bool HDRData::IsValid() const
+{
+	return
+		displayPrimaryRedX > 0 &&
+		displayPrimaryRedY > 0 &&
+		displayPrimaryGreenX > 0 &&
+		displayPrimaryGreenY > 0 &&
+		displayPrimaryBlueX > 0 &&
+		displayPrimaryBlueY > 0 &&
+		whitePointX > 0 &&
+		whitePointY > 0 &&
+		masteringDisplayMaxLuminance > 0 &&
+		masteringDisplayMinLuminance > 0 &&
+		maxCll > 0 &&
+		maxFall > 0;
+}
