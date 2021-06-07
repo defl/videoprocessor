@@ -9,6 +9,7 @@
  // Resources for this:
 //  - http://www.sikyi.net/2018/10/31/c-directshow-list-of-guids/
 //  - https://github.com/manoreken2/projects/blob/23e970f7d0bc903d657f9ccee0bab29d3861c128/Common/MLAVICommon.h
+//  - https://forum.doom9.org/showpost.php?p=1597068&postcount=12553
 #pragma once
 
 #include <guiddef.h>
