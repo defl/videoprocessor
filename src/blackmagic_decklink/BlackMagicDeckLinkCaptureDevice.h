@@ -16,6 +16,7 @@
 
 #include <VideoFrame.h>
 #include <ACaptureDevice.h>
+#include <ITimingClock.h>
 
 
 typedef CComPtr<IDeckLink> IDeckLinkComPtr;
@@ -23,6 +24,7 @@ typedef CComPtr<IDeckLink> IDeckLinkComPtr;
 // Known invalid values
 #define BMD_PIXEL_FORMAT_INVALID (BMDPixelFormat)0
 #define BMD_DISPLAY_MODE_INVALID (BMDDisplayMode)0
+#define BMD_TIME_SCALE_INVALID (BMDTimeScale)0
 #define BMD_EOTF_INVALID -1
 #define BMD_COLOR_SPACE_INVALID -1
 
@@ -34,7 +36,8 @@ class BlackMagicDeckLinkCaptureDevice:
 	public ACaptureDevice,
 	public IDeckLinkInputCallback,
 	public IDeckLinkProfileCallback,
-	public IDeckLinkNotificationCallback
+	public IDeckLinkNotificationCallback,
+	public ITimingClock
 {
 public:
 
@@ -42,14 +45,16 @@ public:
 	virtual ~BlackMagicDeckLinkCaptureDevice();
 
 	// ACaptureDevice
-	virtual void SetCallbackHandler(ICaptureDeviceCallback*) override;
-	virtual CString GetName() override;
-	virtual bool CanCapture() override;
-	virtual void StartCapture() override;
-	virtual void StopCapture() override;
-	virtual CaptureInputId CurrentCaptureInputId() override;
-	virtual CaptureInputs SupportedCaptureInputs() override;
-	virtual void SetCaptureInput(const CaptureInputId) override;
+	void SetCallbackHandler(ICaptureDeviceCallback*) override;
+	CString GetName() override;
+	bool CanCapture() override;
+	void StartCapture() override;
+	void StopCapture() override;
+	CaptureInputId CurrentCaptureInputId() override;
+	CaptureInputs SupportedCaptureInputs() override;
+	void SetCaptureInput(const CaptureInputId) override;
+	int GetSupportedTimingClocks() override;
+	void SetTimingClock(const TimingClockType) override;
 
 	// IDeckLinkInputCallback
 	HRESULT VideoInputFormatChanged(BMDVideoInputFormatChangedEvents notificationEvents, IDeckLinkDisplayMode* newDisplayMode, BMDDetectedVideoInputFormatFlags detectedSignalFlags) override;
@@ -62,10 +67,15 @@ public:
 	// IDeckLinkNotificationCallback
 	HRESULT Notify(BMDNotifications topic, uint64_t param1, uint64_t param2) override;
 
+	// ITimingClock
+	timingclocktime_t GetTimingClockTime() override;
+	timingclocktime_t GetTimingClockTicksPerSecond() const override;
+
 	// IUnknown
 	HRESULT	QueryInterface(REFIID iid, LPVOID* ppv) override;
 	ULONG AddRef() override;
 	ULONG Release() override;
+
 
 private:
 	IDeckLinkComPtr m_deckLink;
@@ -76,9 +86,11 @@ private:
 	CComQIPtr<IDeckLinkStatus> m_deckLinkStatus;
 	bool m_canCapture = true;
 	std::vector<CaptureInput> m_captureInputSet;
+	TimingClockType m_timingClock = TimingClockType::TIMING_CLOCK_NONE;
 
 	// Main lock to prevent undesired interactions between callbacks from capture and user input
-	std::mutex m_mutex;
+	std::mutex m_callbackHandlerMutex;
+	std::mutex m_stateMutex;
 
 	// This is set if the card is capturing, can have only one input supports in here for now.
 	// (This implies we support only one callback whereas the hardware supports this per input.)
@@ -94,14 +106,16 @@ private:
 	bool m_videoFrameSeen = false;
 	BMDPixelFormat m_pixelFormat = BMD_PIXEL_FORMAT_INVALID;
 	BMDDisplayMode m_videoDisplayMode = BMD_DISPLAY_MODE_INVALID;
+	BMDTimeScale m_timeScale = BMD_TIME_SCALE_INVALID;
 	bool m_videoHasInputSource = false;
 	LONGLONG m_videoEotf = BMD_EOTF_INVALID;
 	LONGLONG m_videoColorSpace = BMD_COLOR_SPACE_INVALID;
 	bool m_videoHasHdrData = false;
 	HDRData m_videoHdrData;
+	uint64_t m_videoFrameCounter = 0;
 
 	void ResetVideoState();
-	void SendVideoStateCallback();
+	void SendVideoStateCallbackUnlocked();
 	void SendCardStateCallback();
 
 	// Current state, update through UpdateState()
@@ -112,6 +126,9 @@ private:
 	// Internal helpers
 	void OnNotifyStatusChanged(BMDDeckLinkStatusID statusID);
 	void OnLinkStatusBusyChange();
+
+	// Is capturing (Call inside m_mutex)
+	bool IsCapturingUnlocked() const;
 
 	std::atomic<ULONG> m_refCount;
 };

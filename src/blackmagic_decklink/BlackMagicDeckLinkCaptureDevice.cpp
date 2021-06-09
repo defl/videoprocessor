@@ -15,8 +15,12 @@
 
 #include <blackmagic_decklink/BlackMagicDeckLinkTranslate.h>
 #include <cie.h>
+#include <WallClock.h>
 
 #include "BlackMagicDeckLinkCaptureDevice.h"
+
+
+static const timingclocktime_t DECKLINK_CLOCK_MAX_TICKS_SECOND = 1000000LL;  // us
 
 
 //
@@ -116,13 +120,17 @@ BlackMagicDeckLinkCaptureDevice::~BlackMagicDeckLinkCaptureDevice()
 void BlackMagicDeckLinkCaptureDevice::SetCallbackHandler(ICaptureDeviceCallback* callback)
 {
 	{
-		std::lock_guard<std::mutex> lock(m_mutex);
+		std::lock_guard<std::mutex> lock(m_callbackHandlerMutex);
 
 		m_callback = callback;
 
 		// Update client if subscribing
 		if (m_callback)
+		{
+			std::lock_guard<std::mutex> lock(m_stateMutex);
+
 			m_callback->OnCaptureDeviceState(m_state);
+		}
 	}
 
 	DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::SetCallbackHandler(): updated callback")));
@@ -160,9 +168,9 @@ void BlackMagicDeckLinkCaptureDevice::StartCapture()
 		throw std::runtime_error("Card cannot capture");
 
 	{
-		std::lock_guard<std::mutex> lock(m_mutex);
+		std::lock_guard<std::mutex> lock(m_stateMutex);
 
-		if (m_deckLinkInput)
+		if (IsCapturingUnlocked())
 			throw std::runtime_error("Card already capturing");
 
 		//
@@ -234,8 +242,11 @@ void BlackMagicDeckLinkCaptureDevice::StartCapture()
 void BlackMagicDeckLinkCaptureDevice::StopCapture()
 {
 	{
-		std::lock_guard<std::mutex> lock(m_mutex);
+		std::lock_guard<std::mutex> lock(m_stateMutex);
 
+		assert(IsCapturingUnlocked());
+
+		// TODO: Do we need this idempotentcy?
 		if (!m_deckLinkInput)
 			return;
 
@@ -303,6 +314,30 @@ void BlackMagicDeckLinkCaptureDevice::SetCaptureInput(const CaptureInputId captu
 }
 
 
+int BlackMagicDeckLinkCaptureDevice::GetSupportedTimingClocks()
+{
+	return
+		TimingClockType::TIMING_CLOCK_NONE |
+		TimingClockType::TIMING_CLOCK_OS |
+		TimingClockType::TIMING_CLOCK_VIDEO_STREAM;
+}
+
+
+void BlackMagicDeckLinkCaptureDevice::SetTimingClock(const TimingClockType timingClock)
+{
+	if (timingClock == TimingClockType::TIMING_CLOCK_UNKNOWN)
+		throw std::runtime_error("TIMING_CLOCK_UNKNOWN not allowed to be set");
+
+	{
+		std::lock_guard<std::mutex> lock(m_stateMutex);
+
+		m_timingClock = timingClock;
+	}
+
+	DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::SetTimingClock() to %s"), ToString(timingClock)));
+}
+
+
 //
 // IDeckLinkInputCallback
 //
@@ -328,7 +363,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 		BMDTimeScale timeScale;
 		assert(newMode->GetFrameRate(&frameDuration, &timeScale) == S_OK);
 		const double frameRate = (double)timeScale / frameDuration;
-		assert(fabs(frameRate - dp->RefreshRateHz()) < 0.1);
+		assert(fabs(frameRate - dp->RefreshRateHz()) < 0.01);
 	}
 
 #endif // _DEBUG
@@ -380,13 +415,14 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 		ResetVideoState();
 		m_pixelFormat = pixelFormat;
 		m_videoDisplayMode = newMode->GetDisplayMode();
+		m_timeScale = TranslateDisplayModeToTimeScale(m_videoDisplayMode);
 
 		{
-			std::lock_guard<std::mutex> lock(m_mutex);
+			std::lock_guard<std::mutex> lock(m_stateMutex);
 
 			// Inform callback handlers that stream will be invalid before re-starting
 			// Must be locked!
-			SendVideoStateCallback();
+			SendVideoStateCallbackUnlocked();
 
 			//
 			// Restart stream with new input mode
@@ -439,11 +475,41 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 	if (m_videoDisplayMode == BMD_DISPLAY_MODE_INVALID)
 		return -1;
 
+	timestamp_t timingTimestamp = 0;
+	if(m_timingClock == TimingClockType::TIMING_CLOCK_OS)
+		timingTimestamp = ::GetWallClockTime();
+
 	bool videoStateChanged = false;
 
 	if (videoFrame)
 	{
 		assert(m_videoDisplayMode);
+		assert(m_timeScale != BMD_TIME_SCALE_INVALID);
+		++m_videoFrameCounter;
+
+#ifdef _DEBUG
+		// Every every so often show the difference between the captured timestamp and the current timestamp
+		// according to the card.
+		if(m_videoFrameCounter % 100 == 0)
+		{
+			BMDTimeValue frameTimeTicks;
+			IF_NOT_S_OK(videoFrame->GetHardwareReferenceTimestamp(GetTimingClockTicksPerSecond(), &frameTimeTicks, nullptr))
+				throw std::runtime_error("Could not get the video frame hardware timestamp");
+
+			BMDTimeValue currentTimeTicks = GetTimingClockTime();
+
+			const double timeDeltaMs = (currentTimeTicks - frameTimeTicks) / (double)GetTimingClockTicksPerSecond() * 1000.0;
+
+			DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrived(): Frame #%I64u, Capture->Now: %.03f ms"),
+				m_videoFrameCounter, timeDeltaMs));
+		}
+#endif  // _DEBUG
+
+		if (m_timingClock == TimingClockType::TIMING_CLOCK_VIDEO_STREAM)
+		{
+			IF_NOT_S_OK(videoFrame->GetHardwareReferenceTimestamp(GetTimingClockTicksPerSecond(), &timingTimestamp, nullptr))
+				throw std::runtime_error("Could not get the video frame hardware timestamp");
+		}
 
 		// TODO: The following 2 are set, no idea what to do with them on output as everything seems to work
 		//assert(videoFrame->GetFlags() & bmdFrameFlagFlipVertical == 0);
@@ -634,14 +700,19 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 		if (FAILED(videoFrame->GetBytes(&data)))
 			throw std::runtime_error("Failed to get video frame bytes");
 
-		VideoFrame vpVideoFrame(data);
+		// Build video frame
+		VideoFrame vpVideoFrame(data, timingTimestamp);
 
 		// Send to client, must be locked at this point
 		{
-			std::lock_guard<std::mutex> lock(m_mutex);
+			std::lock_guard<std::mutex> lock(m_callbackHandlerMutex);
 
 			if (videoStateChanged)
-				SendVideoStateCallback();
+			{
+				// TODO: This is unlocked with respect to the capture thread which might change this
+				//       while we're reading. Too bad.
+				SendVideoStateCallbackUnlocked();
+			}
 
 			m_callback->OnCaptureDeviceVideoFrame(vpVideoFrame);
 		}
@@ -660,6 +731,7 @@ HRESULT	STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::ProfileChanging(
 	IDeckLinkProfile* profileToBeActivated, BOOL streamsWillBeForcedToStop)
 {
 	// WARNING: Called from some internal capture card thread!
+
 	if (streamsWillBeForcedToStop)
 	{
 		// TODO: Handle properly by stopping and informing the client through the state callback
@@ -704,6 +776,30 @@ HRESULT BlackMagicDeckLinkCaptureDevice::Notify(BMDNotifications topic, uint64_t
 	}
 
 	return S_OK;
+}
+
+
+//
+// ITimingClock
+//
+
+
+timingclocktime_t BlackMagicDeckLinkCaptureDevice::GetTimingClockTime()
+{
+	BMDTimeValue currentTimeTicks;
+	IF_NOT_S_OK(m_deckLinkInput->GetHardwareReferenceClock(GetTimingClockTicksPerSecond(), &currentTimeTicks, nullptr, nullptr))
+		throw std::runtime_error("Could not get the hardware clock timestamp");
+
+	return currentTimeTicks;
+}
+
+
+timingclocktime_t BlackMagicDeckLinkCaptureDevice::GetTimingClockTicksPerSecond() const
+{
+	// This is hard-coded, we can also take a more course approach by using the exact frame-frequency muliplied by 1000
+	// as shown in the DeckLink examples. Given that we most likely want to convert it to a DirectShow timestamp,
+	// which is 100ns the choice here is to go for maximum usable resolution.
+	return DECKLINK_CLOCK_MAX_TICKS_SECOND;
 }
 
 
@@ -759,6 +855,7 @@ void BlackMagicDeckLinkCaptureDevice::ResetVideoState()
 	m_videoFrameSeen = false;
 	m_pixelFormat = BMD_PIXEL_FORMAT_INVALID;
 	m_videoDisplayMode = BMD_DISPLAY_MODE_INVALID;
+	m_timeScale = BMD_TIME_SCALE_INVALID;
 	m_videoHasInputSource = false;
 	m_videoEotf = BMD_EOTF_INVALID;
 	m_videoColorSpace = BMD_COLOR_SPACE_INVALID;
@@ -768,7 +865,7 @@ void BlackMagicDeckLinkCaptureDevice::ResetVideoState()
 }
 
 
-void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
+void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallbackUnlocked()
 {
 	// WARNING: Needs to be locked
 
@@ -782,21 +879,9 @@ void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
 		(m_videoEotf != BMD_EOTF_INVALID) &&
 		(m_videoColorSpace != BMD_COLOR_SPACE_INVALID);
 
-	// TODO: Move these checks into the HDRData struct and make that a class
 	const bool hasValidHdrData =
 		m_videoHasHdrData &&
-		m_videoHdrData.displayPrimaryRedX > 0 &&
-		m_videoHdrData.displayPrimaryRedY > 0 &&
-		m_videoHdrData.displayPrimaryGreenX > 0 &&
-		m_videoHdrData.displayPrimaryGreenY > 0 &&
-		m_videoHdrData.displayPrimaryBlueX > 0 &&
-		m_videoHdrData.displayPrimaryBlueY > 0 &&
-		m_videoHdrData.whitePointX > 0 &&
-		m_videoHdrData.whitePointY > 0 &&
-		m_videoHdrData.masteringDisplayMaxLuminance > 0 &&
-		m_videoHdrData.masteringDisplayMinLuminance > 0 &&
-		m_videoHdrData.maxCll > 0 &&
-		m_videoHdrData.maxFall > 0;
+		m_videoHdrData.IsValid();
 
 	//
 	// Build and send reply
@@ -892,12 +977,10 @@ void BlackMagicDeckLinkCaptureDevice::SendCardStateCallback()
 	// Send
 	//
 	{
-		std::lock_guard<std::mutex> lock(m_mutex);
+		std::lock_guard<std::mutex> lock(m_callbackHandlerMutex);
 
 		if (m_callback)
-		{
 			m_callback->OnCaptureDeviceCardStateChange(cardState);
-		}
 	}
 }
 
@@ -905,15 +988,16 @@ void BlackMagicDeckLinkCaptureDevice::SendCardStateCallback()
 void BlackMagicDeckLinkCaptureDevice::UpdateState(CaptureDeviceState state)
 {
 	{
-		std::lock_guard<std::mutex> lock(m_mutex);
+		std::lock_guard<std::mutex> lock(m_stateMutex);
 
 		assert(state != m_state);  // Double state is not allowed
 		m_state = state;
+	}
+	{
+		std::lock_guard<std::mutex> lock(m_callbackHandlerMutex);
 
 		if (m_callback)
-		{
-			m_callback->OnCaptureDeviceState(m_state);
-		}
+			m_callback->OnCaptureDeviceState(state);
 	}
 }
 
@@ -975,4 +1059,11 @@ void BlackMagicDeckLinkCaptureDevice::OnLinkStatusBusyChange()
 		ResetVideoState();
 		UpdateState(CaptureDeviceState::CAPTUREDEVICESTATE_READY);
 	}
+}
+
+
+bool BlackMagicDeckLinkCaptureDevice::IsCapturingUnlocked() const
+{
+	//! Must be called inside a m_stateMutex protected environment
+	return m_deckLinkInput != nullptr;
 }
