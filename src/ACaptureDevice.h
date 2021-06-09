@@ -25,6 +25,7 @@
 #include <CaptureInput.h>
 #include <VideoFrame.h>
 #include <VideoState.h>
+#include <TimingClock.h>
 
 
 typedef std::vector<CaptureInput> CaptureInputs;
@@ -75,7 +76,7 @@ typedef CComPtr<CaptureDeviceCardState> CaptureDeviceCardStateComPtr;
 // Different states a capture card can be in
 enum CaptureDeviceState
 {
-	// Card can start capturing
+	// Card can start capturing, but is doing nothing
 	CAPTUREDEVICESTATE_READY,
 
 	// Card is capturting
@@ -87,6 +88,9 @@ enum CaptureDeviceState
 	CAPTUREDEVICESTATE_STARTING,
 	CAPTUREDEVICESTATE_STOPPING
 };
+
+
+const TCHAR* ToString(const CaptureDeviceState eotf);
 
 
 /**
@@ -133,6 +137,10 @@ public:
 	// Get device name (only available after init)
 	virtual CString GetName() = 0;
 
+	//
+	// Capture
+	//
+
 	// Returns true is this device can actually capture. There are cards by capture
 	// card manufacturers which cannot capture or are not compatible with what we want.
 	virtual bool CanCapture() = 0;
@@ -157,6 +165,19 @@ public:
 
 	// Set which capture Input to use
 	virtual void SetCaptureInput(const CaptureInputId) = 0;
+
+	//
+	// Clock
+	//
+
+	// Get an int which is a bitset of the TimingClock values
+	// that this devices supports.
+	virtual int GetSupportedTimingClocks() = 0;
+
+	// Set the clock to use for timing.
+	// Can be changed while capturing but be aware that your renderer might not like that at all.
+	// This will affect what values will go into a VideoFrame.
+	virtual void SetTimingClock(const TimingClockType) = 0;
 };
 
 

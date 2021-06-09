@@ -45,3 +45,27 @@ ULONG CaptureDeviceCardState::Release(void)
 
 	return newRefValue;
 }
+
+
+const TCHAR* ToString(const CaptureDeviceState eotf)
+{
+	switch (eotf)
+	{
+	case CaptureDeviceState::CAPTUREDEVICESTATE_READY:
+		return TEXT("Ready");
+
+	case CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING:
+		return TEXT("Capturing");
+
+	case CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN:
+		return TEXT("Unknown");
+
+	case CaptureDeviceState::CAPTUREDEVICESTATE_STARTING:
+		return TEXT("Starting");
+
+	case CaptureDeviceState::CAPTUREDEVICESTATE_STOPPING:
+		return TEXT("Stopping");
+	}
+
+	throw std::runtime_error("UNSPECIFIED CaptureDeviceState");
+}
