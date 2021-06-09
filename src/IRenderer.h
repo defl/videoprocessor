@@ -28,6 +28,9 @@ enum RendererState
 };
 
 
+const TCHAR* ToString(const RendererState rendererState);
+
+
 /**
  * Renderer callback
  */
