@@ -1,3 +1,10 @@
+0.3.0
+- User-selectable (frame) timing clock, including card hardware clock
+- HDR info is now in CIE image
+- Added final handler for throws which pops up a messagebox upon thrown exceptions, this allows the user to understand what's going on
+- FIX: Deadlock situation with blackmagic callbacks
+- Known issue: Blows up at exit
+
 0.2.0
 - SSE2 build config, not using AVX anymore until needed
 - Integrated ffmpeg
@@ -14,8 +21,8 @@
 - Fix: GUI elements & state related to capture device were uninitialized at start and not cleared when restarting capture
 
 0.1.0
-- Full screen now works and remains full even when modeswitching. 
-  Will full-screen to current monitor. 
+- Full screen now works and remains full even when modeswitching.
+  Will full-screen to current monitor.
   Toggle with alt-enter, exit with escape.
 - Tested with madVR beta 132
 

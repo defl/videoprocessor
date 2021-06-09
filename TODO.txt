@@ -1,20 +1,36 @@
 Roadmap
+=======
 
 0.3.0
 - Change display modes to be real frame interval and display interval
-- Timing improvements
-  - Use hardware timestamps from capture card for frame timing in directshow
+- Add context information to all throws
+- Cleanup TODOs
+- Exit hangs
+- Fix memory leaks
 
 0.4.0
+- Help page linked to help-buttons in GUI
+- Website: Go live with a page
+- Website: Tutorial on how to install VideoProcessor and madVR
+- Update readme to reflect info on webiste
+
+0.5.0
 - Determine baseline latency with external meter
 - Investigate truely constant rendering times so audio can be in sync with fixed offset in remote audio device
-- Use NVIDIA GRID to get the rendered frame and get the egress timestamp it so that we can build a feedback system going.
-  This actually seems possible to get us timestamps of point of frame-render. If the egress delay from there is reasonably
-  constant we can probably get a near constant-time renderer going.
+- Build updating live graph in GUI to show frame gaps/latency
+- Website: Tutorial on how to measure frame-delay with a meter and set correct latency in VideoProcessor
+- Website: Tutorial on how to match video delay in AV unit
 
-Later
-- Audio
-  - Directshow rendered
+Stable for a while = 1.0.0
+
+<website>
+- Tutorial on how to do a 3d LUT
+
+1.1.0
+- Directshow rendered audio
+
+
+Ideas for later:
 - Toggelable HDCP on video output through the win32 Output Protection Manager
   (This will lead to problems with NVIDIA GRID as it's not allowed to capture, and hence we can't get RTT if this is enabled)
 - Support for interlaced formats (only the ones which madVR can handle)
@@ -23,3 +39,6 @@ Later
 - Remove mouse pointer after going full screen
 - Only force settings if none are present (LLDV case mcpherv). Looked at this and it seems little useful without further scripting
   or the ability to store config. Both are not yet on the radar.
+- Use NVIDIA GRID to get the rendered frame and get the egress timestamp it so that we can build a feedback system going.
+  This actually seems possible to get us timestamps of point of frame-render. If the egress delay from there is reasonably
+  constant we can probably get a near constant-time renderer going.
