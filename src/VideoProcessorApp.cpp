@@ -44,7 +44,23 @@ BOOL CVideoProcessorApp::InitInstance()
 	CVideoProcessorDlg dlg(startFullScreen);
 	m_pMainWnd = &dlg;
 
-	dlg.DoModal();
+	try
+	{
+		dlg.DoModal();
+	}
+	catch (std::runtime_error& e)
+	{
+		dlg.EndDialog(IDABORT);
+
+		size_t size = strlen(e.what()) + 1;
+		wchar_t* wtext = new wchar_t[size];
+		size_t outSize;
+		mbstowcs_s(&outSize, wtext, size, e.what(), size - 1);
+
+		MessageBox(NULL, wtext, TEXT("Fatal error"), MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+
+		delete[] wtext;
+	}
 
 	CoUninitialize();
 
