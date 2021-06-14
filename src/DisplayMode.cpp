@@ -25,8 +25,15 @@ DisplayMode::DisplayMode(
 	if (frameHeight < 100 || frameHeight > 10000)
 		throw std::runtime_error("resolutionY not valid");
 
-	if (refreshRateMilliHz < 10000 || frameHeight > 300000)
+	if (refreshRateMilliHz < 10000 || refreshRateMilliHz > 300000)
 		throw std::runtime_error("refreshRateMilliHz not valid");
+}
+
+
+timestamp_t DisplayMode::FrameDuration() const
+{
+	// Convert mhz to 100ns intervals
+	return std::round(10000000000.0 / (double)m_refreshRateMilliHz);
 }
 
 

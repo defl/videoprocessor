@@ -10,6 +10,7 @@
 
 #include <afxstr.h>
 #include <memory>
+#include <WallClock.h>  // TODO: Extract timestamp_t to somewhere we don't need the clock
 
 
 /**
@@ -45,6 +46,10 @@ public:
 
 	// Refresh rate in Milli Hz
 	int RefreshRateMilliHz() const { return m_refreshRateMilliHz; }
+
+	// timestamp ticks (100ns units) per frame
+	// TODO: Not very happy with the naming
+	timestamp_t FrameDuration() const;
 
 	// Return the mode as a human-understandable string
 	CString ToString() const;
