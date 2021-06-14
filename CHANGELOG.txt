@@ -2,8 +2,12 @@
 - User-selectable (frame) timing clock, including card hardware clock
 - HDR info is now in CIE image
 - Added final handler for throws which pops up a messagebox upon thrown exceptions, this allows the user to understand what's going on
+- Removed all mutexes, it now runs lock-free with a few atomics to ensure correctness
 - FIX: Deadlock situation with blackmagic callbacks
+- FIX: frame timestamps now correct, madVR queues fill up and that leads to smooth video output
 - Known issue: Blows up at exit
+- Known issue: Leaks memory at renderer restart
+- Known issue: OS clock doesn't seem correct yet
 
 0.2.0
 - SSE2 build config, not using AVX anymore until needed

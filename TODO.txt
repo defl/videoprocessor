@@ -1,42 +1,43 @@
 Roadmap
 =======
 
-0.3.0
+0.3.0: Clocks
 - Change display modes to be real frame interval and display interval
-- Add context information to all throws
 - Cleanup TODOs
-- Exit hangs
+- Fix exit hang
 - Fix memory leaks
 
-0.4.0
+0.3.1: GUI
+- Remove mouse pointer after going full screen
+- Add context information to all throws
+
+0.4.0: DVD
+- Support for interlaced formats (aim to support DVD, will only test with PS4Pro as player)
+
+0.5.0: Website
 - Help page linked to help-buttons in GUI
 - Website: Go live with a page
 - Website: Tutorial on how to install VideoProcessor and madVR
-- Update readme to reflect info on webiste
+- Update readme to reflect info on website
 
-0.5.0
+1.0.0: Out of beta
+- No changes expected, re-release of 0.5.0 code
+
+1.1.0: Audio and delay
+- Audio
 - Determine baseline latency with external meter
-- Investigate truely constant rendering times so audio can be in sync with fixed offset in remote audio device
-- Build updating live graph in GUI to show frame gaps/latency
-- Website: Tutorial on how to measure frame-delay with a meter and set correct latency in VideoProcessor
-- Website: Tutorial on how to match video delay in AV unit
+- Investigate configurable aimed-for delay to ensure external lip-sync is spot on
+- Website: Tutorial on how to measure frame-delay with a meter, set correct delay in VideoProcessor, setup delay in external AV unit
+- Configurable delay to guarantee buffering for madvr
 
-Stable for a while = 1.0.0
-
-<website>
-- Tutorial on how to do a 3d LUT
-
-1.1.0
-- Directshow rendered audio
-
+1.2.0: Zoom
+- Cropping-zoom so that at a certain amount of crop madVR starts to remove the remaining black bars (steppi85)
 
 Ideas for later:
-- Toggelable HDCP on video output through the win32 Output Protection Manager
-  (This will lead to problems with NVIDIA GRID as it's not allowed to capture, and hence we can't get RTT if this is enabled)
-- Support for interlaced formats (only the ones which madVR can handle)
 - CaptureInput as a first-class citizen rather than a POD (rename to capture device input?)
-- Cropping-zoom so that at a certain amount of crop madVR starts to remove the remaining black bars (steppi85)
-- Remove mouse pointer after going full screen
+- Tutorial on how to do a 3d LUT
+- Toggelable HDCP on video output through the win32 Output Protection Manager
+  (This will lead to problems with NVIDIA GRID as it's not allowed to capture)
 - Only force settings if none are present (LLDV case mcpherv). Looked at this and it seems little useful without further scripting
   or the ability to store config. Both are not yet on the radar.
 - Use NVIDIA GRID to get the rendered frame and get the egress timestamp it so that we can build a feedback system going.
