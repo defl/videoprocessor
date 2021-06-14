@@ -10,7 +10,7 @@
 
 
 #include <vector>
-#include <mutex>
+#include <atomic>
 
 #include <DeckLinkAPI_h.h>
 
@@ -88,9 +88,8 @@ private:
 	std::vector<CaptureInput> m_captureInputSet;
 	TimingClockType m_timingClock = TimingClockType::TIMING_CLOCK_NONE;
 
-	// Main lock to prevent undesired interactions between callbacks from capture and user input
-	std::mutex m_callbackHandlerMutex;
-	std::mutex m_stateMutex;
+	// If false this will not send any more frames out.
+	std::atomic_bool m_outputCaptureData = false;
 
 	// This is set if the card is capturing, can have only one input supports in here for now.
 	// (This implies we support only one callback whereas the hardware supports this per input.)
@@ -102,7 +101,7 @@ private:
 	// data to feed the downstream client. Blackmagic gives you this through many channels and
 	// we need to wait for all to be delivered before sending out OnCaptureDeviceVideoStateChange()
 	// and OnCaptureDeviceVideoFrame(). There a few helper functions for this as well here.
-	// WARNING: R/W from the capture thread.
+	// WARNING: R/W from the capture thread, do not read from other thread
 	bool m_videoFrameSeen = false;
 	BMDPixelFormat m_pixelFormat = BMD_PIXEL_FORMAT_INVALID;
 	BMDDisplayMode m_videoDisplayMode = BMD_DISPLAY_MODE_INVALID;
@@ -115,20 +114,17 @@ private:
 	uint64_t m_videoFrameCounter = 0;
 
 	void ResetVideoState();
-	void SendVideoStateCallbackUnlocked();
+	void SendVideoStateCallback();
 	void SendCardStateCallback();
 
 	// Current state, update through UpdateState()
-	// WARNING: R/W from the capture thread.
+	// WARNING: R/W from the capture thread, do not read from other thread
 	CaptureDeviceState m_state = CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN;
 	void UpdateState(CaptureDeviceState state);
 
 	// Internal helpers
 	void OnNotifyStatusChanged(BMDDeckLinkStatusID statusID);
 	void OnLinkStatusBusyChange();
-
-	// Is capturing (Call inside m_mutex)
-	bool IsCapturingUnlocked() const;
 
 	std::atomic<ULONG> m_refCount;
 };

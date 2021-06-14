@@ -119,19 +119,12 @@ BlackMagicDeckLinkCaptureDevice::~BlackMagicDeckLinkCaptureDevice()
 
 void BlackMagicDeckLinkCaptureDevice::SetCallbackHandler(ICaptureDeviceCallback* callback)
 {
-	{
-		std::lock_guard<std::mutex> lock(m_callbackHandlerMutex);
+	m_callback = callback;
 
-		m_callback = callback;
-
-		// Update client if subscribing
-		if (m_callback)
-		{
-			std::lock_guard<std::mutex> lock(m_stateMutex);
-
-			m_callback->OnCaptureDeviceState(m_state);
-		}
-	}
+	// Update client if subscribing
+	// Note that thisis a read from the state which is set by the capture thread.
+	if (m_callback)
+		m_callback->OnCaptureDeviceState(m_state);
 
 	DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::SetCallbackHandler(): updated callback")));
 }
@@ -164,76 +157,75 @@ bool BlackMagicDeckLinkCaptureDevice::CanCapture()
 
 void BlackMagicDeckLinkCaptureDevice::StartCapture()
 {
+	if (m_outputCaptureData.load(std::memory_order_acquire))
+		throw std::runtime_error("StartCapture() callbed but already started");
+
 	if (!CanCapture())
 		throw std::runtime_error("Card cannot capture");
 
+	//
+	// Set up input
+	//
+
+	if (m_captureInputId == bmdVideoConnectionUnspecified)
+		throw std::runtime_error("Set input with SetCaptureInput() before calling StartCapture()");
+
+	IF_NOT_S_OK(m_deckLinkConfiguration->SetInt(bmdDeckLinkConfigVideoInputConnection, (int64_t)m_captureInputId))
+		throw std::runtime_error("Failed to set bmdDeckLinkConfigVideoInputConnection in config");
+
+	m_deckLinkInput = m_deckLink;
+	if (!m_deckLinkInput)
+		throw std::runtime_error("Failed to create IDeckLinkInput");
+
+	m_deckLinkInput->SetCallback(this);
+
+	//
+	// Enable video input
+	//
+	CComQIPtr<IDeckLinkDisplayMode> displayMode;
+	CComPtr<IDeckLinkDisplayModeIterator> displayModeIterator;
+
+	IF_NOT_S_OK(m_deckLinkInput->GetDisplayModeIterator(&displayModeIterator))
 	{
-		std::lock_guard<std::mutex> lock(m_stateMutex);
-
-		if (IsCapturingUnlocked())
-			throw std::runtime_error("Card already capturing");
-
-		//
-		// Set up input
-		//
-
-		if (m_captureInputId == bmdVideoConnectionUnspecified)
-			throw std::runtime_error("Set input with SetCaptureInput() before calling StartCapture()");
-
-		IF_NOT_S_OK(m_deckLinkConfiguration->SetInt(bmdDeckLinkConfigVideoInputConnection, (int64_t)m_captureInputId))
-			throw std::runtime_error("Failed to set bmdDeckLinkConfigVideoInputConnection in config");
-
-		m_deckLinkInput = m_deckLink;
-		if (!m_deckLinkInput)
-			throw std::runtime_error("Failed to create IDeckLinkInput");
-
-		m_deckLinkInput->SetCallback(this);
-
-		//
-		// Enable video input
-		//
-		CComQIPtr<IDeckLinkDisplayMode> displayMode;
-		CComPtr<IDeckLinkDisplayModeIterator> displayModeIterator;
-
-		IF_NOT_S_OK(m_deckLinkInput->GetDisplayModeIterator(&displayModeIterator))
-		{
-			m_deckLinkInput.Release();
-			m_deckLinkInput = nullptr;
-			throw std::runtime_error("Failed to get display mode");
-		}
-
-		IF_NOT_S_OK(displayModeIterator->Next(&displayMode))
-		{
-			m_deckLinkInput.Release();
-			m_deckLinkInput = nullptr;
-			throw std::runtime_error("Failed to get first display mode");
-		}
-
-		const static BMDVideoInputFlags videoInputFlags = bmdVideoInputFlagDefault | bmdVideoInputEnableFormatDetection;
-		IF_NOT_S_OK(m_deckLinkInput->EnableVideoInput(
-			displayMode->GetDisplayMode(),
-			bmdFormat8BitYUV,
-			videoInputFlags))
-		{
-			displayMode.Release();
-			m_deckLinkInput.Release();
-			m_deckLinkInput = nullptr;
-			throw std::runtime_error("Failed to EnableVideoInput");
-		}
-
-		displayMode.Release();
-
-		//
-		// Start the capture
-		//
-
-		IF_NOT_S_OK(m_deckLinkInput->StartStreams())
-		{
-			m_deckLinkInput.Release();
-			m_deckLinkInput = nullptr;
-			throw std::runtime_error("Failed to StartStreams");
-		}
+		m_deckLinkInput.Release();
+		m_deckLinkInput = nullptr;
+		throw std::runtime_error("Failed to get display mode");
 	}
+
+	IF_NOT_S_OK(displayModeIterator->Next(&displayMode))
+	{
+		m_deckLinkInput.Release();
+		m_deckLinkInput = nullptr;
+		throw std::runtime_error("Failed to get first display mode");
+	}
+
+	const static BMDVideoInputFlags videoInputFlags = bmdVideoInputFlagDefault | bmdVideoInputEnableFormatDetection;
+	IF_NOT_S_OK(m_deckLinkInput->EnableVideoInput(
+		displayMode->GetDisplayMode(),
+		bmdFormat8BitYUV,
+		videoInputFlags))
+	{
+		displayMode.Release();
+		m_deckLinkInput.Release();
+		m_deckLinkInput = nullptr;
+		throw std::runtime_error("Failed to EnableVideoInput");
+	}
+
+	displayMode.Release();
+
+	//
+	// Start the capture
+	//
+
+	IF_NOT_S_OK(m_deckLinkInput->StartStreams())
+	{
+		m_deckLinkInput.Release();
+		m_deckLinkInput = nullptr;
+		throw std::runtime_error("Failed to StartStreams");
+	}
+
+	// From here on out data can egress
+	m_outputCaptureData.store(true, std::memory_order_release);
 
 	DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::StopCapture(): completed successfully")));
 }
@@ -241,39 +233,37 @@ void BlackMagicDeckLinkCaptureDevice::StartCapture()
 
 void BlackMagicDeckLinkCaptureDevice::StopCapture()
 {
+	if (!m_outputCaptureData.load(std::memory_order_acquire))
+		throw std::runtime_error("StopCapture() called while not started");
+
+	// Stop egressing data
+	m_outputCaptureData.store(false, std::memory_order_release);
+
+	assert(m_deckLinkInput);
+
+	IF_NOT_S_OK(m_deckLinkInput->StopStreams())
 	{
-		std::lock_guard<std::mutex> lock(m_stateMutex);
-
-		assert(IsCapturingUnlocked());
-
-		// TODO: Do we need this idempotentcy?
-		if (!m_deckLinkInput)
-			return;
-
-		IF_NOT_S_OK(m_deckLinkInput->StopStreams())
-		{
-			m_deckLinkInput.Release();
-			m_deckLinkInput = nullptr;
-			throw std::runtime_error("Failed to stop streams");
-		}
-
-		IF_NOT_S_OK(m_deckLinkInput->SetCallback(nullptr))
-		{
-			m_deckLinkInput.Release();
-			m_deckLinkInput = nullptr;
-			throw std::runtime_error("Failed to set input callback to nullptr");
-		}
-
-		IF_NOT_S_OK(m_deckLinkInput->DisableVideoInput())
-		{
-			m_deckLinkInput.Release();
-			m_deckLinkInput = nullptr;
-			throw std::runtime_error("Failed to disable video input");
-		}
-
 		m_deckLinkInput.Release();
 		m_deckLinkInput = nullptr;
+		throw std::runtime_error("Failed to stop streams");
 	}
+
+	IF_NOT_S_OK(m_deckLinkInput->SetCallback(nullptr))
+	{
+		m_deckLinkInput.Release();
+		m_deckLinkInput = nullptr;
+		throw std::runtime_error("Failed to set input callback to nullptr");
+	}
+
+	IF_NOT_S_OK(m_deckLinkInput->DisableVideoInput())
+	{
+		m_deckLinkInput.Release();
+		m_deckLinkInput = nullptr;
+		throw std::runtime_error("Failed to disable video input");
+	}
+
+	m_deckLinkInput.Release();
+	m_deckLinkInput = nullptr;
 
 	DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::StopCapture() completed successfully")));
 }
@@ -328,11 +318,7 @@ void BlackMagicDeckLinkCaptureDevice::SetTimingClock(const TimingClockType timin
 	if (timingClock == TimingClockType::TIMING_CLOCK_UNKNOWN)
 		throw std::runtime_error("TIMING_CLOCK_UNKNOWN not allowed to be set");
 
-	{
-		std::lock_guard<std::mutex> lock(m_stateMutex);
-
-		m_timingClock = timingClock;
-	}
+	m_timingClock = timingClock;
 
 	DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::SetTimingClock() to %s"), ToString(timingClock)));
 }
@@ -350,6 +336,10 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 {
 	// WARNING: Called from some internal capture card thread!
 	// TODO: We can be nicer and "return E_INVALIDARG;" for the throws, investigate how that's handled gracefully
+
+	// Dot not process if we're not capturing anymore
+	if (!m_outputCaptureData.load(std::memory_order_acquire))
+		return S_OK;
 
 #ifdef _DEBUG
 
@@ -417,45 +407,41 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 		m_videoDisplayMode = newMode->GetDisplayMode();
 		m_timeScale = TranslateDisplayModeToTimeScale(m_videoDisplayMode);
 
+		// Inform callback handlers that stream will be invalid before re-starting
+		// Must be locked!
+		SendVideoStateCallback();
+
+		//
+		// Restart stream with new input mode
+		//
+		IF_NOT_S_OK(m_deckLinkInput->StopStreams())
 		{
-			std::lock_guard<std::mutex> lock(m_stateMutex);
+			m_deckLinkInput.Release();
+			m_deckLinkInput = nullptr;
+			throw std::runtime_error("Failed to stop streams");
+		}
 
-			// Inform callback handlers that stream will be invalid before re-starting
-			// Must be locked!
-			SendVideoStateCallbackUnlocked();
+		// Set the video input mode
+		IF_NOT_S_OK(m_deckLinkInput->EnableVideoInput(
+			newMode->GetDisplayMode(),
+			pixelFormat,
+			bmdVideoInputFlagDefault | bmdVideoInputEnableFormatDetection))
+		{
+			// TODO: StopStreams() or how does this work under failure conditions?
 
-			//
-			// Restart stream with new input mode
-			//
-			IF_NOT_S_OK(m_deckLinkInput->StopStreams())
-			{
-				m_deckLinkInput.Release();
-				m_deckLinkInput = nullptr;
-				throw std::runtime_error("Failed to stop streams");
-			}
+			m_deckLinkInput.Release();
+			m_deckLinkInput = nullptr;
+			throw std::runtime_error("Failed to set video input");
+		}
 
-			// Set the video input mode
-			IF_NOT_S_OK(m_deckLinkInput->EnableVideoInput(
-				newMode->GetDisplayMode(),
-				pixelFormat,
-				bmdVideoInputFlagDefault | bmdVideoInputEnableFormatDetection))
-			{
-				// TODO: StopStreams() or how does this work under failure conditions?
+		// Start the capture
+		IF_NOT_S_OK(m_deckLinkInput->StartStreams())
+		{
+			// TODO: StopStreams() or how does this work under failure conditions?
 
-				m_deckLinkInput.Release();
-				m_deckLinkInput = nullptr;
-				throw std::runtime_error("Failed to set video input");
-			}
-
-			// Start the capture
-			IF_NOT_S_OK(m_deckLinkInput->StartStreams())
-			{
-				// TODO: StopStreams() or how does this work under failure conditions?
-
-				m_deckLinkInput.Release();
-				m_deckLinkInput = nullptr;
-				throw std::runtime_error("Failed to start stream");
-			}
+			m_deckLinkInput.Release();
+			m_deckLinkInput = nullptr;
+			throw std::runtime_error("Failed to start stream");
 		}
 
 		DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::VideoInputFormatChanged(): restart success")));
@@ -471,6 +457,10 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 {
 	// WARNING: Called from some internal capture card thread!
 	// TODO: Process audioPacket
+
+	// Dot not process if we're not capturing anymore
+	if (!m_outputCaptureData.load(std::memory_order_acquire))
+		return S_OK;
 
 	if (m_videoDisplayMode == BMD_DISPLAY_MODE_INVALID)
 		return -1;
@@ -705,13 +695,11 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 
 		// Send to client, must be locked at this point
 		{
-			std::lock_guard<std::mutex> lock(m_callbackHandlerMutex);
-
 			if (videoStateChanged)
 			{
 				// TODO: This is unlocked with respect to the capture thread which might change this
 				//       while we're reading. Too bad.
-				SendVideoStateCallbackUnlocked();
+				SendVideoStateCallback();
 			}
 
 			m_callback->OnCaptureDeviceVideoFrame(vpVideoFrame);
@@ -865,9 +853,9 @@ void BlackMagicDeckLinkCaptureDevice::ResetVideoState()
 }
 
 
-void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallbackUnlocked()
+void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
 {
-	// WARNING: Needs to be locked
+	// WARNING: Called from some internal capture card thread!
 
 	assert(m_callback);
 
@@ -930,6 +918,8 @@ void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallbackUnlocked()
 
 void BlackMagicDeckLinkCaptureDevice::SendCardStateCallback()
 {
+	// WARNING: Called from some internal capture card thread!
+
 	assert(m_deckLinkStatus);
 
 	CaptureDeviceCardStateComPtr cardState = new CaptureDeviceCardState();
@@ -976,29 +966,20 @@ void BlackMagicDeckLinkCaptureDevice::SendCardStateCallback()
 	//
 	// Send
 	//
-	{
-		std::lock_guard<std::mutex> lock(m_callbackHandlerMutex);
-
-		if (m_callback)
-			m_callback->OnCaptureDeviceCardStateChange(cardState);
-	}
+	if (m_callback)
+		m_callback->OnCaptureDeviceCardStateChange(cardState);
 }
 
 
 void BlackMagicDeckLinkCaptureDevice::UpdateState(CaptureDeviceState state)
 {
-	{
-		std::lock_guard<std::mutex> lock(m_stateMutex);
+	// WARNING: Called from some internal capture card thread!
 
-		assert(state != m_state);  // Double state is not allowed
-		m_state = state;
-	}
-	{
-		std::lock_guard<std::mutex> lock(m_callbackHandlerMutex);
+	assert(state != m_state);  // Double state is not allowed
+	m_state = state;
 
-		if (m_callback)
-			m_callback->OnCaptureDeviceState(state);
-	}
+	if (m_callback)
+		m_callback->OnCaptureDeviceState(state);
 }
 
 
@@ -1009,6 +990,8 @@ void BlackMagicDeckLinkCaptureDevice::UpdateState(CaptureDeviceState state)
 
 void BlackMagicDeckLinkCaptureDevice::OnNotifyStatusChanged(BMDDeckLinkStatusID statusID)
 {
+	// WARNING: Called from some internal capture card thread!
+
 	if (!m_deckLinkInput)
 		return;
 
@@ -1042,6 +1025,8 @@ void BlackMagicDeckLinkCaptureDevice::OnNotifyStatusChanged(BMDDeckLinkStatusID 
 
 void BlackMagicDeckLinkCaptureDevice::OnLinkStatusBusyChange()
 {
+	// WARNING: Called from some internal capture card thread!
+
 	LONGLONG intValue;
 	IF_NOT_S_OK(m_deckLinkStatus->GetInt(bmdDeckLinkStatusBusy, &intValue))
 		throw std::runtime_error("Failed to call bmdDeckLinkStatusBusy");
@@ -1059,11 +1044,4 @@ void BlackMagicDeckLinkCaptureDevice::OnLinkStatusBusyChange()
 		ResetVideoState();
 		UpdateState(CaptureDeviceState::CAPTUREDEVICESTATE_READY);
 	}
-}
-
-
-bool BlackMagicDeckLinkCaptureDevice::IsCapturingUnlocked() const
-{
-	//! Must be called inside a m_stateMutex protected environment
-	return m_deckLinkInput != nullptr;
 }
