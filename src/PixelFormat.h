@@ -32,26 +32,31 @@ enum class PixelFormat
 	// Four 8-bit unsigned components are packed into one 32-bit little-endian word. The alpha channel may be valid.
 	BGRA_8BIT,
 
-	// r210 4:4:4 raw
+	// r210: 4:4:4 raw
 	// Three 10-bit unsigned components are packed into one 32-bit big-endian word.
 	// TODO: This is not really a pixel format but an encoding format, maybe rename this class?
 	R210,
 
-	// R10b 4:4:4 raw
+	// R10b: 4:4:4 raw
 	// Three 10-bit unsigned components are packed into one 32-bit big-endian word.
-	RGB_BE_10BIT,
+	// TODO: This is not really a pixel format but an encoding format, maybe rename this class?
+	R10b,
 
-	// R10l 4:4:4 raw
+	// R10l: 4:4:4 raw
 	// Three 10-bit unsigned components are packed into one 32-bit little-endian word.
-	RGB_LE_10BIT,
+	// TODO: This is not really a pixel format but an encoding format, maybe rename this class?
+	R10l,
 
-	// R12B Big-endian RGB 12-bit per component with full range (0-4095). Packed as 12-bit per component.
+	// R12B: Big-endian RGB 12-bit per component with full range (0-4095). Packed as 12-bit per component.
 	// (SMPTE 268M Digital Moving-Picture Exchange version 1, Annex C, Method C4 packing.)
-	RGB_BE_12BIT,
+	// TODO: This is not really a pixel format but an encoding format, maybe rename this class?
+	R12B,
 
-	// R12L Little-endian RGB 12-bit per component with full range (0-4095). Packed as 12-bit per component.
+	// R12L: Little-endian RGB 12-bit per component with full range (0-4095). Packed as 12-bit per component.
 	// (SMPTE 268M Digital Moving-Picture Exchange version 1, Annex C, Method C4 packing.)
-	RGB_LE_12BIT,
+	// TODO: This is not really a pixel format but an encoding format, maybe rename this class?
+	R12L,
+
 	H265,
 	DNxHR
 };

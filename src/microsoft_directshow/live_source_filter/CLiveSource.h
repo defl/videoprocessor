@@ -37,14 +37,21 @@ class CLiveSource:
 	public IAMFilterMiscFlags
 {
 public:
-	DECLARE_IUNKNOWN;
 
 	CLiveSource(LPUNKNOWN pUnk,	HRESULT* phr);
 	virtual ~CLiveSource();
+
 	static CUnknown* WINAPI CreateInstance(LPUNKNOWN pUnk, HRESULT* phr);
 
+	// IUnknown
+	DECLARE_IUNKNOWN;
+
 	// ILiveSource
-	STDMETHODIMP Setup(IVideoFrameFormatter* videoFrameFormatter, GUID mediaSubType) override;
+	STDMETHODIMP Setup(
+		IVideoFrameFormatter* videoFrameFormatter,
+		GUID mediaSubType,
+		timestamp_t frameDuration,
+		timingclocktime_t timestampTicksPerSecond) override;
 	STDMETHODIMP OnHDRData(HDRDataSharedPtr&) override;
 	STDMETHODIMP OnVideoFrame(VideoFrame&) override;
 

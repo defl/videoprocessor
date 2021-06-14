@@ -54,9 +54,11 @@ public:
 	// Update the video information.
 	// The renderer can decide to stop after this and it will signal so by returning false,
 	// a return of true means the new state was accepted.
+	// ! Only can be called if Start() exectued correctly and before Stop() is called
 	virtual bool OnVideoState(VideoStateComPtr&) = 0;
 
 	// Draw the current buffer as frame
+	// ! Only can be called if Start() exectued correctly and before Stop() is called
 	virtual void OnVideoFrame(VideoFrame&) = 0;
 
 	// Handler for windows events for the graph's pEvent

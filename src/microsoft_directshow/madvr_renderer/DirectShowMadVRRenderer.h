@@ -15,7 +15,9 @@
 #include <PixelValueRange.h>
 #include <VideoState.h>
 #include <IVideoFrameFormatter.h>
+#include <ITimingClock.h>
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>
+#include <microsoft_directshow/DirectShowTimingClock.h>
 
 
 /**
@@ -33,6 +35,7 @@ public:
 		HWND videoHwnd,
 		HWND eventHwnd,
 		UINT eventMsg,
+		ITimingClock* timingClock,
 		VideoStateComPtr& videoState,
 		DXVA_NominalRange forceNominalRange,
 		DXVA_VideoTransferFunction forceVideoTransferFunction,
@@ -55,6 +58,7 @@ private:
 	HWND m_videoHwnd;
 	HWND m_eventHwnd;
 	UINT m_eventMsg;
+	ITimingClock* m_timingClock;
 	VideoStateComPtr m_videoState;
 	DXVA_NominalRange m_forceNominalRange = DXVA_NominalRange_Unknown;  // Unknown means not force
 	DXVA_VideoTransferFunction m_forceVideoTransferFunction = DXVA_VideoTransFunc_Unknown;  // Unknown means not force
@@ -71,10 +75,19 @@ private:
 	IMediaEventEx* m_pEvent = NULL;
 	IVideoWindow* m_videoWindow = NULL;
 	IFilterGraph2* m_pGraph2 = NULL;
+	IMediaFilter* m_mediaFilter = NULL;
+	IAMGraphStreams* m_amGraphStreams = NULL;
 
 	IVideoFrameFormatter* m_videoFramFormatter = nullptr;
+	IReferenceClock* m_referenceClock = nullptr;
 	CLiveSource* m_liveSource = nullptr;
 	IBaseFilter* m_pMVR = nullptr;
+
+#ifdef _DEBUG
+	timingclocktime_t m_previousFrameTime = 0;
+#endif
+
+	uint64_t m_frameCounter = 0;
 
 	// Handle Directshow graph events
 	void OnGraphEvent(long evCode, LONG_PTR param1, LONG_PTR param2);

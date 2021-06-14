@@ -185,6 +185,7 @@
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -192,6 +193,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>opengl32.lib;strmiids.lib;winmm.lib;libswscale.a;libavutil.a;libavcodec.a;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\3rdparty\ffmpeg\lib\msvc2019_x64_release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -211,9 +213,13 @@
     <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.h" />
     <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.h" />
     <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.h" />
+    <ClInclude Include="ITimingClock.h" />
+    <ClInclude Include="OSTimingClock.h" />
+    <ClInclude Include="TimingClock.h" />
     <ClInclude Include="CaptureInput.h" />
     <ClInclude Include="CCie1931Control.h" />
     <ClInclude Include="cie.h" />
+    <ClInclude Include="WallClock.h" />
     <ClInclude Include="CNoopVideoFrameFormatter.h" />
     <ClInclude Include="ColorSpace.h" />
     <ClInclude Include="DisplayMode.h" />
@@ -226,6 +232,7 @@
     <ClInclude Include="InputLocked.h" />
     <ClInclude Include="IRenderer.h" />
     <ClInclude Include="IVideoFrameFormatter.h" />
+    <ClInclude Include="microsoft_directshow\DirectShowTimingClock.h" />
     <ClInclude Include="microsoft_directshow\DirectShowDefines.h" />
     <ClInclude Include="microsoft_directshow\DirectShowTranslations.h" />
     <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSource.h" />
@@ -263,9 +270,13 @@
     <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.cpp" />
     <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.cpp" />
     <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.cpp" />
+    <ClCompile Include="IRenderer.cpp" />
+    <ClCompile Include="OSTimingClock.cpp" />
+    <ClCompile Include="TimingClock.cpp" />
     <ClCompile Include="CaptureInput.cpp" />
     <ClCompile Include="CCie1931Control.cpp" />
     <ClCompile Include="cie.cpp" />
+    <ClCompile Include="WallClock.cpp" />
     <ClCompile Include="CNoopVideoFrameFormatter.cpp" />
     <ClCompile Include="ColorSpace.cpp" />
     <ClCompile Include="DisplayMode.cpp" />
@@ -277,6 +288,7 @@
     <ClCompile Include="guid.cpp" />
     <ClCompile Include="HDRData.cpp" />
     <ClCompile Include="InputLocked.cpp" />
+    <ClCompile Include="microsoft_directshow\DirectShowTimingClock.cpp" />
     <ClCompile Include="microsoft_directshow\DirectShowTranslations.cpp" />
     <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSource.cpp" />
     <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.cpp" />

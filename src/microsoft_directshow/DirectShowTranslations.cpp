@@ -118,10 +118,10 @@ DWORD TranslatePixelformatToBiCompression(PixelFormat pixelFormat)
 	case PixelFormat::ARGB_8BIT:
 	case PixelFormat::BGRA_8BIT:
 	case PixelFormat::R210:
-	case PixelFormat::RGB_BE_10BIT:
-	case PixelFormat::RGB_LE_10BIT:
-	case PixelFormat::RGB_BE_12BIT:
-	case PixelFormat::RGB_LE_12BIT:
+	case PixelFormat::R10b:
+	case PixelFormat::R10l:
+	case PixelFormat::R12B:
+	case PixelFormat::R12L:
 		return BI_RGB;
 	}
 

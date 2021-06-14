@@ -44,6 +44,7 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	// UI element messages
 	ON_CBN_SELCHANGE(IDC_CAPTURE_DEVICE_COMBO, &CVideoProcessorDlg::OnCaptureDeviceSelected)
 	ON_CBN_SELCHANGE(IDC_CAPTURE_INPUT_COMBO, &CVideoProcessorDlg::OnCaptureInputSelected)
+	ON_CBN_SELCHANGE(IDC_TIMING_CLOCK_TYPE_COMBO, &CVideoProcessorDlg::OnClockSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_NOMINAL_RANGE_COMBO, &CVideoProcessorDlg::OnRendererNominalRangeSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_TRANSFER_FUNCTION_COMBO, &CVideoProcessorDlg::OnRendererTransferFunctionSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_TRANSFER_MATRIX_COMBO, &CVideoProcessorDlg::OnRendererTransferMatrixSelected)
@@ -54,6 +55,7 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	// Command handlers
 	ON_COMMAND(ID_COMMAND_FULLSCREEN_TOGGLE, &CVideoProcessorDlg::OnCommandFullScreenToggle)
 	ON_COMMAND(ID_COMMAND_FULLSCREEN_EXIT, &CVideoProcessorDlg::OnCommandFullScreenExit)
+
 END_MESSAGE_MAP()
 
 
@@ -179,6 +181,24 @@ void CVideoProcessorDlg::OnCaptureInputSelected()
 }
 
 
+void CVideoProcessorDlg::OnClockSelected()
+{
+	assert(m_captureDevice);
+
+	const int clockIndex = m_timingClockTypeCombo.GetCurSel();
+	if (clockIndex < 0)
+		return;
+
+	const TimingClockType timingClock = (TimingClockType)m_timingClockTypeCombo.GetItemData(clockIndex);
+	assert(timingClock != TimingClockType::TIMING_CLOCK_UNKNOWN);
+
+	m_timingClockType = timingClock;
+
+	m_wantToRestartRenderer = true;
+	UpdateState();
+}
+
+
 void CVideoProcessorDlg::OnRendererNominalRangeSelected()
 {
 	OnBnClickedRendererRestart();
@@ -205,8 +225,14 @@ void CVideoProcessorDlg::OnRendererPrimariesSelected()
 
 void CVideoProcessorDlg::OnClose()
 {
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnClose()")));
+
 	if (m_wantToTerminate)
 		return;
+
+	// Set intent first, stopping the discoverer will lead to state update calls
+	m_desiredCaptureDevice = nullptr;
+	m_wantToTerminate = true;
 
 	// Stop discovery
 	if (m_blackMagicDeviceDiscoverer)
@@ -215,15 +241,13 @@ void CVideoProcessorDlg::OnClose()
 		m_blackMagicDeviceDiscoverer.Release();
 	}
 
-	m_desiredCaptureDevice = nullptr;
-	m_wantToTerminate = true;
 	UpdateState();
 }
 
 
 void CVideoProcessorDlg::OnBnClickedFullScreenButton()
 {
-	assert(!m_rendererfullScreen);
+	assert(!m_rendererfullScreen);  // Can happen in debug mode where the UI remains visible
 	m_rendererfullScreen = true;
 
 	m_wantToRestartRenderer = true;
@@ -233,6 +257,8 @@ void CVideoProcessorDlg::OnBnClickedFullScreenButton()
 
 void CVideoProcessorDlg::OnBnClickedRendererRestart()
 {
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedRendererRestart()")));
+
 	if (m_rendererState == RendererState::RENDERSTATE_FAILED)
 		m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
 
@@ -251,6 +277,8 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceFound(WPARAM wParam, LPARAM lP
 	ACaptureDeviceComPtr captureDevice;
 	captureDevice.Attach((ACaptureDevice*)wParam);
 
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceFound(): %s"), captureDevice->GetName()));
+
 	m_captureDevices.insert(captureDevice);
 
 	RefreshCaptureDeviceList();
@@ -264,14 +292,17 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceLost(WPARAM wParam, LPARAM lPa
 	ACaptureDeviceComPtr captureDevice;
 	captureDevice.Attach((ACaptureDevice*)wParam);
 
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceLost(): %s"), captureDevice->GetName()));
+
 	auto it = m_captureDevices.find(captureDevice);
 	if (it == m_captureDevices.end())
-		throw std::exception("Removing unknown capture device?");
+		throw std::runtime_error("Removing unknown capture device?");
 
-	// Device being removed is the one we're using
+	// Device being removed is the one we're using, let's stop using it
 	if (m_captureDevice == captureDevice)
 	{
-		CaptureRemove();
+		m_desiredCaptureDevice = nullptr;
+		UpdateState();
 	}
 
 	m_captureDevices.erase(it);
@@ -286,28 +317,70 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(WPARAM wParam, LPA
 {
 	const CaptureDeviceState newState = (CaptureDeviceState)wParam;
 
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(): %s"), ToString(newState)));
+
 	if (!m_captureDevice)
-	{
 		return 0;
-	}
 
 	assert(newState != m_captureDeviceState);
 
 	m_captureDeviceState = newState;
 
+	bool enableClockCombo = false;
+	bool updateClockCombo = false;
+
 	switch (newState)
 	{
 	case CaptureDeviceState::CAPTUREDEVICESTATE_READY:
+		enableClockCombo = true;
+		updateClockCombo = true;
 		m_captureDeviceStateText.SetWindowText(TEXT("Ready"));
 		break;
 
 	case CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING:
+		enableClockCombo = true;
 		m_captureDeviceStateText.SetWindowText(TEXT("Capturing"));
 		break;
 
 	default:
 		throw std::runtime_error("Unexpected state received from capture device");
 	}
+
+	if (updateClockCombo)
+	{
+		assert(m_captureDevice);
+
+		m_timingClockTypeCombo.ResetContent();
+
+		// Get clocks
+		// TODO: This is unlocked, add to API notes
+		const int cardSupportedTimingClocks = m_captureDevice->GetSupportedTimingClocks();
+
+		for (const TimingClockType tc : TimingClockTypes)
+		{
+			if ((cardSupportedTimingClocks & tc) > 0)
+			{
+				const int index = m_timingClockTypeCombo.AddString(ToString(tc));
+				m_timingClockTypeCombo.SetItemDataPtr(index, (void*)tc);
+			}
+		}
+
+		// Add NONE clock
+		{
+			const int index = m_timingClockTypeCombo.AddString(ToString(TimingClockType::TIMING_CLOCK_NONE));
+			m_timingClockTypeCombo.SetItemDataPtr(index, (void*)TimingClockType::TIMING_CLOCK_NONE);
+		}
+
+		// Select first clock if none selected
+		const int index = m_timingClockTypeCombo.GetCurSel();
+		if (index == CB_ERR)
+		{
+			m_timingClockTypeCombo.SetCurSel(0);
+			OnClockSelected();
+		}
+	}
+
+	m_timingClockTypeCombo.EnableWindow(enableClockCombo);
 
 	UpdateState();
 
@@ -319,8 +392,11 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceCardStateChange(WPARAM wParam,
 {
 	CaptureDeviceCardStateComPtr cardState;
 	cardState.Attach((CaptureDeviceCardState*)wParam);
-
 	assert(cardState);
+
+	DbgLog((LOG_TRACE, 1,
+		TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(): Lock=%d"),
+		cardState->inputLocked));
 
 	// Input fields
 	m_inputLockedText.SetWindowText(ToString(cardState->inputLocked));
@@ -357,6 +433,10 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 {
 	VideoStateComPtr videoState;
 	videoState.Attach((VideoState*)wParam);
+
+	DbgLog((LOG_TRACE, 1,
+		TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(): Valid=%d"),
+		videoState->valid));
 
 	const bool rendererAcceptedState = (bool)lParam;
 
@@ -397,12 +477,6 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 	{
 		const HDRData hdrData = *(videoState->hdrData);
 
-		m_hdrDpRed.SetWindowText(CieXYToString(hdrData.displayPrimaryRedX, hdrData.displayPrimaryRedY));
-		m_hdrDpGreen.SetWindowText(CieXYToString(hdrData.displayPrimaryGreenX, hdrData.displayPrimaryGreenY));
-		m_hdrDpBlue.SetWindowText(CieXYToString(hdrData.displayPrimaryBlueX, hdrData.displayPrimaryBlueY));
-
-		m_hdrWhitePoint.SetWindowText(CieXYToString(hdrData.whitePointX, hdrData.whitePointY));
-
 		CString cstring;
 		cstring.Format(
 			_T("%.03f-%.01f"),
@@ -418,10 +492,6 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 	}
 	else
 	{
-		m_hdrDpRed.SetWindowText(_T(""));
-		m_hdrDpGreen.SetWindowText(_T(""));
-		m_hdrDpBlue.SetWindowText(_T(""));
-		m_hdrWhitePoint.SetWindowText(_T(""));
 		m_hdrDml.SetWindowText(_T(""));
 		m_hdrMaxCll.SetWindowText(_T(""));
 		m_hdrMaxFall.SetWindowText(_T(""));
@@ -451,8 +521,6 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 // it works by using the GUI's message queue.
 LRESULT CVideoProcessorDlg::OnMessageDirectShowNotification(WPARAM wParam, LPARAM lParam)
 {
-	// TODO: Renderer lock?
-
 	if (m_renderer)
 		if (FAILED(m_renderer->OnWindowsEvent(wParam, lParam)))
 			throw std::runtime_error("Failed to handle windows event in renderer");
@@ -464,39 +532,39 @@ LRESULT CVideoProcessorDlg::OnMessageDirectShowNotification(WPARAM wParam, LPARA
 LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM lParam)
 {
 	const RendererState newRendererState = (RendererState)wParam;
+
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageRendererStateChange(): %s"), ToString(newRendererState)));
+
 	assert(newRendererState != RendererState::RENDERSTATE_UNKNOWN);
+
 	bool enableButtons = false;
 
+	assert(m_renderer);
+	assert(m_rendererState != newRendererState);
+	m_rendererState = newRendererState;
+
+	switch (m_rendererState)
 	{
-		std::lock_guard<std::mutex> lock(m_rendererMutex);
+		// Renderer ready, can be started if wanted
+	case RendererState::RENDERSTATE_READY:
+		m_rendererStateText.SetWindowText(TEXT("Ready"));
+		break;
 
-		assert(m_renderer);
-		assert(m_rendererState != newRendererState);
-		m_rendererState = newRendererState;
+		// Renderer running, ready for frames
+	case RendererState::RENDERSTATE_RENDERING:
+		m_deliverCaptureDataToRenderer.store(true, std::memory_order_release);
+		enableButtons = true;
+		m_rendererStateText.SetWindowText(TEXT("Rendering"));
+		break;
 
-		switch (m_rendererState)
-		{
-			// Renderer ready, can be started if wanted
-		case RendererState::RENDERSTATE_READY:
-			m_rendererStateText.SetWindowText(TEXT("Ready"));
-			break;
+		// Stopped rendering, can be cleaned up
+	case RendererState::RENDERSTATE_STOPPED:
+		RenderRemove();
+		m_rendererStateText.SetWindowText(TEXT("Stopped"));
+		break;
 
-			// Renderer running, ready for frames
-		case RendererState::RENDERSTATE_RENDERING:
-			m_deliverFramesToRenderer = true;
-			enableButtons = true;
-			m_rendererStateText.SetWindowText(TEXT("Rendering"));
-			break;
-
-			// Stopped rendering, can be cleaned up
-		case RendererState::RENDERSTATE_STOPPED:
-			RenderRemoveLocked();
-			m_rendererStateText.SetWindowText(TEXT("Stopped"));
-			break;
-
-		default:
-			throw std::runtime_error("Unknown renderer state");
-		}
+	default:
+		throw std::runtime_error("Unknown renderer state");
 	}
 
 	m_rendererFullscreenButton.EnableWindow(enableButtons);
@@ -593,19 +661,24 @@ void CVideoProcessorDlg::OnCaptureDeviceCardStateChange(CaptureDeviceCardStateCo
 
 void CVideoProcessorDlg::OnCaptureDeviceVideoStateChange(VideoStateComPtr videoState)
 {
-	// WARNING: Most likely to be called from some internal capture card thread!
+	// WARNING: Most likely to be called from different thread.
+	//          DO NOT LOCK! THIS IS JUST HERE BECAUSE I'M LAZY WITH OVERHALING
+	//          THE API, IT WILL BE MOVED SO A LOCK WONT BE AVAILABLE. (direct capture->renderer)
+	// TODO ----^
 
 	assert(videoState);
 	bool rendererAcceptedState = true;  // If no renderer it'll have no problems with the new state
 
-	// Push to renderer first
+	// This is an atomic bool which is set by the main thread and used in context of the
+	// capture thread which will deliver frames.
+	if (m_deliverCaptureDataToRenderer.load(std::memory_order_acquire))
 	{
-		std::lock_guard<std::mutex> lock(m_rendererMutex);
+		assert(m_captureDevice);
+		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
+		assert(m_renderer);
+		assert(m_rendererState == RendererState::RENDERSTATE_RENDERING);
 
-		if (m_renderer)
-		{
-			rendererAcceptedState = m_renderer->OnVideoState(videoState);
-		}
+		rendererAcceptedState = m_renderer->OnVideoState(videoState);
 	}
 
 	PostMessage(
@@ -617,14 +690,22 @@ void CVideoProcessorDlg::OnCaptureDeviceVideoStateChange(VideoStateComPtr videoS
 
 void CVideoProcessorDlg::OnCaptureDeviceVideoFrame(VideoFrame& videoFrame)
 {
-	// WARNING: Most likely to be called from different thread, ensure proper locking
+	// WARNING: Most likely to be called from different thread.
+	//          DO NOT LOCK! THIS IS JUST HERE BECAUSE I'M LAZY WITH OVERHALING
+	//          THE API, IT WILL BE MOVED SO A LOCK WONT BE AVAILABLE. (direct capture->renderer)
+	// TODO ----^
 
-	std::lock_guard<std::mutex> lock(m_rendererMutex);
+	// This is an atomic bool which is set by the main thread and used in context of the
+	// capture thread which will deliver frames.
+	if (m_deliverCaptureDataToRenderer.load(std::memory_order_acquire))
+	{
+		assert(m_captureDevice);
+		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
+		assert(m_renderer);
+		assert(m_rendererState == RendererState::RENDERSTATE_RENDERING);
 
-	assert(m_captureDevice);
-
-	if (m_renderer && m_deliverFramesToRenderer)
 		m_renderer->OnVideoFrame(videoFrame);
+	}
 }
 
 
@@ -642,6 +723,8 @@ void CVideoProcessorDlg::OnRendererState(RendererState rendererState)
 
 void CVideoProcessorDlg::UpdateState()
 {
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::UpdateState()")));
+
 	// Want to change cards
 	if (m_desiredCaptureDevice != m_captureDevice)
 	{
@@ -654,14 +737,16 @@ void CVideoProcessorDlg::UpdateState()
 			m_rendererState == RendererState::RENDERSTATE_RENDERING)
 			RenderStop();
 
+		// Waiting for render to go away
+		// (This has to come before stopping the capture as the renderer might be
+		//  using the capture card as a clock.)
+		if (m_renderer)
+			return;
+
 		// Have a capture and it's capturing, stop it
 		if (m_captureDevice &&
 			m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
 			CaptureStop();
-
-		// Waiting for render to go away
-		if (m_renderer)
-			return;
 
 		// If capture device is stopped we're happy to remove it
 		if (m_captureDevice && m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_READY)
@@ -674,11 +759,11 @@ void CVideoProcessorDlg::UpdateState()
 		// From this point on we should be clean, set up new card if so desired
 		assert(!m_renderer);
 		assert(!m_captureDevice);
+		assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
+		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
 
 		if (m_desiredCaptureDevice)
 		{
-			assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
-
 			m_captureDevice = m_desiredCaptureDevice;
 			m_captureDevice->SetCallbackHandler(this);
 
@@ -702,7 +787,9 @@ void CVideoProcessorDlg::UpdateState()
 		assert(!m_desiredCaptureDevice);
 		assert(!m_renderer);
 		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
-		assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
+		assert(
+			m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
+			m_rendererState == RendererState::RENDERSTATE_FAILED ||
 			m_rendererState == RendererState::RENDERSTATE_STOPPED);
 
 		CDialog::EndDialog(S_OK);
@@ -733,18 +820,25 @@ void CVideoProcessorDlg::UpdateState()
 			m_rendererState == RendererState::RENDERSTATE_RENDERING)
 			RenderStop();
 
+		// Waiting for render to go away
+		// (This has to come before stopping the capture as the renderer might be
+		//  using the capture card as a clock.)
+		if (m_renderer)
+			return;
+
 		// Have a capture and it's capturing, stop it
 		if (m_captureDevice &&
 			m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
 			CaptureStop();
 
-		// Waiting for render to go away and for the capture to be stopped
-		if (m_renderer ||
-			m_captureDeviceState != CaptureDeviceState::CAPTUREDEVICESTATE_READY)
+		// Waiting for the capture to be stopped
+		if (m_captureDeviceState != CaptureDeviceState::CAPTUREDEVICESTATE_READY)
 			return;
 
 		// From this point on we should be clean, set up new card
 		assert(!m_renderer);
+		assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
+		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_READY);
 
 		m_captureDevice->SetCaptureInput(m_desiredCaptureInputId);
 		m_currentCaptureInputId = m_desiredCaptureInputId;
@@ -757,6 +851,14 @@ void CVideoProcessorDlg::UpdateState()
 	assert(m_captureDevice);
 	assert(m_desiredCaptureDevice == m_captureDevice);
 	assert(m_desiredCaptureInputId == m_currentCaptureInputId);
+
+	// Only continue if we're actually capturing
+	if (m_captureDeviceState != CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
+		return;
+
+	//
+	// Capture is good from here on out
+	//
 
 	// No render, start one if the current state is not failed and we have a valid video state
 	if (!m_renderer)
@@ -847,7 +949,10 @@ void CVideoProcessorDlg::RefreshCaptureDeviceList()
 		m_captureDeviceCombo.EnableWindow(FALSE);
 
 		if (m_captureDevice)
-			CaptureRemove();
+		{
+			m_desiredCaptureDevice = nullptr;
+			UpdateState();
+		}
 	}
 }
 
@@ -914,8 +1019,13 @@ void CVideoProcessorDlg::RefreshInputConnectionCombo()
 
 void CVideoProcessorDlg::CaptureStart()
 {
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::CaptureStart()")));
+
 	assert(m_captureDevice);
 	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_READY);
+	assert(!m_renderer);
+	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
+
 
 	// Update internal state before call to StartCapture as that might be synchronous
 	m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_STARTING;
@@ -931,8 +1041,12 @@ void CVideoProcessorDlg::CaptureStart()
 
 void CVideoProcessorDlg::CaptureStop()
 {
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::CaptureStop(): Begin")));
+
 	assert(m_captureDevice);
 	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
+	assert(!m_renderer);
+	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
 
 	// Update internal state before call to StartCapture as that might be synchronous
 	m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_STOPPING;
@@ -946,12 +1060,19 @@ void CVideoProcessorDlg::CaptureStop()
 	// Update GUI
 	CaptureGUIClear();
 	m_captureDeviceStateText.SetWindowText(TEXT("Stopping"));
+
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::CaptureStop(): End")));
 }
 
 
 void CVideoProcessorDlg::CaptureRemove()
 {
-	m_captureDevice->SetCallbackHandler(nullptr);
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::CaptureRemove(): Begin")));
+
+	assert(m_captureDevice);
+	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_READY);
+	assert(!m_renderer);
+	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
 
 	m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN;
 	m_captureDevice.Release();
@@ -959,6 +1080,8 @@ void CVideoProcessorDlg::CaptureRemove()
 
 	m_desiredCaptureInputId = INVALID_CAPTURE_INPUT_ID;
 	m_currentCaptureInputId = INVALID_CAPTURE_INPUT_ID;
+
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::CaptureRemove(): End")));
 }
 
 
@@ -986,10 +1109,6 @@ void CVideoProcessorDlg::CaptureGUIClear()
 	m_colorspaceCie1931xy.SetHDRData(nullptr);
 
 	// HDR group
-	m_hdrDpRed.SetWindowText(TEXT(""));
-	m_hdrDpGreen.SetWindowText(TEXT(""));
-	m_hdrDpBlue.SetWindowText(TEXT(""));
-	m_hdrWhitePoint.SetWindowText(TEXT(""));
 	m_hdrDml.SetWindowText(TEXT(""));
 	m_hdrMaxCll.SetWindowText(TEXT(""));
 	m_hdrMaxFall.SetWindowText(TEXT(""));
@@ -998,11 +1117,14 @@ void CVideoProcessorDlg::CaptureGUIClear()
 
 void CVideoProcessorDlg::RenderStart()
 {
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::RenderStart(): Begin")));
+
 	assert(!m_renderer);
 	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
 		   m_rendererState == RendererState::RENDERSTATE_STOPPED);
 
-	int i;
+	assert(m_captureDevice);
+	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
 
 	// Update internal state before call to StartCapture as that might be synchronous
 	// TODO: Call should always be posted and never sync
@@ -1013,6 +1135,8 @@ void CVideoProcessorDlg::RenderStart()
 	DXVA_VideoTransferFunction forceVideoTransferFunction = DXVA_VideoTransferFunction::DXVA_VideoTransFunc_Unknown;
 	DXVA_VideoTransferMatrix forceVideoTransferMatrix = DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_Unknown;
 	DXVA_VideoPrimaries forceVideoPrimaries = DXVA_VideoPrimaries::DXVA_VideoPrimaries_Unknown;
+
+	int i;
 
 	i = m_rendererNominalRangeCombo.GetCurSel();
 	if (i >= 0)
@@ -1030,14 +1154,37 @@ void CVideoProcessorDlg::RenderStart()
 	if (i >= 0)
 		forceVideoPrimaries = (DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
 
+	// Only update the capture's timing clock before we start a new renderer
+	assert(m_timingClockType != TimingClockType::TIMING_CLOCK_UNKNOWN);
+	m_captureDevice->SetTimingClock(m_timingClockType);
+
+	// Get timing clock
+	ITimingClock* timingClock = nullptr;
+	switch (m_timingClockType)
+	{
+	case TimingClockType::TIMING_CLOCK_OS:
+		timingClock = &m_osTimingClock;
+		break;
+
+	case TimingClockType::TIMING_CLOCK_VIDEO_STREAM:
+		assert(m_captureDevice);
+		timingClock = dynamic_cast<ITimingClock*>(m_captureDevice.p);
+		if (!timingClock)
+			throw std::runtime_error("Capture device is not a timing clock");
+	}
+
 	// Renderer
 	try
 	{
+		assert(!m_renderer);
+		assert(m_captureDevice);
+
 		m_renderer = new DirectShowMadVRRenderer(
 			*this,
 			GetRenderWindow(),
 			this->GetSafeHwnd(),
 			WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
+			timingClock,
 			m_captureDeviceVideoState,
 			forceNominalRange,
 			forceVideoTransferFunction,
@@ -1062,7 +1209,7 @@ void CVideoProcessorDlg::RenderStart()
 		mbstowcs_s(&outSize, wtext, size, e.what(), size-1);
 		m_rendererBox.SetWindowText(wtext);
 
-		delete wtext;
+		delete[] wtext;
 
 		// Ensure we're not full screen anymore and update state
 		m_rendererfullScreen = false;
@@ -1071,50 +1218,52 @@ void CVideoProcessorDlg::RenderStart()
 		// Give the user a chance to try again
 		m_rendererRestartButton.EnableWindow(true);
 	}
+
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::RenderStart(): End")));
 }
 
 
 void CVideoProcessorDlg::RenderStop()
 {
-	{
-		std::lock_guard<std::mutex> lock(m_rendererMutex);
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::RenderStop(): Begin")));
 
-		assert(m_renderer);
-		assert(m_rendererState == RendererState::RENDERSTATE_RENDERING);
-		assert(m_deliverFramesToRenderer);
+	assert(m_captureDevice);
+	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
 
-		m_deliverFramesToRenderer = false;
+	assert(m_renderer);
+	assert(m_rendererState == RendererState::RENDERSTATE_RENDERING);
+	assert(m_deliverCaptureDataToRenderer.load(std::memory_order_acquire));
 
-		// Update internal state before call to StartCapture as that might be synchronous
-		// TODO: Call should always be posted and never sync
-		m_rendererState = RendererState::RENDERSTATE_STOPPING;
+	// After this call no frames will ever go through to the renderer
+	m_deliverCaptureDataToRenderer.store(false, std::memory_order_release);
 
-		m_renderer->Stop();
-	}
+	// Update internal state before call to StartCapture as that might be synchronous
+	// TODO: Call should always be posted and never sync
+	m_rendererState = RendererState::RENDERSTATE_STOPPING;
+
+	m_renderer->Stop();
 
 	m_rendererStateText.SetWindowText(TEXT("Stopping"));
+
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::RenderStop(): End")));
 }
 
 
 void CVideoProcessorDlg::RenderRemove()
 {
-	{
-		std::lock_guard<std::mutex> lock(m_rendererMutex);
-		RenderRemoveLocked();
-	}
-}
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::RenderRemove(): Begin")));
 
-
-void CVideoProcessorDlg::RenderRemoveLocked()
-{
-	// WARNING: You need to own the m_rendererMutex at this point
 
 	assert(m_renderer);
 	assert(m_rendererState == RendererState::RENDERSTATE_STOPPED);
-	assert(!m_deliverFramesToRenderer);
+	assert(!m_deliverCaptureDataToRenderer);
 
 	delete m_renderer;
 	m_renderer = nullptr;
+
+	m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
+
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::RenderRemove(): End")));
 }
 
 
@@ -1186,14 +1335,13 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_VIDEO_EOTF_STATIC, m_videoEotfText);
 	DDX_Control(pDX, IDC_VIDEO_COLORSPACE_STATIC, m_videoColorSpaceText);
 
+	// Clock group
+	DDX_Control(pDX, IDC_TIMING_CLOCK_TYPE_COMBO, m_timingClockTypeCombo);
+
 	// ColorSpace group
 	DDX_Control(pDX, IDC_CIE1931XY_GRAPH, m_colorspaceCie1931xy);
 
 	//  HDR group
-	DDX_Control(pDX, IDC_HDR_DP_RED_STATIC, m_hdrDpRed);
-	DDX_Control(pDX, IDC_HDR_DP_GREEN_STATIC, m_hdrDpGreen);
-	DDX_Control(pDX, IDC_HDR_DP_BLUE_STATIC, m_hdrDpBlue);
-	DDX_Control(pDX, IDC_HDR_WHITE_POINT_STATIC, m_hdrWhitePoint);
 	DDX_Control(pDX, IDC_HDR_DML_STATIC, m_hdrDml);
 	DDX_Control(pDX, IDC_HDR_MAX_CLL_STATIC, m_hdrMaxCll);
 	DDX_Control(pDX, IDC_HDR_MAX_FALL_STATIC, m_hdrMaxFall);
@@ -1234,6 +1382,7 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	// Disable the interface
 	m_captureDeviceCombo.EnableWindow(FALSE);
 	m_captureInputCombo.EnableWindow(FALSE);
+	m_timingClockTypeCombo.EnableWindow(FALSE);
 
 	// Fill renderer directshow selection boxes
 	for (const auto& p : DIRECTSHOW_NOMINAL_RANGE_OPTIONS)
@@ -1313,9 +1462,10 @@ void CVideoProcessorDlg::OnPaint()
 	}
 	else
 	{
-		// TODO: Lock access?
-		if (m_renderer)
-			m_renderer->OnPaint();
+		{
+			if (m_renderer)
+				m_renderer->OnPaint();
+		}
 
 		CDialog::OnPaint();
 	}
@@ -1333,24 +1483,32 @@ void CVideoProcessorDlg::OnSize(UINT nType, int cx, int cy)
 
 void CVideoProcessorDlg::OnSetFocus(CWnd* pOldWnd)
 {
-	//TODO: Remove?
-	// ::SetFocus(GetRenderWindow());
+	CDialog::OnSetFocus(pOldWnd);
 }
 
 
-// The system calls this function to obtain the cursor to display while the user drags
-// the minimized window.
 HCURSOR CVideoProcessorDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
 
-// Required to ensure minimum size of dialog
 void CVideoProcessorDlg::OnGetMinMaxInfo(MINMAXINFO* minMaxInfo)
 {
 	CDialog::OnGetMinMaxInfo(minMaxInfo);
 
+	// Guarantee minimum size of window
 	minMaxInfo->ptMinTrackSize.x = std::max(minMaxInfo->ptMinTrackSize.x, m_minDialogSize.cx);
 	minMaxInfo->ptMinTrackSize.y = std::max(minMaxInfo->ptMinTrackSize.y, m_minDialogSize.cy);
+}
+
+
+void CVideoProcessorDlg::OnEnChangeEdit1()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the __super::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
 }

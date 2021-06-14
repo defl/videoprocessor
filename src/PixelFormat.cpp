@@ -35,16 +35,16 @@ const TCHAR* ToString(const PixelFormat pixelFormat)
 	case PixelFormat::R210:
 		return TEXT("RGB 10-bit (r210)");
 
-	case PixelFormat::RGB_BE_10BIT:
+	case PixelFormat::R10b:
 		return TEXT("RGB Big-Endian 10-bit (R10b)");
 
-	case PixelFormat::RGB_LE_10BIT:
+	case PixelFormat::R10l:
 		return TEXT("RGB Little-Endian 10-bit (R10l)");
 
-	case PixelFormat::RGB_BE_12BIT:
+	case PixelFormat::R12B:
 		return TEXT("RGB Big-Endian 12-bit (R12B)");
 
-	case PixelFormat::RGB_LE_12BIT:
+	case PixelFormat::R12L:
 		return TEXT("RGB Little-Endian 12-bit (R12L)");
 
 	case PixelFormat::H265:
@@ -75,7 +75,7 @@ uint32_t PixelFormatBitsPerPixel(PixelFormat pixelFormat)
 	case PixelFormat::R210:
 		return 30;
 
-	case PixelFormat::RGB_BE_12BIT:
+	case PixelFormat::R12B:
 		return 36/8;  // Guess
 	}
 

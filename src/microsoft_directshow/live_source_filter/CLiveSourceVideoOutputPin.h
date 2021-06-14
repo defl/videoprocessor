@@ -18,14 +18,17 @@
 
 class CLiveSourceVideoOutputPin:
 	public CBaseOutputPin,
-	public IAMPushSource
+	public IAMPushSource,
+	public IKsPropertySet
 {
 public:
 
-	DECLARE_IUNKNOWN;
-
 	CLiveSourceVideoOutputPin(CLiveSource* filter, CCritSec *pLock, HRESULT *phr);
 	virtual ~CLiveSourceVideoOutputPin();
+
+	// IUnknown
+	DECLARE_IUNKNOWN;
+	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv) override;
 
 	// CBaseOutputPin overrides
 	HRESULT GetMediaType(int iPosition, CMediaType* pmt) override;
@@ -33,19 +36,38 @@ public:
 	HRESULT DecideAllocator(IMemInputPin* pPin, IMemAllocator** pAlloc) override;
 	HRESULT DecideBufferSize(IMemAllocator *pAlloc, ALLOCATOR_PROPERTIES *ppropInputRequest) override;
 
-	// IAMPushSource members
-	virtual STDMETHODIMP GetMaxStreamOffset(REFERENCE_TIME* prtMaxOffset) override;
-	virtual STDMETHODIMP GetPushSourceFlags(ULONG* pFlags) override;
-	virtual STDMETHODIMP GetStreamOffset(REFERENCE_TIME* prtOffset) override;
-	virtual STDMETHODIMP SetMaxStreamOffset(REFERENCE_TIME rtMaxOffset) override;
-	virtual STDMETHODIMP SetPushSourceFlags(ULONG Flags) override;
-	virtual STDMETHODIMP SetStreamOffset(REFERENCE_TIME rtOffset) override;
-	virtual STDMETHODIMP GetLatency(REFERENCE_TIME* prtLatency) override;
+	// IAMPushSource
+	STDMETHODIMP GetMaxStreamOffset(REFERENCE_TIME* prtMaxOffset) override;
+	STDMETHODIMP GetPushSourceFlags(ULONG* pFlags) override;
+	STDMETHODIMP GetStreamOffset(REFERENCE_TIME* prtOffset) override;
+	STDMETHODIMP SetMaxStreamOffset(REFERENCE_TIME rtMaxOffset) override;
+	STDMETHODIMP SetPushSourceFlags(ULONG Flags) override;
+	STDMETHODIMP SetStreamOffset(REFERENCE_TIME rtOffset) override;
+	STDMETHODIMP GetLatency(REFERENCE_TIME* prtLatency) override;
 
 	// IQualityControl
-	virtual STDMETHODIMP Notify(IBaseFilter * pSender, Quality q) override;
+	STDMETHODIMP Notify(IBaseFilter * pSender, Quality q) override;
+	HRESULT STDMETHODCALLTYPE SetSink(IQualityControl* piqc) override;
 
+	// IKsPropertySet
+	HRESULT STDMETHODCALLTYPE Set(
+		REFGUID guidPropSet, DWORD dwPropID, LPVOID pInstanceData, DWORD cbInstanceData,
+		LPVOID pPropData, DWORD cbPropData) override;
+	HRESULT STDMETHODCALLTYPE Get(
+		REFGUID guidPropSet, DWORD dwPropID, LPVOID pInstanceData,
+		DWORD cbInstanceData, LPVOID pPropData, DWORD cbPropData,
+		DWORD* pcbReturned) override;
+	HRESULT STDMETHODCALLTYPE QuerySupported(
+		REFGUID guidPropSet, DWORD dwPropID, DWORD* pTypeSupport) override;
+
+	// Set video formatter to use
 	void SetFormatter(IVideoFrameFormatter* videoFrameFormatter);
+
+	// Set (expected) duration of a frame in timestamp_t (100ns ticks)
+	void SetFrameDuration(timestamp_t duration);
+
+	// Set the clock frequecy of the timestamps we're about to get
+	void SetTimestampTicksPerSecond(timingclocktime_t timestampTicksPerSecond);
 
 	// Part of ILiveSource interface replicated here
 	void OnHDRData(HDRDataSharedPtr&);
@@ -56,7 +78,17 @@ private:
 	IVideoFrameFormatter* m_videoFrameFormatter = nullptr;
 
 	uint32_t m_frameCounter = 0;
+#ifdef _DEBUG
+	REFERENCE_TIME m_previousTimeStop = 0;
+#endif
+	timestamp_t m_frameDuration = 0;
+	timingclocktime_t m_timestampTicksPerSecond = 0;
+	timestamp_t m_startTimeOffset = 0;
 
 	HDRDataSharedPtr m_hdrData = nullptr;
 	bool m_hdrChanged = false;
+
+	HRESULT DeliverFrame(
+		VideoFrame& videoFrame,
+		REFERENCE_TIME time_offset);
 };

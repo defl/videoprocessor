@@ -33,6 +33,31 @@ CLiveSourceVideoOutputPin::~CLiveSourceVideoOutputPin()
 }
 
 
+STDMETHODIMP CLiveSourceVideoOutputPin::NonDelegatingQueryInterface(REFIID riid, void** ppv)
+{
+	if (riid == IID_IAMPushSource)
+	{
+		return GetInterface((IAMPushSource*)this, ppv);
+	}
+	else if (riid == IID_IQualityControl)
+	{
+		return GetInterface((IQualityControl*)this, ppv);
+	}
+	else if (riid == IID_IKsPropertySet)
+	{
+		return GetInterface((IKsPropertySet*)this, ppv);
+	}
+
+	return CUnknown::NonDelegatingQueryInterface(riid, ppv);
+}
+
+
+HRESULT CLiveSourceVideoOutputPin::GetMediaType(int iPosition, CMediaType* pmt)
+{
+	throw std::runtime_error("GetMediaType() is not supported");
+}
+
+
 HRESULT CLiveSourceVideoOutputPin::CheckMediaType(const CMediaType* pmt)
 {
 	CheckPointer(pmt, E_POINTER);
@@ -42,7 +67,7 @@ HRESULT CLiveSourceVideoOutputPin::CheckMediaType(const CMediaType* pmt)
 		return E_INVALIDARG;
 	}
 
-	if (!IsEqualGUID(pmt->subtype, dynamic_cast<CLiveSource*>(m_pFilter)->GetMediaSubType()))
+	if (!IsEqualGUID(pmt->subtype, static_cast<CLiveSource*>(m_pFilter)->GetMediaSubType()))
 	{
 		return E_INVALIDARG;
 	}
@@ -53,12 +78,6 @@ HRESULT CLiveSourceVideoOutputPin::CheckMediaType(const CMediaType* pmt)
 	}
 
 	return S_OK;
-}
-
-
-HRESULT CLiveSourceVideoOutputPin::GetMediaType(int iPosition, CMediaType* pmt)
-{
-	throw std::runtime_error("GetMediaType() is not supported");
 }
 
 
@@ -135,6 +154,11 @@ HRESULT CLiveSourceVideoOutputPin::DecideBufferSize(IMemAllocator *pAlloc, ALLOC
 }
 
 
+//
+// IAMPushSource
+//
+
+
 STDMETHODIMP CLiveSourceVideoOutputPin::GetMaxStreamOffset(REFERENCE_TIME *prtMaxOffset)
 {
 	*prtMaxOffset = 0;
@@ -144,6 +168,8 @@ STDMETHODIMP CLiveSourceVideoOutputPin::GetMaxStreamOffset(REFERENCE_TIME *prtMa
 
 STDMETHODIMP CLiveSourceVideoOutputPin::GetPushSourceFlags(ULONG *pFlags)
 {
+	// Return (* pFlags) = 0 [if this is a iAMPushSource]
+	// https://docs.microsoft.com/en-us/windows/win32/api/strmif/nn-strmif-ireferenceclock
 	*pFlags = 0;
 	return S_OK;
 }
@@ -176,14 +202,90 @@ STDMETHODIMP CLiveSourceVideoOutputPin::SetStreamOffset(REFERENCE_TIME rtOffset)
 
 STDMETHODIMP CLiveSourceVideoOutputPin::GetLatency(REFERENCE_TIME *prtLatency)
 {
-	// TODO: *prtLatency = m_rtFrameRate;
+	// latency in 100-nanosecond units.
+	*prtLatency = 0;  // TODO: Just a guess
 	return S_OK;
 }
+
+
+//
+// IQualityControl
+//
 
 
 STDMETHODIMP CLiveSourceVideoOutputPin::Notify(IBaseFilter* pSender, Quality q)
 {
 	// TODO
+	return S_OK;
+}
+
+
+HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::SetSink(IQualityControl* piqc)
+{
+	// TODO
+	return S_OK;
+}
+
+
+//
+// IKsPropertySet
+//
+
+
+HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::Set(
+	REFGUID guidPropSet, DWORD dwPropID, LPVOID pInstanceData, DWORD cbInstanceData,
+	LPVOID pPropData, DWORD cbPropData)
+{
+	// https://docs.microsoft.com/en-us/windows/win32/directshow/pin-requirements-for-capture-filters
+	return E_NOTIMPL;
+}
+
+
+HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::Get(
+	REFGUID guidPropSet, DWORD dwPropID, LPVOID pInstanceData,
+	DWORD cbInstanceData, LPVOID pPropData, DWORD cbPropData,
+	DWORD* pcbReturned)
+{
+	// https://docs.microsoft.com/en-us/windows/win32/directshow/pin-requirements-for-capture-filters
+
+	if (guidPropSet != AMPROPSETID_Pin)
+		return E_PROP_SET_UNSUPPORTED;
+
+	if (dwPropID != AMPROPERTY_PIN_CATEGORY)
+		return E_PROP_ID_UNSUPPORTED;
+
+	if (pPropData == NULL && pcbReturned == NULL)
+		return E_POINTER;
+
+	if (pcbReturned)
+		*pcbReturned = sizeof(GUID);
+
+	if (pPropData == NULL)  // Caller just wants to know the size.
+		return S_OK;
+
+	if (cbPropData < sizeof(GUID))  // The buffer is too small.
+		return E_UNEXPECTED;
+
+	*(GUID*)pPropData = PIN_CATEGORY_CAPTURE;
+	return S_OK;
+}
+
+
+HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::QuerySupported(
+	REFGUID guidPropSet, DWORD dwPropID, DWORD* pTypeSupport)
+{
+	// https://docs.microsoft.com/en-us/windows/win32/directshow/pin-requirements-for-capture-filters
+
+	if (guidPropSet != AMPROPSETID_Pin)
+		return E_PROP_SET_UNSUPPORTED;
+
+	if (dwPropID != AMPROPERTY_PIN_CATEGORY)
+		return E_PROP_ID_UNSUPPORTED;
+
+	// We support getting this property, but not setting it.
+	if (pTypeSupport)
+		*pTypeSupport = KSPROPERTY_SUPPORT_GET;
+
 	return S_OK;
 }
 
@@ -194,6 +296,27 @@ void CLiveSourceVideoOutputPin::SetFormatter(IVideoFrameFormatter* videoFrameFor
 		throw std::runtime_error("Cannot set null IVideoFrameFormatter");
 
 	m_videoFrameFormatter = videoFrameFormatter;
+}
+
+
+void CLiveSourceVideoOutputPin::SetFrameDuration(timestamp_t duration)
+{
+	if(duration <= 0)
+		throw std::runtime_error("Duration must be > 0");
+
+	assert(duration > 50000LL); // 5ms frame is 200Hz, probably a reasonable upper bound
+	assert(duration < 10000000LL);  // 1Hz, reasonable lower bound
+
+	m_frameDuration = duration;
+}
+
+
+void CLiveSourceVideoOutputPin::SetTimestampTicksPerSecond(timingclocktime_t timestampTicksPerSecond)
+{
+	if (timestampTicksPerSecond < 0)
+		throw std::runtime_error("Ticks per second must be >= 0");
+
+	m_timestampTicksPerSecond = timestampTicksPerSecond;
 }
 
 
@@ -228,6 +351,62 @@ HRESULT CLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 		return hr;
 	}
 
+	// Set time if we have a timestamp
+	if (videoFrame.GetTimingTimestamp() > 0)
+	{
+		assert(m_timestampTicksPerSecond > 0);
+
+		REFERENCE_TIME timeStart = videoFrame.GetTimingTimestamp();
+
+		// TODO: I don't like the floating point math here
+		timeStart = timeStart * (10000000.0 / m_timestampTicksPerSecond);
+
+		// Guarantee first frame to start counting at time zero
+		if (m_startTimeOffset == 0)
+		{
+			m_startTimeOffset = timeStart;
+		}
+		timeStart -= m_startTimeOffset;
+
+		assert(m_frameDuration > 0);
+		REFERENCE_TIME timeStop = timeStart + m_frameDuration;
+
+		hr = pSample->SetTime(&timeStart, &timeStop);
+		if (FAILED(hr))
+		{
+			pSample->Release();
+			return hr;
+		}
+
+#ifdef _DEBUG
+		if (m_frameCounter < 10)
+		{
+			DbgLog((LOG_TRACE, 1, TEXT("::OnVideoFrame(): #%I64u, Start: %I64d Stop: %I64d"),
+				m_frameCounter, timeStart, timeStop));
+		}
+
+		// In debug keep track of expected timestamps and ensure they're not too far off
+		// allow for a whole bunch of startup frames
+		if (m_frameCounter > 0)
+		{
+			assert(m_previousTimeStop < timeStop);
+			//assert(abs(m_previousTimeStop - timeStart) < 10000);  // Must be under a ms
+		}
+		m_previousTimeStop = timeStop;
+#endif
+	}
+
+	// Media time is frame counter
+	LONGLONG mediaTimeStart = m_frameCounter;
+	LONGLONG mediaTimeStop = mediaTimeStart + 1;
+	hr = pSample->SetMediaTime(&mediaTimeStart, &mediaTimeStop);
+	if (FAILED(hr))
+	{
+		pSample->Release();
+		return hr;
+	}
+
+	// Format (which can just be a copy) the video frame to the DirectShow buffer
 	assert(m_videoFrameFormatter);
 	m_videoFrameFormatter->FormatVideoFrame(videoFrame, pData);
 
@@ -238,6 +417,18 @@ HRESULT CLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 		return hr;
 	}
 
+	// First frame is known discontinuity
+	if (m_frameCounter == 0)
+	{
+		hr = pSample->SetDiscontinuity(TRUE);
+		if (FAILED(hr))
+		{
+			pSample->Release();
+			return hr;
+		}
+	}
+
+	// All frames are complete images and hence sync points by definition
 	hr = pSample->SetSyncPoint(TRUE);
 	if (FAILED(hr))
 	{
@@ -245,6 +436,7 @@ HRESULT CLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 		return hr;
 	}
 
+	// Set HDR data if needed
 	if (m_hdrData)
 	{
 		if ((m_frameCounter % 100) == 0 || m_hdrChanged)

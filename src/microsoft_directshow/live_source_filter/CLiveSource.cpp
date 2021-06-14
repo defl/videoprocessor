@@ -55,9 +55,21 @@ CUnknown* WINAPI CLiveSource::CreateInstance(LPUNKNOWN pUnk, HRESULT* phr)
 	return liveSource;
 }
 
-STDMETHODIMP CLiveSource::Setup(IVideoFrameFormatter* videoFrameFormatter, GUID mediaSubType)
+
+STDMETHODIMP CLiveSource::Setup(
+	IVideoFrameFormatter* videoFrameFormatter,
+	GUID mediaSubType,
+	timestamp_t frameDuration,
+	timingclocktime_t timestampTicksPerSecond)
 {
+	assert(videoFrameFormatter);
+	assert(mediaSubType.Data1 > 0);
+	assert(frameDuration > 0);
+
 	m_videoOutputPin->SetFormatter(videoFrameFormatter);
+	m_videoOutputPin->SetFrameDuration(frameDuration);
+	m_videoOutputPin->SetTimestampTicksPerSecond(timestampTicksPerSecond);
+
 	m_mediaSubType = mediaSubType;
 	return S_OK;
 }
@@ -86,7 +98,18 @@ STDMETHODIMP CLiveSource::NonDelegatingQueryInterface(REFIID riid, void** ppv)
 	}
 	else if (riid == IID_IAMPushSource)
 	{
-		return GetInterface((IAMPushSource*)m_videoOutputPin, ppv);
+		// This should be on the pin itself
+		throw std::runtime_error("NonDelegatingQueryInterface IID_IAMPushSource called on CLiveSource");
+	}
+	else if (riid == IID_IQualityControl)
+	{
+		// This should be on the pin itself
+		throw std::runtime_error("NonDelegatingQueryInterface IID_IQualityControl called on CLiveSource");
+	}
+	else if (riid == IID_IKsPropertySet)
+	{
+		// This should be on the pin itself
+		throw std::runtime_error("NonDelegatingQueryInterface IID_IKsPropertySet called on CLiveSource");
 	}
 	else if (riid == IID_IAMFilterMiscFlags)
 	{

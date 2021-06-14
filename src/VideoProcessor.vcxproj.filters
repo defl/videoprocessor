@@ -156,6 +156,21 @@
     <ClInclude Include="ffmpeg\CFFMpegScalerVideoFrameFormatter.h">
       <Filter>Header Files\ffmpeg</Filter>
     </ClInclude>
+    <ClInclude Include="WallClock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\DirectShowTimingClock.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
+    </ClInclude>
+    <ClInclude Include="TimingClock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ITimingClock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OSTimingClock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -250,6 +265,21 @@
     </ClCompile>
     <ClCompile Include="ffmpeg\CFFMpegScalerVideoFrameFormatter.cpp">
       <Filter>Source Files\ffmpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="WallClock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\DirectShowTimingClock.cpp">
+      <Filter>Source Files\microsoft_directshow</Filter>
+    </ClCompile>
+    <ClCompile Include="TimingClock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OSTimingClock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IRenderer.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

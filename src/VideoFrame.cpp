@@ -11,9 +11,9 @@
 #include "VideoFrame.h"
 
 
-VideoFrame::VideoFrame(const void* const data):
-	m_data(data)
+VideoFrame::VideoFrame(const void* const data, timingclocktime_t timingTimestamp):
+	m_data(data),
+	m_timingTimestamp(timingTimestamp)
 {
-	if (!data)
-		throw std::runtime_error("Null data is not acceptable for a video frame");
+	assert(data);
 }

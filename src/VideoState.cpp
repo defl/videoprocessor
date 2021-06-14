@@ -50,6 +50,7 @@ ULONG VideoState::Release(void)
 uint32_t VideoState::BytesPerRow() const
 {
 	// See docs/bmd_pixel_formats.pdf also in "Blackmagic DeckLink SDK.pdf" from v 12.0
+
 	switch (pixelFormat)
 	{
 	case PixelFormat::YUV_8BIT:
@@ -63,12 +64,12 @@ uint32_t VideoState::BytesPerRow() const
 		return ((displayMode->FrameWidth() + 32) / 8);
 
 	case PixelFormat::R210:
-	case PixelFormat::RGB_BE_10BIT:
-	case PixelFormat::RGB_LE_10BIT:
+	case PixelFormat::R10b:
+	case PixelFormat::R10l:
 		return ((displayMode->FrameWidth() + 63) / 64) * 256;
 
-	case PixelFormat::RGB_BE_12BIT:
-	case PixelFormat::RGB_LE_12BIT:
+	case PixelFormat::R12B:
+	case PixelFormat::R12L:
 		return ((displayMode->FrameWidth() * 36) / 8);
 	}
 

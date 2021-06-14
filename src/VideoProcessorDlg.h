@@ -10,7 +10,7 @@
 
 
 #include <set>
-#include <mutex>
+#include <atomic>
 
 #include <blackmagic_decklink/BlackMagicDeckLinkCaptureDeviceDiscoverer.h>
 #include <PixelValueRange.h>
@@ -18,6 +18,7 @@
 #include <IRenderer.h>
 #include <VideoFrame.h>
 #include <FullscreenWindow.h>
+#include <OSTimingClock.h>
 
 #include "resource.h"
 
@@ -51,6 +52,7 @@ public:
 	// UI-related handlers
 	afx_msg void OnCaptureDeviceSelected();
 	afx_msg void OnCaptureInputSelected();
+	afx_msg void OnClockSelected();
 	afx_msg void OnRendererNominalRangeSelected();
 	afx_msg void OnRendererTransferFunctionSelected();
 	afx_msg void OnRendererTransferMatrixSelected();
@@ -109,14 +111,13 @@ protected:
 	CStatic m_videoEotfText;
 	CStatic m_videoColorSpaceText;
 
+	// Clock group
+	CComboBox m_timingClockTypeCombo;
+
 	// ColorSpace group
 	CCie1931Control m_colorspaceCie1931xy;
 
 	// HDR group
-	CStatic	m_hdrDpRed;
-	CStatic	m_hdrDpGreen;
-	CStatic	m_hdrDpBlue;
-	CStatic	m_hdrWhitePoint;
 	CStatic	m_hdrDml;
 	CStatic	m_hdrMaxCll;
 	CStatic	m_hdrMaxFall;
@@ -142,10 +143,7 @@ protected:
 	// Program data
 	//
 
-	IRenderer* m_renderer = nullptr;
-	std::mutex m_rendererMutex;  // TODO: Make teardown lock-free
-	RendererState m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
-	bool m_deliverFramesToRenderer = false;
+	CComPtr<BlackMagicDeckLinkCaptureDeviceDiscoverer> m_blackMagicDeviceDiscoverer;
 
 	std::set<ACaptureDeviceComPtr> m_captureDevices;
 	CComPtr<ACaptureDevice>	m_captureDevice;
@@ -153,7 +151,12 @@ protected:
 	CaptureDeviceState m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN;
 	VideoStateComPtr m_captureDeviceVideoState = nullptr;
 
-	CComPtr<BlackMagicDeckLinkCaptureDeviceDiscoverer> m_blackMagicDeviceDiscoverer;
+	IRenderer* m_renderer = nullptr;
+	RendererState m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
+
+	std::atomic_bool m_deliverCaptureDataToRenderer = false;
+
+	OSTimingClock m_osTimingClock;
 
 	// We often have to wait for devices to come back etc. Hence many functions can't complete
 	// immediately. We solve this by setting a desired capture device and input and calling UpdateState()
@@ -161,6 +164,8 @@ protected:
 	CComPtr<ACaptureDevice>	m_desiredCaptureDevice = nullptr;
 	CaptureInputId m_desiredCaptureInputId = INVALID_CAPTURE_INPUT_ID;
 	//PixelValueRange m_desiredRendererPixelValueRange = PixelValueRange::PIXELVALUERANGE_UNKNOWN;  // = let render decide
+	TimingClockType m_timingClockType = TimingClockType::TIMING_CLOCK_UNKNOWN;
+	bool m_wantToRestartCapture = false;
 	bool m_wantToRestartRenderer = false;
 	bool m_wantToTerminate = false;
 	void UpdateState();
@@ -175,7 +180,6 @@ protected:
 	void RenderStart();
 	void RenderStop();
 	void RenderRemove();
-	void RenderRemoveLocked();  // Execute while holding the m_rendererMutex
 	void FullScreenWindowConstruct();
 	void FullScreenWindowDestroy();
 	HWND GetRenderWindow();
@@ -193,4 +197,7 @@ protected:
 	afx_msg HCURSOR	OnQueryDragIcon();
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
 	DECLARE_MESSAGE_MAP()
+
+public:
+	afx_msg void OnEnChangeEdit1();
 };

@@ -29,7 +29,11 @@ DECLARE_INTERFACE_(ILiveSource, IUnknown)
 	//STDMETHOD(OnVideoState)(VideoStateComPtr&) PURE;
 
 	// Setup this source and it's output pin
-	STDMETHOD(Setup)(IVideoFrameFormatter* videoFrameFormatter, GUID mediaSubType) PURE;
+	STDMETHOD(Setup)(
+		IVideoFrameFormatter* videoFrameFormatter,
+		GUID mediaSubType,
+		timestamp_t frameDuration,
+		timingclocktime_t timestampTicksPerSecond) PURE;
 
 	// HDR data can change dynamically on a frame-by-frame basis. If you call
 	// this then the next frame sent through OnVideoFrame() will carry the information
