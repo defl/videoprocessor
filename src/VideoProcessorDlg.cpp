@@ -13,6 +13,7 @@
 #include <vector>
 #include <dxva.h>
 
+#include <version.h>
 #include <cie.h>
 #include <resource.h>
 #include <VideoProcessorApp.h>
@@ -1194,21 +1195,28 @@ void CVideoProcessorDlg::RenderStart()
 		if (!m_renderer)
 			throw std::runtime_error("Failed to build DirectShowMadVRRenderer");
 
+		m_renderer->Build();
 		m_renderer->Start();
 
 		m_rendererStateText.SetWindowText(TEXT("Starting"));
 	}
 	catch (std::runtime_error e)
 	{
+		if (m_renderer)
+		{
+			delete m_renderer;
+			m_renderer = nullptr;
+		}
+
 		m_rendererState = RendererState::RENDERSTATE_FAILED;
 		m_rendererStateText.SetWindowText(TEXT("Failed"));
 
+		// Show error in renderer box
 		size_t size = strlen(e.what()) + 1;
 		wchar_t* wtext = new wchar_t[size];
 		size_t outSize;
 		mbstowcs_s(&outSize, wtext, size, e.what(), size-1);
 		m_rendererBox.SetWindowText(wtext);
-
 		delete[] wtext;
 
 		// Ensure we're not full screen anymore and update state
@@ -1252,7 +1260,6 @@ void CVideoProcessorDlg::RenderStop()
 void CVideoProcessorDlg::RenderRemove()
 {
 	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::RenderRemove(): Begin")));
-
 
 	assert(m_renderer);
 	assert(m_rendererState == RendererState::RENDERSTATE_STOPPED);
@@ -1368,6 +1375,10 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 {
 	if (!CDialog::OnInitDialog())
 		return FALSE;
+
+	CString title;
+	title.Format(_T("VideoProcessor (%s)"), VERSION_DESCRIBE);
+	SetWindowText(title.GetBuffer());
 
 	SetIcon(m_hIcon, FALSE);
 

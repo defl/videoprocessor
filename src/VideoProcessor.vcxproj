@@ -145,6 +145,9 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
+    <PreBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)tools\generate_version.ps1" "$(ProjectDir)\" "$(SolutionDir)\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -205,6 +208,9 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
+    <PreBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)tools\generate_version.ps1" "$(ProjectDir)\" "$(SolutionDir)\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ACaptureDevice.h" />
@@ -219,6 +225,7 @@
     <ClInclude Include="CaptureInput.h" />
     <ClInclude Include="CCie1931Control.h" />
     <ClInclude Include="cie.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="WallClock.h" />
     <ClInclude Include="CNoopVideoFrameFormatter.h" />
     <ClInclude Include="ColorSpace.h" />

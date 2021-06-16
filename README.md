@@ -27,6 +27,9 @@ With all that out of the way, get the latest release at http://www.videoprocesso
 
 # Installing it
 
+- Build a madVR capable computer
+  - [AVSForum: Guide: Building a 4k HTPC for madVR](https://www.avsforum.com/threads/guide-building-a-4k-htpc-for-madvr.2364113/)
+  - Add capture card, see below
 - Install VS2019 x64 runtime
 - Install capture card (see below) and drivers, verify the card and capture works by running the vendor's capture application.
 - Download VideoProcessor.exe 
@@ -46,10 +49,10 @@ VideoProcessor has a wide range of applications. You can do as little as just so
 
 **Tested and confirmed working**
 
-If you can spare it, the BlackMagic DeckLink Quad HDMI can do 4k60, which makes your life easier as many GUIs and menus are in this format. The Mini Recorder 4K is significantly cheaper but can cause some confusion to your systems as it is max 30fps at 4K, this isn't perfectly recognized by all systems which potentially will require fiddling to get it working. For >99.9% of the movies out there the value choice is as good as the best choice.
+If you can spare it, the BlackMagic DeckLink Quad HDMI can do 4k60, which makes your life easier as many GUIs and menus are in this format. The Mini Recorder 4K is significantly cheaper but can cause some confusion to your systems as it is max 30fps at 4K, this isn't perfectly recognized by all systems which potentially will require fiddling to get it working. For >99.9% of the movies out there the best (value) choice is as good as the high-end choice.
 
- * [BlackMagic DeckLink Quad HDMI Recorder](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-36) (4k60) (€~500) <-- best choice
- * [BlackMagic DeckLink Mini Recorder 4k](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-33) (4k30) (€~200) <-- value choice
+ * [BlackMagic DeckLink Mini Recorder 4k](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-33) (4k30) (€~200) <-- best (value) choice
+ * [BlackMagic DeckLink Quad HDMI Recorder](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-36) (4k60) (€~500) <-- high-end choice
 
 
 
@@ -85,7 +88,7 @@ For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX
 
 **Renderer shows black screen - with valid input**
 
-- Are you sure you're capturing something which is outside of what the card can pass along. 4k>30 with Blackmagic Recorder 4K mini will lead to this.?
+- Are you sure you're capturing something which is outside of what the card can pass along? For example 4k>30 with Blackmagic Recorder 4K mini will lead to this.
 - Did you set the correct output display modes in madVR? (2160p23, 2160p24 etc)?
 
 **I have frame drops or similar performance problems**
@@ -95,9 +98,10 @@ For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX
 - Ensure that your card is getting it's full PCIe bandwidth. The BlackMagic cards will show their bandwidth in the Capture Device -> Other properties which has to be link >=2 and width >=4.
 - Do not run other high (memory) bandwidth applications at the same time. 4k30 12 bit is pushing over 13gbps and that data needs to be in RAM and processed by your CPU several times, which can load up your memory bus quite a bit
 
-**Can this display 10bit?**
+**Can this display >=10bit?**
 
-- Yes, >=10 bit capture input, >=10 bit transfer to madVR, 10 bit D3D11 into 12bit screen have all been observed working
+- Yes, >=10 bit capture input, >=10 bit transfer to madVR, 10 bit D3D11 into >=10 bit screen have all been observed working
+- Example: Use a PS4Pro, set up 12 bit RGB mode and hook the output of your video card to a computer monitor. Once you fullscreen you should be seeing 10bit and madVR will tell you so in it's debug output.
 
 
 

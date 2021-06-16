@@ -14,6 +14,7 @@
 #include <dxva.h>
 #include <gl/gl.h>
 #include <windef.h>
+#include <guiddef.h>
 
 #include <guid.h>
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>
@@ -57,8 +58,6 @@ DirectShowMadVRRenderer::DirectShowMadVRRenderer(
 
 	if (timingClock && timingClock->GetTimingClockTicksPerSecond() < 1000LL)
 		throw std::runtime_error("TimingClock needs resolution of at least millisecond level");
-
-	GraphBuild();
 }
 
 
@@ -182,11 +181,16 @@ HRESULT DirectShowMadVRRenderer::OnWindowsEvent(LONG_PTR, LONG_PTR)
 }
 
 
+void DirectShowMadVRRenderer::Build()
+{
+	GraphBuild();
+}
+
+
 void DirectShowMadVRRenderer::Start()
 {
 	GraphRun();
 }
-
 
 
 void DirectShowMadVRRenderer::Stop()
@@ -211,6 +215,7 @@ void DirectShowMadVRRenderer::OnSize()
 	RECT rectWindow;
 	if (!GetWindowRect(m_videoHwnd, &rectWindow))
 		throw std::runtime_error("Failed to get window rectangle");
+
 	m_renderBoxWidth = rectWindow.right - rectWindow.left;
 	m_renderBoxHeight = rectWindow.bottom - rectWindow.top;
 
@@ -272,6 +277,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 	RECT rectWindow;
 	if (!GetWindowRect(m_videoHwnd, &rectWindow))
 		throw std::runtime_error("Failed to get window rectangle");
+
 	m_renderBoxWidth = rectWindow.right - rectWindow.left;
 	m_renderBoxHeight = rectWindow.bottom - rectWindow.top;
 
@@ -406,6 +412,16 @@ void DirectShowMadVRRenderer::GraphBuild()
 	if (FAILED(m_pGraph->AddFilter(m_pMVR, L"madVR")))
 		throw std::runtime_error("Failed to add madVR to the graph");
 
+	//CComQIPtr<IMadVRSettings> pMVRSettings = m_pMVR;
+	//if(!pMVRSettings)
+	//	throw std::runtime_error("Failed to get MadVR IMadVRSettings");
+
+	// TODO: These will allways fail, they fall outside of the valid range for madVR,
+	//       should talk to madshi to get lower values accepted.
+	//pMVRSettings->SettingsSetInteger(L"cpuQueueSize", 1);
+	//pMVRSettings->SettingsSetInteger(L"gpuQueueSize", 1);
+	//pMVRSettings->SettingsSetInteger(L"preRenderFrames", 3);
+
 	//
 	// Build media type for connect
 	//
@@ -516,6 +532,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 
 	pEnum->Release();
 
+	// TODO: With madVR beta 132 this increases the ref on the live filter by 3, of which 2 I cannot explain
 	if (FAILED(m_pGraph->ConnectDirect(pLiveSourceOutputPin, pMadVRInputPin, &pmt)))
 	{
 		pLiveSourceOutputPin->Release();
@@ -526,7 +543,6 @@ void DirectShowMadVRRenderer::GraphBuild()
 
 	pLiveSourceOutputPin->Release();
 	pMadVRInputPin->Release();
-
 
 	//
 	// Set up window
@@ -542,6 +558,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 	if (FAILED(m_videoWindow->SetWindowPosition(0, 0, m_renderBoxWidth, m_renderBoxHeight)))
 		throw std::runtime_error("Failed to SetWindowPosition");
 
+	// TODO: Only do full screen
 	if (FAILED(m_videoWindow->HideCursor(OATRUE)))
 		throw std::runtime_error("Failed to HideCursor");
 
@@ -605,17 +622,17 @@ void DirectShowMadVRRenderer::GraphTeardown()
 		throw std::runtime_error("Failed to disconnect pins");
 
 	pLiveSourceOutputPin->Release();
-
 	//
 	// Free
 	//
 
-	if (m_pGraph)
-		m_pGraph->Release();
+	// Graph interfaces
 	if (m_pControl)
 		m_pControl->Release();
 	if (m_pEvent)
 		m_pEvent->Release();
+	if (m_videoWindow)
+		m_videoWindow->Release();
 	if (m_pGraph2)
 		m_pGraph2->Release();
 	if (m_mediaFilter)
@@ -623,20 +640,29 @@ void DirectShowMadVRRenderer::GraphTeardown()
 	if (m_amGraphStreams)
 		m_amGraphStreams->Release();
 
-	if (m_videoWindow)
-		m_videoWindow->Release();
-
 	if (m_referenceClock)
 		m_referenceClock->Release();
 
 	if (m_videoFramFormatter)
 		delete m_videoFramFormatter;
 
-	assert(m_liveSource);
-	m_liveSource->Release();
+	// Graph itself, will auto-remove filters
+	if (m_pGraph)
+	{
+		m_pGraph->Release();
+	}
 
-	assert(m_pMVR);
-	m_pMVR->Release();
+	if (m_pMVR)
+	{
+		m_pMVR->Release();
+	}
+
+	if (m_liveSource)
+	{
+		// TODO: When calling ConnectDirect() madvr beta 132 gets 3 references to us and never gives them back
+		//       no idea if this is me (probably) but the only way i can fix it is by ending it forefully here.
+		while (m_liveSource->Release());
+	}
 
 	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::GraphTeardown(): End")));
 }

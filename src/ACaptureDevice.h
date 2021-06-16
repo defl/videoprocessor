@@ -42,6 +42,12 @@ class CaptureDeviceCardState:
 {
 public:
 
+	virtual ~CaptureDeviceCardState()
+	{
+		if (inputDisplayMode)
+			inputDisplayMode.reset();
+	}
+
 	//
 	// Input data
 	// This is the data arriving at the capture card from the outside, it's the

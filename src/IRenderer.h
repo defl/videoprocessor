@@ -64,6 +64,9 @@ public:
 	// Handler for windows events for the graph's pEvent
 	virtual HRESULT OnWindowsEvent(LONG_PTR param1, LONG_PTR param2) = 0;
 
+	// Construct the graph
+	virtual void Build() = 0;
+
 	// Ask the renderer to start, this can take some time and you'll get notified
 	// through the IRendererCallback
 	virtual void Start() = 0;

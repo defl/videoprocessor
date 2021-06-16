@@ -48,6 +48,7 @@ public:
 	bool OnVideoState(VideoStateComPtr&) override;
 	void OnVideoFrame(VideoFrame& videoFrame) override;
 	HRESULT OnWindowsEvent(LONG_PTR param1, LONG_PTR param2) override;
+	void Build() override;
 	void Start() override;
 	void Stop() override;
 	void OnPaint() override;

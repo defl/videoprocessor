@@ -153,14 +153,14 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "Blackmagic Design"
-            VALUE "FileDescription", "Capture Preview"
-            VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "CapturePreview.exe"
-            VALUE "LegalCopyright", "Copyright © 2013-2019 Blackmagic Design.  All rights reserved."
-            VALUE "OriginalFilename", "CapturePreview.exe"
-            VALUE "ProductName", "CapturePreview"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "CompanyName", "Dennis Fleurbaaij"
+            VALUE "FileDescription", "Video Processor"
+            VALUE "FileVersion", ""
+            VALUE "InternalName", "VideoProcessor.exe"
+            VALUE "LegalCopyright", "Copyright © 2021 Dennis Fleurbaaij."
+            VALUE "OriginalFilename", "VideoProcessor.exe"
+            VALUE "ProductName", "VideoProcessor"
+            VALUE "ProductVersion", ""
         END
     END
     BLOCK "VarFileInfo"

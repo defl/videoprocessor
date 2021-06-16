@@ -4,12 +4,14 @@ Roadmap
 0.3.0: Clocks
 - Change display modes to be real frame interval and display interval
 - Cleanup TODOs
-- Fix exit hang
-- Fix memory leaks
+- OS clock doesn't seem correct yet
+
 
 0.3.1: GUI
 - Remove mouse pointer after going full screen
 - Add context information to all throws
+- No pop-up for some exceptions (start 2 in release mode shows nothing)
+- Cleanup TODOs
 
 0.4.0: DVD
 - Support for interlaced formats (aim to support DVD, will only test with PS4Pro as player)

@@ -46,6 +46,16 @@ public:
 	// IUnknown
 	DECLARE_IUNKNOWN;
 
+	STDMETHODIMP_(ULONG) NonDelegatingAddRef()
+	{
+		return CBaseFilter::NonDelegatingAddRef();
+	}
+
+	STDMETHODIMP_(ULONG) NonDelegatingRelease()
+	{
+		return CBaseFilter::NonDelegatingRelease();
+	}
+
 	// ILiveSource
 	STDMETHODIMP Setup(
 		IVideoFrameFormatter* videoFrameFormatter,

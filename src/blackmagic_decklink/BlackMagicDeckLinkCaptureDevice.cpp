@@ -104,6 +104,8 @@ BlackMagicDeckLinkCaptureDevice::BlackMagicDeckLinkCaptureDevice(const IDeckLink
 
 BlackMagicDeckLinkCaptureDevice::~BlackMagicDeckLinkCaptureDevice()
 {
+	m_callback = nullptr;
+
 	if (m_deckLinkProfileManager)
 		m_deckLinkProfileManager->SetCallback(nullptr);
 
@@ -922,6 +924,9 @@ void BlackMagicDeckLinkCaptureDevice::SendCardStateCallback()
 
 	assert(m_deckLinkStatus);
 
+	if (!m_callback)
+		return;
+
 	CaptureDeviceCardStateComPtr cardState = new CaptureDeviceCardState();
 	if (!cardState)
 		throw std::runtime_error("Failed to alloc CaptureDeviceCardStateComPtr");
@@ -948,7 +953,6 @@ void BlackMagicDeckLinkCaptureDevice::SendCardStateCallback()
 	//
 	// Other
 	//
-
 	CString s;
 
 	if (m_deckLinkStatus->GetInt(bmdDeckLinkStatusPCIExpressLinkWidth, &intValue) == S_OK)
@@ -966,8 +970,7 @@ void BlackMagicDeckLinkCaptureDevice::SendCardStateCallback()
 	//
 	// Send
 	//
-	if (m_callback)
-		m_callback->OnCaptureDeviceCardStateChange(cardState);
+	m_callback->OnCaptureDeviceCardStateChange(cardState);
 }
 
 
@@ -1000,6 +1003,7 @@ void BlackMagicDeckLinkCaptureDevice::OnNotifyStatusChanged(BMDDeckLinkStatusID 
 	// Device state changed
 	case bmdDeckLinkStatusBusy:
 		OnLinkStatusBusyChange();
+		break;
 
 	// Card state changed.
 	case bmdDeckLinkStatusVideoInputSignalLocked:
