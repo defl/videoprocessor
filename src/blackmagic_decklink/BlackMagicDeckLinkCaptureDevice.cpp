@@ -126,7 +126,10 @@ void BlackMagicDeckLinkCaptureDevice::SetCallbackHandler(ICaptureDeviceCallback*
 	// Update client if subscribing
 	// Note that thisis a read from the state which is set by the capture thread.
 	if (m_callback)
+	{
 		m_callback->OnCaptureDeviceState(m_state);
+		SendVideoStateCallback();
+	}
 
 	DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::SetCallbackHandler(): updated callback")));
 }
@@ -219,15 +222,15 @@ void BlackMagicDeckLinkCaptureDevice::StartCapture()
 	// Start the capture
 	//
 
+	// From here on out data can egress
+	m_outputCaptureData.store(true, std::memory_order_release);
+
 	IF_NOT_S_OK(m_deckLinkInput->StartStreams())
 	{
 		m_deckLinkInput.Release();
 		m_deckLinkInput = nullptr;
 		throw std::runtime_error("Failed to StartStreams");
 	}
-
-	// From here on out data can egress
-	m_outputCaptureData.store(true, std::memory_order_release);
 
 	DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::StopCapture(): completed successfully")));
 }
@@ -503,8 +506,15 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 				throw std::runtime_error("Could not get the video frame hardware timestamp");
 		}
 
-		// TODO: The following 2 are set, no idea what to do with them on output as everything seems to work
-		//assert(videoFrame->GetFlags() & bmdFrameFlagFlipVertical == 0);
+		// Check if vertical inverted
+		const bool videoInvertedVertical = (videoFrame->GetFlags() & bmdFrameFlagFlipVertical) != 0;
+		if (videoInvertedVertical != m_videoInvertedVertical)
+		{
+			m_videoInvertedVertical = videoInvertedVertical;
+			videoStateChanged = true;
+		}
+
+		// TODO: What to do with this?
 		//assert(videoFrame->GetFlags() & bmdFrameCapturedAsPsF == 0);
 
 #ifdef _DEBUG
@@ -881,8 +891,6 @@ void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
 	if (!videoState)
 		throw std::runtime_error("Failed to alloc VideoStateComPtr");
 
-	//ZeroMemory(videoState.p, sizeof(videoState.p));
-
 	// Not valid, don't send
 	if (!hasValidVideoState)
 	{
@@ -905,6 +913,7 @@ void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
 		videoState->colorspace = Translate(
 			(BMDColorspace)m_videoColorSpace,
 			videoState->displayMode->FrameHeight());
+		videoState->invertedVertical = m_videoInvertedVertical;
 
 		// Build a fresh copy of the HDR data if valid
 		if (hasValidHdrData)

@@ -11,6 +11,13 @@
 #include "ACaptureDevice.h"
 
 
+CaptureDeviceCardState::~CaptureDeviceCardState()
+{
+	if (inputDisplayMode)
+		inputDisplayMode.reset();
+}
+
+
 HRESULT	CaptureDeviceCardState::QueryInterface(REFIID iid, LPVOID* ppv)
 {
 	if (ppv == nullptr)

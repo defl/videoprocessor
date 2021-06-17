@@ -31,9 +31,9 @@
 typedef std::vector<CaptureInput> CaptureInputs;
 
 
-
 /**
  * State of the capture card.
+ *
  * This is everything besides the video state. The video state might not change on this changing but that will
  * be a separate message.
  */
@@ -42,11 +42,7 @@ class CaptureDeviceCardState:
 {
 public:
 
-	virtual ~CaptureDeviceCardState()
-	{
-		if (inputDisplayMode)
-			inputDisplayMode.reset();
-	}
+	virtual ~CaptureDeviceCardState();
 
 	//
 	// Input data
@@ -137,7 +133,6 @@ class ACaptureDevice:
 public:
 
 	// Set callback handler.
-	// TODO: Move to constructor and find way to pass this through the discoverer.
 	virtual void SetCallbackHandler(ICaptureDeviceCallback*) = 0;
 
 	// Get device name (only available after init)

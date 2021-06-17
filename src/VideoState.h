@@ -34,6 +34,7 @@ public:
 	PixelFormat pixelFormat = PixelFormat::UNKNOWN;
 	EOTF eotf = EOTF::UNKNOWN;
 	ColorSpace colorspace = ColorSpace::UNKNOWN;
+	bool invertedVertical = false;
 
 	// Will be non-null if valid
 	HDRDataSharedPtr hdrData = nullptr;

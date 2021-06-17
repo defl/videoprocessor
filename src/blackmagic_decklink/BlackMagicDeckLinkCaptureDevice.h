@@ -107,6 +107,7 @@ private:
 	BMDDisplayMode m_videoDisplayMode = BMD_DISPLAY_MODE_INVALID;
 	BMDTimeScale m_timeScale = BMD_TIME_SCALE_INVALID;
 	bool m_videoHasInputSource = false;
+	bool m_videoInvertedVertical = false;
 	LONGLONG m_videoEotf = BMD_EOTF_INVALID;
 	LONGLONG m_videoColorSpace = BMD_COLOR_SPACE_INVALID;
 	bool m_videoHasHdrData = false;

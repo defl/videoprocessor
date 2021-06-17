@@ -90,7 +90,7 @@ bool DirectShowMadVRRenderer::OnVideoState(VideoStateComPtr& videoState)
 			if (FAILED(m_liveSource->OnHDRData(videoState->hdrData)))
 				throw std::runtime_error("Failed to set HDR data");
 
-			// TODO: This updating of the video state is not very nice
+			// Update the HDR in the videostate
 			m_videoState->hdrData = videoState->hdrData;
 		}
 	}
@@ -327,6 +327,9 @@ void DirectShowMadVRRenderer::GraphBuild()
 
 	// r210 to RGB48
 	case PixelFormat::R210:
+
+		assert(m_videoState->invertedVertical);
+
 		mediaSubType = MEDIASUBTYPE_RGB48LE;
 		bitCount = 48;
 
@@ -337,6 +340,9 @@ void DirectShowMadVRRenderer::GraphBuild()
 
 	// RGB 12-bit to RGB48
 	case PixelFormat::R12B:
+
+		assert(m_videoState->invertedVertical);
+
 		mediaSubType = MEDIASUBTYPE_RGB48LE;
 		bitCount = 48;
 
@@ -412,12 +418,13 @@ void DirectShowMadVRRenderer::GraphBuild()
 	if (FAILED(m_pGraph->AddFilter(m_pMVR, L"madVR")))
 		throw std::runtime_error("Failed to add madVR to the graph");
 
+	// TODO: Setting minimal queue sizes will always fail as , they fall outside of the valid range for madVR
+	//       Should talk to madshi to get lower values accepted.
+	//
 	//CComQIPtr<IMadVRSettings> pMVRSettings = m_pMVR;
 	//if(!pMVRSettings)
 	//	throw std::runtime_error("Failed to get MadVR IMadVRSettings");
-
-	// TODO: These will allways fail, they fall outside of the valid range for madVR,
-	//       should talk to madshi to get lower values accepted.
+	//
 	//pMVRSettings->SettingsSetInteger(L"cpuQueueSize", 1);
 	//pMVRSettings->SettingsSetInteger(L"gpuQueueSize", 1);
 	//pMVRSettings->SettingsSetInteger(L"preRenderFrames", 3);
@@ -450,7 +457,8 @@ void DirectShowMadVRRenderer::GraphBuild()
 	pvi2->bmiHeader.biBitCount = bitCount;
 	pvi2->bmiHeader.biCompression = pmt.subtype.Data1;
 	pvi2->bmiHeader.biWidth = m_videoState->displayMode->FrameWidth();
-	pvi2->bmiHeader.biHeight = -((long)m_videoState->displayMode->FrameHeight());  // TODO: Always negate seems to work but I expect that to go wrong sometime
+	pvi2->bmiHeader.biHeight = ((long)m_videoState->displayMode->FrameHeight()) *
+		                       (m_videoState->invertedVertical ? -1 : 1);
 	pvi2->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	pvi2->bmiHeader.biPlanes = 1;
 	pvi2->bmiHeader.biClrImportant = 0;
@@ -550,17 +558,16 @@ void DirectShowMadVRRenderer::GraphBuild()
 	//
 
 	if (FAILED(m_videoWindow->put_Owner((OAHWND)m_videoHwnd)))
-		throw std::runtime_error("Failed to set window owner");
+		throw std::runtime_error("Failed to set owner of video window");
 
 	if (FAILED(m_videoWindow->put_WindowStyle(WS_CHILD | WS_CLIPSIBLINGS)))
-		throw std::runtime_error("Failed to set window style");
+		throw std::runtime_error("Failed to set window style in video window");
 
 	if (FAILED(m_videoWindow->SetWindowPosition(0, 0, m_renderBoxWidth, m_renderBoxHeight)))
-		throw std::runtime_error("Failed to SetWindowPosition");
+		throw std::runtime_error("Failed to SetWindowPosition in video window");
 
-	// TODO: Only do full screen
 	if (FAILED(m_videoWindow->HideCursor(OATRUE)))
-		throw std::runtime_error("Failed to HideCursor");
+		throw std::runtime_error("Failed to HideCursor in video window");
 
 	//
 	// Set up event notification.
@@ -587,11 +594,14 @@ void DirectShowMadVRRenderer::GraphTeardown()
 	// These can fail if we are terminating and there is no visible window anymore, no problem
 	if (m_videoWindow)
 	{
-		// TODO: This might only be applicable for full-screen
-		m_videoWindow->HideCursor(OAFALSE);
+		if (FAILED(m_videoWindow->put_Visible(OAFALSE)))
+			throw std::runtime_error("Failed to make video window invisble");
 
-		m_videoWindow->put_Visible(OAFALSE);
-		m_videoWindow->put_Owner(NULL);
+		if (FAILED(m_videoWindow->put_Owner(NULL)))
+			throw std::runtime_error("Failed to remove owner from video window");
+
+		if (FAILED(m_videoWindow->HideCursor(OAFALSE)))
+			throw std::runtime_error("Failed to un-HideCursor from video window");
 	}
 
 	// Stop sending event messages
@@ -600,7 +610,7 @@ void DirectShowMadVRRenderer::GraphTeardown()
 	{
 		m_pEvent->SetNotifyWindow((OAHWND)NULL, NULL, NULL);
 		m_pEvent->Release();
-		m_pEvent = NULL;
+		m_pEvent = nullptr;
 	}
 
 	//
@@ -660,7 +670,7 @@ void DirectShowMadVRRenderer::GraphTeardown()
 	if (m_liveSource)
 	{
 		// TODO: When calling ConnectDirect() madvr beta 132 gets 3 references to us and never gives them back
-		//       no idea if this is me (probably) but the only way i can fix it is by ending it forefully here.
+		//       no idea if this is me (probably) but the only way I can fix it is by ending it forefully here.
 		while (m_liveSource->Release());
 	}
 
@@ -705,9 +715,8 @@ void DirectShowMadVRRenderer::GraphStop()
 	if ((FILTER_STATE)madVrPlaybastState != FILTER_STATE::State_Stopped)
 		throw std::runtime_error("Madvr was not stopped");
 
-	// Wait-lock until state is ok
-	// TODO: There still is some sort os async component to stopping but no callback handler. No idea how to check if the graph has really stopped
-	OAFilterState filterState = -1; // Invalid state
+	// Check if filter really stoppedd
+	OAFilterState filterState = -1;  // Known invalid state
 	if (FAILED(m_pControl->GetState(500, &filterState)))
 		throw std::runtime_error("Failed to get filter state");
 

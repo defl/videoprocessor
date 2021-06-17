@@ -233,7 +233,6 @@
     <ClInclude Include="Encoding.h" />
     <ClInclude Include="EOTF.h" />
     <ClInclude Include="ffmpeg\CFFMpegDecoderVideoFrameFormatter.h" />
-    <ClInclude Include="ffmpeg\CFFMpegScalerVideoFrameFormatter.h" />
     <ClInclude Include="FullscreenWindow.h" />
     <ClInclude Include="guid.h" />
     <ClInclude Include="InputLocked.h" />
@@ -290,7 +289,6 @@
     <ClCompile Include="Encoding.cpp" />
     <ClCompile Include="EOTF.cpp" />
     <ClCompile Include="ffmpeg\CFFMpegDecoderVideoFrameFormatter.cpp" />
-    <ClCompile Include="ffmpeg\CFFMpegScalerVideoFrameFormatter.cpp" />
     <ClCompile Include="FullscreenWindow.cpp" />
     <ClCompile Include="guid.cpp" />
     <ClCompile Include="HDRData.cpp" />

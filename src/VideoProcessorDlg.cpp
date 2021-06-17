@@ -130,6 +130,8 @@ CVideoProcessorDlg::CVideoProcessorDlg(bool startstartFullscreen):
 	m_rendererfullScreen(startstartFullscreen)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+
+	m_blackMagicDeviceDiscoverer = new BlackMagicDeckLinkCaptureDeviceDiscoverer(*this);
 }
 
 
@@ -354,9 +356,7 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(WPARAM wParam, LPA
 		m_timingClockTypeCombo.ResetContent();
 
 		// Get clocks
-		// TODO: This is unlocked, add to API notes
 		const int cardSupportedTimingClocks = m_captureDevice->GetSupportedTimingClocks();
-
 		for (const TimingClockType tc : TimingClockTypes)
 		{
 			if ((cardSupportedTimingClocks & tc) > 0)
@@ -499,8 +499,6 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 	}
 
 	// If the renderer did not accept the new state we need to restart the renderer
-	// TODO: This causes an interesting loop and double lock but is vital to auto switching...
-	// 	     Maybe post the updatestate so it gets decoupled?
 	if (!rendererAcceptedState)
 	{
 		m_wantToRestartRenderer = true;
@@ -662,10 +660,7 @@ void CVideoProcessorDlg::OnCaptureDeviceCardStateChange(CaptureDeviceCardStateCo
 
 void CVideoProcessorDlg::OnCaptureDeviceVideoStateChange(VideoStateComPtr videoState)
 {
-	// WARNING: Most likely to be called from different thread.
-	//          DO NOT LOCK! THIS IS JUST HERE BECAUSE I'M LAZY WITH OVERHALING
-	//          THE API, IT WILL BE MOVED SO A LOCK WONT BE AVAILABLE. (direct capture->renderer)
-	// TODO ----^
+	// WARNING: Most likely to be called from some internal capture card thread!
 
 	assert(videoState);
 	bool rendererAcceptedState = true;  // If no renderer it'll have no problems with the new state
@@ -691,10 +686,7 @@ void CVideoProcessorDlg::OnCaptureDeviceVideoStateChange(VideoStateComPtr videoS
 
 void CVideoProcessorDlg::OnCaptureDeviceVideoFrame(VideoFrame& videoFrame)
 {
-	// WARNING: Most likely to be called from different thread.
-	//          DO NOT LOCK! THIS IS JUST HERE BECAUSE I'M LAZY WITH OVERHALING
-	//          THE API, IT WILL BE MOVED SO A LOCK WONT BE AVAILABLE. (direct capture->renderer)
-	// TODO ----^
+	// WARNING: Most likely to be called from some internal capture card thread!
 
 	// This is an atomic bool which is set by the main thread and used in context of the
 	// capture thread which will deliver frames.
@@ -712,8 +704,8 @@ void CVideoProcessorDlg::OnCaptureDeviceVideoFrame(VideoFrame& videoFrame)
 
 void CVideoProcessorDlg::OnRendererState(RendererState rendererState)
 {
-	// Will be called synchronous as a response to our calls and hence does not need posting messages.
-	// we still do so to de-couple actions.
+	// Will be called synchronous as a response to our calls and hence does
+	// not need posting messages, we still do so to de-couple actions.
 
 	PostMessage(
 		WM_MESSAGE_RENDERER_STATE_CHANGE,
@@ -729,8 +721,6 @@ void CVideoProcessorDlg::UpdateState()
 	// Want to change cards
 	if (m_desiredCaptureDevice != m_captureDevice)
 	{
-		// TODO: m_rendererMutex??
-
 		m_captureInputCombo.EnableWindow(FALSE);
 
 		// Have a render and it's rendering, stop it
@@ -1027,12 +1017,9 @@ void CVideoProcessorDlg::CaptureStart()
 	assert(!m_renderer);
 	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
 
-
 	// Update internal state before call to StartCapture as that might be synchronous
 	m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_STARTING;
 
-	// TODO: Return boolean and upon failure to start call StopCapture()
-	// TODO: Check if safe to be called from other thread
 	m_captureDevice->StartCapture();
 
 	// Update GUI
@@ -1052,8 +1039,6 @@ void CVideoProcessorDlg::CaptureStop()
 	// Update internal state before call to StartCapture as that might be synchronous
 	m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_STOPPING;
 
-	// TODO: Return boolean and upon failure and do something?
-	// TODO: Check if safe to be called from other thread
 	m_captureDevice->StopCapture();
 
 	m_captureDeviceVideoState = nullptr;
@@ -1076,6 +1061,7 @@ void CVideoProcessorDlg::CaptureRemove()
 	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
 
 	m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN;
+	m_captureDevice->SetCallbackHandler(nullptr);
 	m_captureDevice.Release();
 	m_captureDevice = nullptr;
 
@@ -1128,7 +1114,6 @@ void CVideoProcessorDlg::RenderStart()
 	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
 
 	// Update internal state before call to StartCapture as that might be synchronous
-	// TODO: Call should always be posted and never sync
 	m_rendererState = RendererState::RENDERSTATE_STARTING;
 
 	// Get currently selected forced overrides
@@ -1246,7 +1231,6 @@ void CVideoProcessorDlg::RenderStop()
 	m_deliverCaptureDataToRenderer.store(false, std::memory_order_release);
 
 	// Update internal state before call to StartCapture as that might be synchronous
-	// TODO: Call should always be posted and never sync
 	m_rendererState = RendererState::RENDERSTATE_STOPPING;
 
 	m_renderer->Stop();
@@ -1280,7 +1264,6 @@ void CVideoProcessorDlg::FullScreenWindowConstruct()
 
 	HMONITOR hmon = MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
 
-
 	m_fullScreenRenderWindow = new FullscreenWindow();
 	if (!m_fullScreenRenderWindow)
 		throw std::runtime_error("Failed to create full screen renderer window");
@@ -1293,6 +1276,7 @@ void CVideoProcessorDlg::FullScreenWindowDestroy()
 {
 	assert(m_fullScreenRenderWindow);
 	delete m_fullScreenRenderWindow;
+	m_fullScreenRenderWindow = nullptr;
 }
 
 
@@ -1425,8 +1409,6 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	m_rendererPrimariesCombo.SetCurSel(0);
 
 	// Start discovery services
-	// TODO: Construct this at construction time, no need to do this here later
-	m_blackMagicDeviceDiscoverer = new BlackMagicDeckLinkCaptureDeviceDiscoverer(*this);
 	m_blackMagicDeviceDiscoverer->Start();
 
 	m_accelerator = LoadAccelerators(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_ACCELERATOR1));
@@ -1511,15 +1493,4 @@ void CVideoProcessorDlg::OnGetMinMaxInfo(MINMAXINFO* minMaxInfo)
 	// Guarantee minimum size of window
 	minMaxInfo->ptMinTrackSize.x = std::max(minMaxInfo->ptMinTrackSize.x, m_minDialogSize.cx);
 	minMaxInfo->ptMinTrackSize.y = std::max(minMaxInfo->ptMinTrackSize.y, m_minDialogSize.cy);
-}
-
-
-void CVideoProcessorDlg::OnEnChangeEdit1()
-{
-	// TODO:  If this is a RICHEDIT control, the control will not
-	// send this notification unless you override the __super::OnInitDialog()
-	// function and call CRichEditCtrl().SetEventMask()
-	// with the ENM_CHANGE flag ORed into the mask.
-
-	// TODO:  Add your control notification handler code here
 }

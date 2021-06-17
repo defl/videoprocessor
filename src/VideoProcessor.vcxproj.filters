@@ -153,9 +153,6 @@
     <ClInclude Include="CNoopVideoFrameFormatter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ffmpeg\CFFMpegScalerVideoFrameFormatter.h">
-      <Filter>Header Files\ffmpeg</Filter>
-    </ClInclude>
     <ClInclude Include="WallClock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -265,9 +262,6 @@
     </ClCompile>
     <ClCompile Include="CNoopVideoFrameFormatter.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ffmpeg\CFFMpegScalerVideoFrameFormatter.cpp">
-      <Filter>Source Files\ffmpeg</Filter>
     </ClCompile>
     <ClCompile Include="WallClock.cpp">
       <Filter>Source Files</Filter>

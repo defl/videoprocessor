@@ -197,7 +197,4 @@ protected:
 	afx_msg HCURSOR	OnQueryDragIcon();
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
 	DECLARE_MESSAGE_MAP()
-
-public:
-	afx_msg void OnEnChangeEdit1();
 };
