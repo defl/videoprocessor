@@ -30,13 +30,21 @@ CLiveSource::CLiveSource(
 		else
 			*phr = S_OK;
 	}
+
+	if(m_videoOutputPin)
+		m_videoOutputPin->AddRef();
 }
 
 
 CLiveSource::~CLiveSource()
 {
 	if (m_videoOutputPin)
+	{
+		//TODO: Because we cannot properly release everything we manually delete here
+		//m_videoOutputPin->Release();
 		delete m_videoOutputPin;
+		m_videoOutputPin = nullptr;
+	}
 }
 
 
@@ -56,7 +64,7 @@ CUnknown* WINAPI CLiveSource::CreateInstance(LPUNKNOWN pUnk, HRESULT* phr)
 }
 
 
-STDMETHODIMP CLiveSource::Setup(
+STDMETHODIMP CLiveSource::Initialize(
 	IVideoFrameFormatter* videoFrameFormatter,
 	GUID mediaSubType,
 	timestamp_t frameDuration,
@@ -66,9 +74,10 @@ STDMETHODIMP CLiveSource::Setup(
 	assert(mediaSubType.Data1 > 0);
 	assert(frameDuration > 0);
 
-	m_videoOutputPin->SetFormatter(videoFrameFormatter);
-	m_videoOutputPin->SetFrameDuration(frameDuration);
-	m_videoOutputPin->SetTimestampTicksPerSecond(timestampTicksPerSecond);
+	m_videoOutputPin->Initialize(
+		videoFrameFormatter,
+		frameDuration,
+		timestampTicksPerSecond);
 
 	m_mediaSubType = mediaSubType;
 	return S_OK;

@@ -495,7 +495,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 
 			const double timeDeltaMs = (currentTimeTicks - frameTimeTicks) / (double)GetTimingClockTicksPerSecond() * 1000.0;
 
-			DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrived(): Frame #%I64u, Capture->Now: %.03f ms"),
+			DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrived(#%I64u): Capture->Now: %.03f ms"),
 				m_videoFrameCounter, timeDeltaMs));
 		}
 #endif  // _DEBUG

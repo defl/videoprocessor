@@ -11,12 +11,12 @@ Push-Location -LiteralPath $GitRoot
 
 $VerFileHead     = "`#pragma once`n`n`#include <atlstr.h>`n`n"
 $VerFileTail     = "`n"
-$VerDescribePre  = "const TCHAR* VERSION_DESCRIBE=TEXT(`""
+$VerDescribePre  = "static const TCHAR* VERSION_DESCRIBE=TEXT(`""
 $VerDescribePost = "`");`n"
 
-$VerBy       = (git log -n 1 --format=format:"const TCHAR* VERSION_AUTHOR=TEXT(`\`"%an `<%ae`>`\`");%n") | Out-String
-$VerUrl      = (git log -n 1 --format=format:"const TCHAR* VERSION_URL=TEXT(`\`"$VerPrefix%H`\`");%n") | Out-String
-$VerDate     = (git log -n 1 --format=format:"const TCHAR* VERSION_DATE=TEXT(`\`"%ai`\`");%n") | Out-String
+$VerBy       = (git log -n 1 --format=format:"static const TCHAR* VERSION_AUTHOR=TEXT(`\`"%an `<%ae`>`\`");%n") | Out-String
+$VerUrl      = (git log -n 1 --format=format:"static const TCHAR* VERSION_URL=TEXT(`\`"$VerPrefix%H`\`");%n") | Out-String
+$VerDate     = (git log -n 1 --format=format:"static const TCHAR* VERSION_DATE=TEXT(`\`"%ai`\`");%n") | Out-String
 $VerDescribe = (git describe --tags --long).Trim() | Out-String
 $VerDescribe = $VerDescribe.TrimEnd()
 

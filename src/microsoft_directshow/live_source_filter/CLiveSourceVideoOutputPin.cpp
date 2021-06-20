@@ -30,6 +30,32 @@ CLiveSourceVideoOutputPin::CLiveSourceVideoOutputPin(
 
 CLiveSourceVideoOutputPin::~CLiveSourceVideoOutputPin()
 {
+	// TODO: Because we cannot properly delete we hack this
+	assert(m_cRef > 0);
+	m_cRef = 0;
+}
+
+
+void CLiveSourceVideoOutputPin::Initialize(
+	IVideoFrameFormatter* videoFrameFormatter,
+	timestamp_t frameDuration,
+	timingclocktime_t timestampTicksPerSecond)
+{
+	if (!videoFrameFormatter)
+		throw std::runtime_error("Cannot set null IVideoFrameFormatter");
+
+	if (frameDuration <= 0)
+		throw std::runtime_error("Duration must be > 0");
+	assert(frameDuration > 50000LL); // 5ms frame is 200Hz, probably a reasonable upper bound
+	assert(frameDuration < 10000000LL);  // 1Hz, reasonable lower bound
+
+	if (timestampTicksPerSecond < 0)
+		throw std::runtime_error("Ticks per second must be >= 0");
+
+	m_videoFrameFormatter = videoFrameFormatter;
+	m_frameDuration = frameDuration;
+	m_timestampTicksPerSecond = timestampTicksPerSecond;
+
 }
 
 
@@ -290,36 +316,6 @@ HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::QuerySupported(
 }
 
 
-void CLiveSourceVideoOutputPin::SetFormatter(IVideoFrameFormatter* videoFrameFormatter)
-{
-	if (!videoFrameFormatter)
-		throw std::runtime_error("Cannot set null IVideoFrameFormatter");
-
-	m_videoFrameFormatter = videoFrameFormatter;
-}
-
-
-void CLiveSourceVideoOutputPin::SetFrameDuration(timestamp_t duration)
-{
-	if(duration <= 0)
-		throw std::runtime_error("Duration must be > 0");
-
-	assert(duration > 50000LL); // 5ms frame is 200Hz, probably a reasonable upper bound
-	assert(duration < 10000000LL);  // 1Hz, reasonable lower bound
-
-	m_frameDuration = duration;
-}
-
-
-void CLiveSourceVideoOutputPin::SetTimestampTicksPerSecond(timingclocktime_t timestampTicksPerSecond)
-{
-	if (timestampTicksPerSecond < 0)
-		throw std::runtime_error("Ticks per second must be >= 0");
-
-	m_timestampTicksPerSecond = timestampTicksPerSecond;
-}
-
-
 void CLiveSourceVideoOutputPin::OnHDRData(HDRDataSharedPtr& hdrData)
 {
 	if (!hdrData)
@@ -336,7 +332,8 @@ HRESULT CLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 	HRESULT hr;
 
 	// Get buffer for sample
-	// TODO: the 2 null pointers here point to the start and end of the sample, use that in cooperation with the captured time?
+	// After measuring this is below detection with windows wall clock time,
+	// no need to try to optimize by using the start/stop arguments.
 	IMediaSample* pSample = NULL;
 	hr = this->GetDeliveryBuffer(&pSample, NULL, NULL, 0);
 	if (FAILED(hr))
@@ -407,8 +404,23 @@ HRESULT CLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 	}
 
 	// Format (which can just be a copy) the video frame to the DirectShow buffer
+	// A simple memcpy runs in the 2-4ms range for a decent frame size
+#ifdef _DEBUG
+	timestamp_t startTime = ::GetWallClockTime();
+#endif
+
 	assert(m_videoFrameFormatter);
 	m_videoFrameFormatter->FormatVideoFrame(videoFrame, pData);
+
+#ifdef _DEBUG
+	if (m_frameCounter % 100 == 0)
+	{
+		DbgLog((LOG_TRACE, 1,
+			TEXT("CLiveSourceVideoOutputPin::OnVideoFrame(#%I64u): Formatter took %.1f us"),
+			m_frameCounter,
+			((::GetWallClockTime() - startTime) / 10.0)));
+	}
+#endif
 
 	hr = pSample->SetActualDataLength(m_videoFrameFormatter->GetOutFrameSize());
 	if (FAILED(hr))
@@ -439,7 +451,7 @@ HRESULT CLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 	// Set HDR data if needed
 	if (m_hdrData)
 	{
-		if ((m_frameCounter % 100) == 0 || m_hdrChanged)
+		if ((m_frameCounter % 100) == 1 || m_hdrChanged)
 		{
 			IMediaSideData* pMediaSideData = nullptr;
 			if (FAILED(pSample->QueryInterface(&pMediaSideData)))
@@ -471,7 +483,23 @@ HRESULT CLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 		}
 	}
 
+#ifdef _DEBUG
+	startTime = ::GetWallClockTime();
+#endif
+
+	// Deliver to madVR can take forver when timestamps are set
 	hr = this->Deliver(pSample);
+
+#ifdef _DEBUG
+	if (m_frameCounter % 100 == 0)
+	{
+		DbgLog((LOG_TRACE, 1,
+			TEXT("CLiveSourceVideoOutputPin::OnVideoFrame(#%I64u): Call to deliver took %.1f us"),
+			m_frameCounter,
+			((::GetWallClockTime() - startTime) / 10.0)));
+	}
+#endif
+
 	pSample->Release();
 
 	++m_frameCounter;

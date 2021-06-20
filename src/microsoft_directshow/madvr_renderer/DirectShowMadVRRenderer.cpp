@@ -111,7 +111,6 @@ void DirectShowMadVRRenderer::OnVideoFrame(VideoFrame& videoFrame)
 
 	if (m_timingClock)
 	{
-
 		const timingclocktime_t frameTime = videoFrame.GetTimingTimestamp();
 		const timingclocktime_t clockTime = m_timingClock->GetTimingClockTime();
 
@@ -128,24 +127,42 @@ void DirectShowMadVRRenderer::OnVideoFrame(VideoFrame& videoFrame)
 		timingclocktime_t captureNowTimeDiff = clockTime - frameTime;
 		double timeDeltaMs = captureNowTimeDiff / (double)m_timingClock->GetTimingClockTicksPerSecond() * 1000.0;
 
-		// Clock should be within 20s or so, captures botch wrong clocks but also massive buffering
+		// Clock should be within 20s or so, captures both wrong clocks but also massive buffering
 		assert(captureNowTimeDiff < 20 * m_timingClock->GetTimingClockTicksPerSecond());
 
 		// Display once in a while
-		if (m_frameCounter % 50 == 0)
+		if (m_frameCounter % 100 == 0)
 		{
-			DbgLog((LOG_TRACE, 1, TEXT("CLiveSourceVideoOutputPin::OnVideoFrame(): (Has clock) Capture->now: %.03f ms, Prev-current: %.03f ms"),
+			DbgLog((LOG_TRACE, 1, TEXT(
+				"DirectShowMadVRRenderer::OnVideoFrame(#%I64u): Capture->now: %.03f ms, Prev-current: %.03f ms"),
+				m_frameCounter,
 				timeDeltaMs,
 				previousFrameDiffMs));
 		}
 	}
 
+	timestamp_t startTime = ::GetWallClockTime();
 #endif  // _DEBUG
+
 
 	if (FAILED(m_liveSource->OnVideoFrame(videoFrame)))
 	{
-		DbgLog((LOG_TRACE, 1, TEXT("CLiveSourceVideoOutputPin::OnVideoFrame(): Failed to deliver frame #%I64u"), m_frameCounter));
+		DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::OnVideoFrame(): Failed to deliver frame #%I64u"), m_frameCounter));
 	}
+
+#ifdef _DEBUG
+
+	const timestamp_t endTime = ::GetWallClockTime();
+	const double durationUs = (endTime - startTime) / 10.0;
+
+	if (m_frameCounter % 100 == 0)
+	{
+		DbgLog((LOG_TRACE, 1,
+			TEXT("DirectShowMadVRRenderer::OnVideoFrame(#%I64u): Call to deliver took %.1f us"),
+			m_frameCounter,
+			durationUs));
+	}
+#endif
 
 	++m_frameCounter;
 }
@@ -370,7 +387,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 
 	m_liveSource->AddRef();
 
-	m_liveSource->Setup(
+	m_liveSource->Initialize(
 		m_videoFramFormatter,
 		mediaSubType,
 		m_videoState->displayMode->FrameDuration(),
@@ -389,17 +406,16 @@ void DirectShowMadVRRenderer::GraphBuild()
 	// Clock
 	//
 
-	// TODO: Make this COM
 	if (m_timingClock)
 	{
 		m_referenceClock = new DirectShowTimingClock(*m_timingClock);
 		m_referenceClock->AddRef();
 		if (FAILED(m_mediaFilter->SetSyncSource(m_referenceClock)))
 			throw std::runtime_error("Failed to set sync source to our reference clock");
-	}
 
-	if (FAILED(m_amGraphStreams->SyncUsingStreamOffset(TRUE)))
-		throw std::runtime_error("Failed to call SyncUsingStreamOffset");
+		if (FAILED(m_amGraphStreams->SyncUsingStreamOffset(TRUE)))
+			throw std::runtime_error("Failed to call SyncUsingStreamOffset");
+	}
 
 	//
 	// madVR render filter
@@ -418,7 +434,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 	if (FAILED(m_pGraph->AddFilter(m_pMVR, L"madVR")))
 		throw std::runtime_error("Failed to add madVR to the graph");
 
-	// TODO: Setting minimal queue sizes will always fail as , they fall outside of the valid range for madVR
+	// TODO: Setting minimal queue sizes will always fail as they fall outside of the valid range for madVR
 	//       Should talk to madshi to get lower values accepted.
 	//
 	//CComQIPtr<IMadVRSettings> pMVRSettings = m_pMVR;
@@ -520,6 +536,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 	}
 
 	pEnum->Release();
+	pEnum = nullptr;
 
 	if (FAILED(m_pMVR->EnumPins(&pEnum)))
 	{
@@ -539,6 +556,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 	}
 
 	pEnum->Release();
+	pEnum = nullptr;
 
 	// TODO: With madVR beta 132 this increases the ref on the live filter by 3, of which 2 I cannot explain
 	if (FAILED(m_pGraph->ConnectDirect(pLiveSourceOutputPin, pMadVRInputPin, &pmt)))
@@ -617,8 +635,8 @@ void DirectShowMadVRRenderer::GraphTeardown()
 	// Disonnect
 	//
 
-	IEnumPins* pEnum = NULL;
-	IPin* pLiveSourceOutputPin = NULL;
+	IEnumPins* pEnum = nullptr;
+	IPin* pLiveSourceOutputPin = nullptr;
 
 	if (FAILED(m_liveSource->EnumPins(&pEnum)))
 		throw std::runtime_error("Failed to get livesource pin enumerator");
@@ -627,44 +645,73 @@ void DirectShowMadVRRenderer::GraphTeardown()
 		throw std::runtime_error("Failed to run next on livesource pin");
 
 	pEnum->Release();
+	pEnum = nullptr;
 
 	if (FAILED(m_pGraph->Disconnect(pLiveSourceOutputPin)))
 		throw std::runtime_error("Failed to disconnect pins");
 
 	pLiveSourceOutputPin->Release();
+
 	//
 	// Free
 	//
 
 	// Graph interfaces
 	if (m_pControl)
+	{
 		m_pControl->Release();
+		m_pControl = nullptr;
+	}
 	if (m_pEvent)
+	{
 		m_pEvent->Release();
+		m_pEvent = nullptr;
+	}
 	if (m_videoWindow)
+	{
 		m_videoWindow->Release();
+		m_videoWindow = nullptr;
+	}
 	if (m_pGraph2)
+	{
 		m_pGraph2->Release();
+		m_pGraph2 = nullptr;
+	}
 	if (m_mediaFilter)
+	{
 		m_mediaFilter->Release();
+		m_mediaFilter = nullptr;
+	}
+
 	if (m_amGraphStreams)
+	{
 		m_amGraphStreams->Release();
+		m_amGraphStreams = nullptr;
+	}
 
 	if (m_referenceClock)
+	{
 		m_referenceClock->Release();
+		m_referenceClock = nullptr;
+	}
 
 	if (m_videoFramFormatter)
+	{
 		delete m_videoFramFormatter;
+		m_videoFramFormatter = nullptr;
+	}
 
 	// Graph itself, will auto-remove filters
 	if (m_pGraph)
 	{
 		m_pGraph->Release();
+		m_pGraph = nullptr;
 	}
 
 	if (m_pMVR)
 	{
 		m_pMVR->Release();
+		m_pMVR = nullptr;
 	}
 
 	if (m_liveSource)
@@ -672,6 +719,7 @@ void DirectShowMadVRRenderer::GraphTeardown()
 		// TODO: When calling ConnectDirect() madvr beta 132 gets 3 references to us and never gives them back
 		//       no idea if this is me (probably) but the only way I can fix it is by ending it forefully here.
 		while (m_liveSource->Release());
+		m_liveSource = nullptr;
 	}
 
 	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::GraphTeardown(): End")));

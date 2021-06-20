@@ -57,7 +57,7 @@ public:
 	}
 
 	// ILiveSource
-	STDMETHODIMP Setup(
+	STDMETHODIMP Initialize(
 		IVideoFrameFormatter* videoFrameFormatter,
 		GUID mediaSubType,
 		timestamp_t frameDuration,

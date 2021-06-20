@@ -46,6 +46,9 @@
     <Filter Include="Source Files\microsoft_directshow\madvr_renderer">
       <UniqueIdentifier>{7c1c5756-853b-4b7d-8bf8-c26501e7df2f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{fe9494c9-405a-408e-b9d8-c51b7b573c39}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VideoProcessorDlg.h">
@@ -278,6 +281,9 @@
     <ClCompile Include="IRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="version.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\images\cie1932xy.bmp">
@@ -298,6 +304,9 @@
     </None>
     <None Include="..\README.md">
       <Filter>Project files</Filter>
+    </None>
+    <None Include="..\tools\generate_version.ps1">
+      <Filter>Tools</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

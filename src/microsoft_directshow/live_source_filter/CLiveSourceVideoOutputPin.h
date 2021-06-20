@@ -26,6 +26,12 @@ public:
 	CLiveSourceVideoOutputPin(CLiveSource* filter, CCritSec *pLock, HRESULT *phr);
 	virtual ~CLiveSourceVideoOutputPin();
 
+	// TODO Units of frameduration?
+	void Initialize(
+		IVideoFrameFormatter * videoFrameFormatter,
+		timestamp_t frameDuration,
+		timingclocktime_t timestampTicksPerSecond);
+
 	// IUnknown
 	DECLARE_IUNKNOWN;
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv) override;
@@ -60,15 +66,6 @@ public:
 	HRESULT STDMETHODCALLTYPE QuerySupported(
 		REFGUID guidPropSet, DWORD dwPropID, DWORD* pTypeSupport) override;
 
-	// Set video formatter to use
-	void SetFormatter(IVideoFrameFormatter* videoFrameFormatter);
-
-	// Set (expected) duration of a frame in timestamp_t (100ns ticks)
-	void SetFrameDuration(timestamp_t duration);
-
-	// Set the clock frequecy of the timestamps we're about to get
-	void SetTimestampTicksPerSecond(timingclocktime_t timestampTicksPerSecond);
-
 	// Part of ILiveSource interface replicated here
 	void OnHDRData(HDRDataSharedPtr&);
 	HRESULT OnVideoFrame(VideoFrame&);
@@ -76,19 +73,15 @@ public:
 private:
 
 	IVideoFrameFormatter* m_videoFrameFormatter = nullptr;
+	timestamp_t m_frameDuration = 0;
+	timingclocktime_t m_timestampTicksPerSecond = 0;
 
 	uint32_t m_frameCounter = 0;
 #ifdef _DEBUG
 	REFERENCE_TIME m_previousTimeStop = 0;
 #endif
-	timestamp_t m_frameDuration = 0;
-	timingclocktime_t m_timestampTicksPerSecond = 0;
 	timestamp_t m_startTimeOffset = 0;
 
 	HDRDataSharedPtr m_hdrData = nullptr;
 	bool m_hdrChanged = false;
-
-	HRESULT DeliverFrame(
-		VideoFrame& videoFrame,
-		REFERENCE_TIME time_offset);
 };

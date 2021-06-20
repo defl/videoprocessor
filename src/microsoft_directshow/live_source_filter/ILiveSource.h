@@ -24,12 +24,8 @@ static const GUID CLSID_CLiveSource =
 
 DECLARE_INTERFACE_(ILiveSource, IUnknown)
 {
-	// Set the VideoState which contains information about buffer sizes etc of the stream of frames
-	// Without calling this called to OnVideoFrame() will lead to exceptions being thrown.
-	//STDMETHOD(OnVideoState)(VideoStateComPtr&) PURE;
-
-	// Setup this source and it's output pin
-	STDMETHOD(Setup)(
+	// Initialize, can only be called once
+	STDMETHOD(Initialize)(
 		IVideoFrameFormatter* videoFrameFormatter,
 		GUID mediaSubType,
 		timestamp_t frameDuration,

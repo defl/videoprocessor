@@ -128,6 +128,8 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <CallingConvention>Cdecl</CallingConvention>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <Optimization>Disabled</Optimization>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -282,6 +284,7 @@
     <ClCompile Include="CaptureInput.cpp" />
     <ClCompile Include="CCie1931Control.cpp" />
     <ClCompile Include="cie.cpp" />
+    <ClCompile Include="version.cpp" />
     <ClCompile Include="WallClock.cpp" />
     <ClCompile Include="CNoopVideoFrameFormatter.cpp" />
     <ClCompile Include="ColorSpace.cpp" />
@@ -318,6 +321,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+    <None Include="..\tools\generate_version.ps1" />
     <None Include="VideoProcessor.rc2" />
   </ItemGroup>
   <ItemGroup>
