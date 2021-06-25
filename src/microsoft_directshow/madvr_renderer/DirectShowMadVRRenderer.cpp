@@ -18,7 +18,6 @@
 
 #include <guid.h>
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>
-#include <microsoft_directshow/live_source_filter/CLiveSourceVideoOutputPin.h>
 #include <microsoft_directshow/DIrectShowTranslations.h>
 #include <CNoopVideoFrameFormatter.h>
 #include <ffmpeg/CFFMpegDecoderVideoFrameFormatter.h>

@@ -539,4 +539,3 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 
 	return hr;
 }
-
