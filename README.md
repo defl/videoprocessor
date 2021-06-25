@@ -15,7 +15,7 @@ VideoProcessor is a one-click solution for this problem allowing live streaming,
 
 **HDCP**
 
-There is one snag through, all high quality copyright protected video is protected with High-bandwidth Digital Content Protection (HDCP). No retail capture card is allowed to forward unprotected video data to it's clients. Therefore, if you connect a HDCP source to a capture card the video output will be disabled or blank. VideoProcessor is a just a client of your capture card and hence if your capture card does not output video because of HDCP, there is no video to process. VideoProcessor cannot strip, circumvent or work around HDCP in any way, shape or form, it can only process what it is given.
+There is one snag through, all high quality copyright protected video is protected with High-bandwidth Digital Content Protection (HDCP). No retail capture card is allowed to forward unprotected video data to it's clients. Therefore, if you connect a HDCP source to a capture card the video output will be disabled or blank. VideoProcessor is just a client of your capture card and hence if your capture card does not output video because of HDCP, there is no video to process. VideoProcessor cannot strip, circumvent or work around HDCP in any way, shape or form, it can only process what it is given.
 
 Devices which can remove this protection are available, allowing for HDCP protected sources being captured by your capture card, but their legality depends on your jurisdiction and use. Ensuring compliance with your local laws, and feeding your capture card data it can forward to VideoProcessor, is <u>your</u> responsibility. 
 
@@ -78,7 +78,7 @@ The following cards have capable hardware but are not supported; getting them wo
 
 VideoProcessor itself takes very little CPU. The capture card drivers often just take a decent amount of memory up (gigs) and the rest is madVR. MadVR can be a massive resource drain; at maximum settings when working on a 4K high frame rate feed there simply is no available hardware which can sustain it (RTX3090 included).
 
-Luckily if you tone it down a bit it works well with quite modest hardware. There are tons of threads like [Building a 4K HTPC for madVR](https://www.avsforum.com/threads/guide-building-a-4k-htpc-for-madvr.2364113/) on this so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements.
+Luckily if you tone it down a bit it works well with quite modest hardware. There are quite a few guides on this, as linked above, so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements. Generally Nvidia is strongly preferred.
 
 For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX 1660 + BlackMagic DeckLink Mini Recorder 4k which is enough for my purposes which is 4K HDR input, 1080p tone mapped output plus some minor enhancements.
 
@@ -128,7 +128,7 @@ Get the source from https://github.com/defl/videoprocessor
 
 # Commercial alternatives
 
-The people behind madVR also have a commercial offering called [MadVR Envy](https://madvrenvy.com/) It does what this program does but is a complete device, offers support, will be better, has more magic and it's HDCP certified meaning it can show HDCP protected content out of the box AND there is no DIY-ing involved. 
+The people behind madVR also have a commercial offering called [MadVR Envy](https://madvrenvy.com/). It does what this program does but is a complete device, offers support, will be better, has more magic and it's HDCP certified meaning it can show HDCP protected content out of the box AND there is no DIY-ing involved. 
 
 *If you have the means I would recommend you buy their product and support madVR development*
 

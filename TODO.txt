@@ -2,19 +2,20 @@ Roadmap
 =======
 
 0.3.0: Clocks
-- Change display modes to be real frame interval and display interval
 - Cleanup TODOs
-- OS clock doesn't seem correct yet
-
+- Re-generate version.rc and use that somehow?
+- Check PS4 image (invertedVertical in video state should automatically do the right thing now)
 
 0.3.1: GUI
-- Remove mouse pointer after going full screen
 - Add context information to all throws
 - No pop-up for some exceptions (start 2 in release mode shows nothing)
-- Cleanup TODOs
+- Rendering screen black background with white text centered (both normal and full-screen)
+- Disable screen saver
 
 0.4.0: DVD
+- Change display modes to be real frame interval and display interval
 - Support for interlaced formats (aim to support DVD, will only test with PS4Pro as player)
+- Force YCbCr422 to YCbCr420 so that madVR can do the upscaling
 
 0.5.0: Website
 - Help page linked to help-buttons in GUI

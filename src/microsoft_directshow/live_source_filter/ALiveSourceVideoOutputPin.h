@@ -9,38 +9,44 @@
 #pragma once
 
 
-#include <streams.h>
-
 #include <IVideoFrameFormatter.h>
+#include <IRenderer.h>    // TODO: Pull out timestamp?
 
 #include "CLiveSource.h"
 
 
-class CLiveSourceVideoOutputPin:
+/**
+ * Abstract implementation of the video pin
+ */
+class ALiveSourceVideoOutputPin:
 	public CBaseOutputPin,
 	public IAMPushSource,
+	public IQualityControl,
 	public IKsPropertySet
 {
 public:
 
-	CLiveSourceVideoOutputPin(CLiveSource* filter, CCritSec *pLock, HRESULT *phr);
-	virtual ~CLiveSourceVideoOutputPin();
+	ALiveSourceVideoOutputPin(
+		CLiveSource* filter,
+		CCritSec* pLock,
+		HRESULT* phr);
+	virtual ~ALiveSourceVideoOutputPin();
 
-	// TODO Units of frameduration?
-	void Initialize(
-		IVideoFrameFormatter * videoFrameFormatter,
-		timestamp_t frameDuration,
-		timingclocktime_t timestampTicksPerSecond);
-
-	// IUnknown
 	DECLARE_IUNKNOWN;
-	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv) override;
+
+	void Initialize(
+		IVideoFrameFormatter* const videoFrameFormatter,
+		timestamp_t frameDuration,
+		ITimingClock* const timingClock,
+		RendererTimestamp timestamp,
+		int frameClockOffsetMs,
+		GUID mediaSubType);
 
 	// CBaseOutputPin overrides
-	HRESULT GetMediaType(int iPosition, CMediaType* pmt) override;
-	HRESULT CheckMediaType(const CMediaType *pmt) override;
-	HRESULT DecideAllocator(IMemInputPin* pPin, IMemAllocator** pAlloc) override;
-	HRESULT DecideBufferSize(IMemAllocator *pAlloc, ALLOCATOR_PROPERTIES *ppropInputRequest) override;
+	HRESULT GetMediaType(int iPosition, CMediaType* pmt);
+	HRESULT CheckMediaType(const CMediaType *pmt);
+	HRESULT DecideAllocator(IMemInputPin* pPin, IMemAllocator** pAlloc);
+	HRESULT DecideBufferSize(IMemAllocator *pAlloc, ALLOCATOR_PROPERTIES *ppropInputRequest);
 
 	// IAMPushSource
 	STDMETHODIMP GetMaxStreamOffset(REFERENCE_TIME* prtMaxOffset) override;
@@ -68,20 +74,45 @@ public:
 
 	// Part of ILiveSource interface replicated here
 	void OnHDRData(HDRDataSharedPtr&);
-	HRESULT OnVideoFrame(VideoFrame&);
+	virtual HRESULT OnVideoFrame(VideoFrame&) = 0;
+
+	// Set the size of the queue.
+	// Zero means no queueing, might not be legal
+	virtual void SetFrameQueueMaxSize(size_t) = 0;
+
+	// Get the size of the queue.
+	// Zero means no queueing going on.
+	virtual size_t GetFrameQueueSize() = 0;
+
+	// Get the current "video lead" in milliseconds
+	// Video lead is how many ms the last frame start is ahead of the clock.
+	double GetFrameVideoLeadMs() const { return m_lastFrameVideoLeadMs; }
+
+protected:
+
+	// Render function to render a videoFrame onto a IMediaSample.
+	// Will not release the sample or dec videoframe nor do the Deliver()
+	HRESULT RenderVideoFrameIntoSample(VideoFrame&, IMediaSample* const);
 
 private:
 
-	IVideoFrameFormatter* m_videoFrameFormatter = nullptr;
-	timestamp_t m_frameDuration = 0;
-	timingclocktime_t m_timestampTicksPerSecond = 0;
+	// Constructor
+	IVideoFrameFormatter* m_videoFrameFormatter;
+	timestamp_t m_frameDuration;
+	ITimingClock* m_timingClock;
+	RendererTimestamp m_timestamp;
+	int m_frameClockOffsetMs;
+	GUID m_mediaSubType;
 
-	uint32_t m_frameCounter = 0;
 #ifdef _DEBUG
 	REFERENCE_TIME m_previousTimeStop = 0;
 #endif
 	timestamp_t m_startTimeOffset = 0;
+	uint64_t m_frameCounter = 0;
+	uint64_t m_previousFrameCounter = 0;
 
 	HDRDataSharedPtr m_hdrData = nullptr;
 	bool m_hdrChanged = false;
+
+	double m_lastFrameVideoLeadMs = 0.0;  // how many ms the last frame start is ahead of the clock.
 };

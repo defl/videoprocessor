@@ -47,7 +47,8 @@
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
-    <EnableASAN>false</EnableASAN>
+    <EnableASAN>
+    </EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -122,20 +123,23 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <AdditionalIncludeDirectories>.;..\3rdparty\blackmagic_decklink;..\3rdparty\madvr;..\3rdparty\microsoft_directshow_baseclasses;..\3rdparty\lavfilters;..\3rdparty\ffmpeg\include</AdditionalIncludeDirectories>
-      <ControlFlowGuard>false</ControlFlowGuard>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <CallingConvention>Cdecl</CallingConvention>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>opengl32.lib;strmiids.lib;winmm.lib;libswscale.a;libavutil.a;libavcodec.a;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\3rdparty\ffmpeg\lib\msvc2019_x64_debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <TreatLinkerWarningAsErrors>
+      </TreatLinkerWarningAsErrors>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -222,6 +226,9 @@
     <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.h" />
     <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.h" />
     <ClInclude Include="ITimingClock.h" />
+    <ClInclude Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.h" />
+    <ClInclude Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.h" />
+    <ClInclude Include="microsoft_directshow\live_source_filter\CUnbufferedLiveSourceVideoOutputPin.h" />
     <ClInclude Include="OSTimingClock.h" />
     <ClInclude Include="TimingClock.h" />
     <ClInclude Include="CaptureInput.h" />
@@ -244,7 +251,6 @@
     <ClInclude Include="microsoft_directshow\DirectShowDefines.h" />
     <ClInclude Include="microsoft_directshow\DirectShowTranslations.h" />
     <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSource.h" />
-    <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.h" />
     <ClInclude Include="microsoft_directshow\live_source_filter\ILiveSource.h" />
     <ClInclude Include="microsoft_directshow\madvr_renderer\DirectShowMadVRRenderer.h" />
     <ClInclude Include="PixelFormat.h" />
@@ -279,6 +285,9 @@
     <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.cpp" />
     <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.cpp" />
     <ClCompile Include="IRenderer.cpp" />
+    <ClCompile Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.cpp" />
+    <ClCompile Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.cpp" />
+    <ClCompile Include="microsoft_directshow\live_source_filter\CUnbufferedLiveSourceVideoOutputPin.cpp" />
     <ClCompile Include="OSTimingClock.cpp" />
     <ClCompile Include="TimingClock.cpp" />
     <ClCompile Include="CaptureInput.cpp" />
@@ -299,7 +308,6 @@
     <ClCompile Include="microsoft_directshow\DirectShowTimingClock.cpp" />
     <ClCompile Include="microsoft_directshow\DirectShowTranslations.cpp" />
     <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSource.cpp" />
-    <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.cpp" />
     <ClCompile Include="microsoft_directshow\madvr_renderer\DirectShowMadVRRenderer.cpp" />
     <ClCompile Include="PixelFormat.cpp" />
     <ClCompile Include="PixelValueRange.cpp" />

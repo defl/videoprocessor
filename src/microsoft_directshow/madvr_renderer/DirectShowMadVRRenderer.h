@@ -37,6 +37,9 @@ public:
 		UINT eventMsg,
 		ITimingClock* timingClock,
 		VideoStateComPtr& videoState,
+		RendererTimestamp timestamp,
+		size_t frameQueueMaxSize,
+		int frameClockOffsetMs,
 		DXVA_NominalRange forceNominalRange,
 		DXVA_VideoTransferFunction forceVideoTransferFunction,
 		DXVA_VideoTransferMatrix forceVideoTransferMatrix,
@@ -53,6 +56,8 @@ public:
 	void Stop() override;
 	void OnPaint() override;
 	void OnSize() override;
+	int GetFrameQueueSize() override;
+	double GetFrameVideoLeadMs() override;
 
 private:
 	IRendererCallback& m_callback;
@@ -61,6 +66,9 @@ private:
 	UINT m_eventMsg;
 	ITimingClock* m_timingClock;
 	VideoStateComPtr m_videoState;
+	RendererTimestamp m_timestamp;
+	size_t m_frameQueueMaxSize;
+	int m_frameClockOffsetMs;
 	DXVA_NominalRange m_forceNominalRange = DXVA_NominalRange_Unknown;  // Unknown means not force
 	DXVA_VideoTransferFunction m_forceVideoTransferFunction = DXVA_VideoTransFunc_Unknown;  // Unknown means not force
 	DXVA_VideoTransferMatrix m_forceVideoTransferMatrix = DXVA_VideoTransferMatrix_Unknown;  // Unknown means not force
@@ -78,9 +86,8 @@ private:
 	IFilterGraph2* m_pGraph2 = NULL;
 	IMediaFilter* m_mediaFilter = NULL;
 	IAMGraphStreams* m_amGraphStreams = NULL;
-
-	IVideoFrameFormatter* m_videoFramFormatter = nullptr;
 	IReferenceClock* m_referenceClock = nullptr;
+	IVideoFrameFormatter* m_videoFramFormatter = nullptr;
 	CLiveSource* m_liveSource = nullptr;
 	IBaseFilter* m_pMVR = nullptr;
 

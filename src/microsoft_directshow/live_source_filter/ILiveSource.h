@@ -29,7 +29,10 @@ DECLARE_INTERFACE_(ILiveSource, IUnknown)
 		IVideoFrameFormatter* videoFrameFormatter,
 		GUID mediaSubType,
 		timestamp_t frameDuration,
-		timingclocktime_t timestampTicksPerSecond) PURE;
+		ITimingClock * timingClock,
+		RendererTimestamp timestamp,
+		size_t frameQueueMaxSize,
+		int m_frameClockOffsetMs) PURE;
 
 	// HDR data can change dynamically on a frame-by-frame basis. If you call
 	// this then the next frame sent through OnVideoFrame() will carry the information

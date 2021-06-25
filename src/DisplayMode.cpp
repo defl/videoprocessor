@@ -33,7 +33,8 @@ DisplayMode::DisplayMode(
 timestamp_t DisplayMode::FrameDuration() const
 {
 	// Convert mhz to 100ns intervals
-	return std::round(10000000000.0 / (double)m_refreshRateMilliHz);
+	double interval = 10000000000.0 / m_refreshRateMilliHz;
+	return round(interval);
 }
 
 

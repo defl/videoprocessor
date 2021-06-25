@@ -11,6 +11,24 @@
 #include "IRenderer.h"
 
 
+const TCHAR* ToString(const RendererTimestamp rendererTimestamp)
+{
+	switch (rendererTimestamp)
+	{
+	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK:
+		return TEXT("Clock");
+
+	case RendererTimestamp::RENDERER_TIMESTAMP_THEORETICAL:
+		return TEXT("Theo");
+
+	case RendererTimestamp::RENDERER_TIMESTAMP_NONE:
+		return TEXT("None");
+	}
+
+	throw std::runtime_error("UNSPECIFIED RendererTimestamp");
+}
+
+
 const TCHAR* ToString(const RendererState rendererState)
 {
 	switch (rendererState)

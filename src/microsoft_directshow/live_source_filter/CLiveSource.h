@@ -13,11 +13,12 @@
 
 #include <VideoState.h>
 #include <IVideoFrameFormatter.h>
+#include <IRenderer.h>  // TODO: Pull out timestamp?
 
 #include "ILiveSource.h"
 
 
-class CLiveSourceVideoOutputPin;
+class ALiveSourceVideoOutputPin;
 
 
 #define LIVE_SOURCE_FILTER_NAME TEXT("LiveSourceFilter")
@@ -46,6 +47,7 @@ public:
 	// IUnknown
 	DECLARE_IUNKNOWN;
 
+#ifdef _DEBUG
 	STDMETHODIMP_(ULONG) NonDelegatingAddRef()
 	{
 		return CBaseFilter::NonDelegatingAddRef();
@@ -55,16 +57,21 @@ public:
 	{
 		return CBaseFilter::NonDelegatingRelease();
 	}
+#endif // _DEBUG
 
 	// ILiveSource
 	STDMETHODIMP Initialize(
 		IVideoFrameFormatter* videoFrameFormatter,
 		GUID mediaSubType,
 		timestamp_t frameDuration,
-		timingclocktime_t timestampTicksPerSecond) override;
+		ITimingClock* timingClock,
+		RendererTimestamp timestamp,
+		size_t frameQueueMaxSize,
+		int frameClockOffsetMs) override;
 	STDMETHODIMP OnHDRData(HDRDataSharedPtr&) override;
 	STDMETHODIMP OnVideoFrame(VideoFrame&) override;
 
+	// CBaseFilter
 	// CBaseFilter
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv) override;
 	int GetPinCount() override;
@@ -76,8 +83,18 @@ public:
 	// Get the MediaSubType the data will represent
 	GUID GetMediaSubType();
 
+	// Get the current frame queue size, negative means no queue
+	int GetFrameQueueSize();
+
+	// Get the current "video lead" in milliseconds
+	// Video lead is how many ms the last frame start is ahead of the clock.
+	double GetFrameVideoLeadMs();
+
+	// Get the video output pint
+	ALiveSourceVideoOutputPin* GetVideoOutputPin() const { return m_videoOutputPin; }
+
 private:
-	CLiveSourceVideoOutputPin* m_videoOutputPin;
+	ALiveSourceVideoOutputPin* m_videoOutputPin;
 
 	GUID m_mediaSubType;
 

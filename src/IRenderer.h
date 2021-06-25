@@ -31,6 +31,22 @@ enum RendererState
 const TCHAR* ToString(const RendererState rendererState);
 
 
+enum RendererTimestamp
+{
+	// Use the given clock
+	RENDERER_TIMESTAMP_CLOCK,
+
+	// Theoretical timestamp based on frame
+	RENDERER_TIMESTAMP_THEORETICAL,
+
+	// Don't set timestamps (and use clock)
+	RENDERER_TIMESTAMP_NONE
+};
+
+
+const TCHAR* ToString(const RendererTimestamp rendererTimestamp);
+
+
 /**
  * Renderer callback
  */
@@ -80,4 +96,15 @@ public:
 
 	// Handle window resize event
 	virtual void OnSize() = 0;
+
+	// Get the current frame queue size, negative means no queue
+	// Only valid te be called if the RendererState called back RENDERSTATE_RENDERING
+	virtual int GetFrameQueueSize() = 0;
+
+	// Get the current "video lead" in milliseconds
+	// Video lead is how many ms the last frame start is ahead of the clock.
+	// - postive means frame to be rendered in the future, which is what we need
+	// - negative means the frame is late, will be rendered immediately
+	// Only valid te be called if the RendererState called back RENDERSTATE_RENDERING
+	virtual double GetFrameVideoLeadMs() = 0;
 };

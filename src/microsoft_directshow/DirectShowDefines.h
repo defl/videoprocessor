@@ -41,3 +41,8 @@ static const DXVA_VideoTransferFunction DIRECTSHOW_VIDEOTRANSFUNC_26 = (DXVA_Vid
 static const DXVA_VideoTransferFunction DIRECTSHOW_VIDEOTRANSFUNC_2084 = (DXVA_VideoTransferFunction)15;  // PQ
 static const DXVA_VideoTransferFunction DIRECTSHOW_VIDEOTRANSFUNC_HLG = (DXVA_VideoTransferFunction)16;
 static const DXVA_VideoTransferFunction DIRECTSHOW_VIDEOTRANSFUNC_10_rel = (DXVA_VideoTransferFunction)17;
+
+// Timestamps
+#define US_TO_DSTS(us) ((REFERENCE_TIME)us * 10LL)
+#define MS_TO_DSTS(ms) (US_TO_DSTS(ms) * 1000LL)
+#define S_TO_DSTS(s) (MS_TO_DSTS(s) * 1000LL)

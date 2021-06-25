@@ -144,9 +144,6 @@
     <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSource.h">
       <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
     </ClInclude>
-    <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.h">
-      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
-    </ClInclude>
     <ClInclude Include="microsoft_directshow\live_source_filter\ILiveSource.h">
       <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
     </ClInclude>
@@ -173,6 +170,15 @@
     </ClInclude>
     <ClInclude Include="version.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.h">
+      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\live_source_filter\CUnbufferedLiveSourceVideoOutputPin.h">
+      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.h">
+      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -257,9 +263,6 @@
     <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSource.cpp">
       <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
     </ClCompile>
-    <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSourceVideoOutputPin.cpp">
-      <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
-    </ClCompile>
     <ClCompile Include="microsoft_directshow\madvr_renderer\DirectShowMadVRRenderer.cpp">
       <Filter>Source Files\microsoft_directshow\madvr_renderer</Filter>
     </ClCompile>
@@ -283,6 +286,15 @@
     </ClCompile>
     <ClCompile Include="version.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.cpp">
+      <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\live_source_filter\CUnbufferedLiveSourceVideoOutputPin.cpp">
+      <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.cpp">
+      <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

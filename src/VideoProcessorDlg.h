@@ -53,6 +53,7 @@ public:
 	afx_msg void OnCaptureDeviceSelected();
 	afx_msg void OnCaptureInputSelected();
 	afx_msg void OnClockSelected();
+	afx_msg void OnRendererTimestampSelected();
 	afx_msg void OnRendererNominalRangeSelected();
 	afx_msg void OnRendererTransferFunctionSelected();
 	afx_msg void OnRendererTransferMatrixSelected();
@@ -123,13 +124,18 @@ protected:
 	CStatic	m_hdrMaxFall;
 
 	// Renderer group
-	CStatic m_rendererStateText;
+	CComboBox m_rendererTimestampCombo;
 	CComboBox m_rendererNominalRangeCombo;
 	CComboBox m_rendererTransferFunctionCombo;
 	CComboBox m_rendererTransferMatrixCombo;
 	CComboBox m_rendererPrimariesCombo;
 	CButton m_rendererFullscreenButton;
 	CButton m_rendererRestartButton;
+	CStatic m_rendererStateText;
+	CStatic m_rendererVideoFrameQueueSize;
+	CEdit m_rendererVideoFrameQueueSizeMaxEdit;
+	CStatic m_rendererVideoLeadMs;
+	CEdit m_rendererClockOffsetEdit;
 	CStatic	m_rendererBox;  // This is the small renderer window
 
 	CSize m_minDialogSize;
@@ -180,9 +186,12 @@ protected:
 	void RenderStart();
 	void RenderStop();
 	void RenderRemove();
+	void RenderGUIClear();
 	void FullScreenWindowConstruct();
 	void FullScreenWindowDestroy();
 	HWND GetRenderWindow();
+	size_t GetRendererVideoFrameQueueSizeMax();
+	int GetRendererVideoFrameClockOffsetMs();
 
 	// CDialog
 	virtual void DoDataExchange(CDataExchange* pDX) override;
@@ -194,6 +203,7 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnClose();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg HCURSOR	OnQueryDragIcon();
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
 	DECLARE_MESSAGE_MAP()

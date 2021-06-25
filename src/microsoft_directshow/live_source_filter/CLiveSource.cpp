@@ -8,7 +8,8 @@
 
 #include <stdafx.h>
 
-#include "CLiveSourceVideoOutputPin.h"
+#include "CUnbufferedLiveSourceVideoOutputPin.h"
+#include "CBufferedLiveSourceVideoOutputPin.h"
 
 #include "CLiveSource.h"
 
@@ -18,10 +19,21 @@ CLiveSource::CLiveSource(
 	HRESULT* phr):
 	CBaseFilter(LIVE_SOURCE_FILTER_NAME, pUnk, &m_critSec, CLSID_CLiveSource)
 {
-	m_videoOutputPin = new CLiveSourceVideoOutputPin(
+	HRESULT hr = S_OK;
+
+	//m_videoOutputPin = new CUnbufferedLiveSourceVideoOutputPin(
+	//	this,
+	//	&m_critSec,
+	//	&hr);
+
+	m_videoOutputPin = new CBufferedLiveSourceVideoOutputPin(
 		this,
 		&m_critSec,
-		phr);
+		&hr);
+
+
+	if (hr != S_OK)
+		throw std::runtime_error("Failed to construct pin");
 
 	if (phr)
 	{
@@ -40,9 +52,8 @@ CLiveSource::~CLiveSource()
 {
 	if (m_videoOutputPin)
 	{
-		//TODO: Because we cannot properly release everything we manually delete here
-		//m_videoOutputPin->Release();
-		delete m_videoOutputPin;
+		ULONG refCount = m_videoOutputPin->Release();
+		assert(refCount == 0);
 		m_videoOutputPin = nullptr;
 	}
 }
@@ -68,16 +79,25 @@ STDMETHODIMP CLiveSource::Initialize(
 	IVideoFrameFormatter* videoFrameFormatter,
 	GUID mediaSubType,
 	timestamp_t frameDuration,
-	timingclocktime_t timestampTicksPerSecond)
+	ITimingClock* timingClock,
+	RendererTimestamp timestamp,
+	size_t frameQueueMaxSize,
+	int frameClockOffsetMs)
 {
 	assert(videoFrameFormatter);
 	assert(mediaSubType.Data1 > 0);
 	assert(frameDuration > 0);
+	assert(-5000 < frameClockOffsetMs < 5000);
 
 	m_videoOutputPin->Initialize(
 		videoFrameFormatter,
 		frameDuration,
-		timestampTicksPerSecond);
+		timingClock,
+		timestamp,
+		frameClockOffsetMs,
+		m_mediaSubType);
+
+	m_videoOutputPin->SetFrameQueueMaxSize(frameQueueMaxSize);
 
 	m_mediaSubType = mediaSubType;
 	return S_OK;
@@ -102,33 +122,15 @@ STDMETHODIMP CLiveSource::NonDelegatingQueryInterface(REFIID riid, void** ppv)
 	CheckPointer(ppv, E_POINTER);
 
 	if (riid == IID_ILiveSource)
-	{
 		return GetInterface((ILiveSource*)this, ppv);
-	}
-	else if (riid == IID_IAMPushSource)
-	{
-		// This should be on the pin itself
-		throw std::runtime_error("NonDelegatingQueryInterface IID_IAMPushSource called on CLiveSource");
-	}
-	else if (riid == IID_IQualityControl)
-	{
-		// This should be on the pin itself
-		throw std::runtime_error("NonDelegatingQueryInterface IID_IQualityControl called on CLiveSource");
-	}
-	else if (riid == IID_IKsPropertySet)
-	{
-		// This should be on the pin itself
-		throw std::runtime_error("NonDelegatingQueryInterface IID_IKsPropertySet called on CLiveSource");
-	}
+
 	else if (riid == IID_IAMFilterMiscFlags)
-	{
 		return GetInterface((IAMFilterMiscFlags*)this, ppv);
-	}
+
 	else
-	{
 		return CBaseFilter::NonDelegatingQueryInterface(riid, ppv);
-	}
 }
+
 
 int CLiveSource::GetPinCount()
 {
@@ -154,4 +156,16 @@ ULONG CLiveSource::GetMiscFlags()
 GUID CLiveSource::GetMediaSubType()
 {
 	return m_mediaSubType;
+}
+
+
+int CLiveSource::GetFrameQueueSize()
+{
+	return m_videoOutputPin->GetFrameQueueSize();
+}
+
+
+double CLiveSource::GetFrameVideoLeadMs()
+{
+	return m_videoOutputPin->GetFrameVideoLeadMs();
 }

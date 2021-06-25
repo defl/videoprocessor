@@ -18,6 +18,7 @@
 
 #include <guid.h>
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>
+#include <microsoft_directshow/live_source_filter/CLiveSourceVideoOutputPin.h>
 #include <microsoft_directshow/DIrectShowTranslations.h>
 #include <CNoopVideoFrameFormatter.h>
 #include <ffmpeg/CFFMpegDecoderVideoFrameFormatter.h>
@@ -32,6 +33,9 @@ DirectShowMadVRRenderer::DirectShowMadVRRenderer(
 	UINT eventMsg,
 	ITimingClock* timingClock,
 	VideoStateComPtr& videoState,
+	RendererTimestamp timestamp,
+	size_t frameQueueMaxSize,
+	int frameClockOffsetMs,
 	DXVA_NominalRange forceNominalRange,
 	DXVA_VideoTransferFunction forceVideoTransferFunction,
 	DXVA_VideoTransferMatrix forceVideoTransferMatrix,
@@ -42,6 +46,9 @@ DirectShowMadVRRenderer::DirectShowMadVRRenderer(
 	m_eventMsg(eventMsg),
 	m_timingClock(timingClock),
 	m_videoState(videoState),
+	m_timestamp(timestamp),
+	m_frameClockOffsetMs(frameClockOffsetMs),
+	m_frameQueueMaxSize(frameQueueMaxSize),
 	m_forceNominalRange(forceNominalRange),
 	m_forceVideoTransferFunction(forceVideoTransferFunction),
 	m_forceVideoTransferMatrix(forceVideoTransferMatrix),
@@ -140,29 +147,12 @@ void DirectShowMadVRRenderer::OnVideoFrame(VideoFrame& videoFrame)
 				previousFrameDiffMs));
 		}
 	}
-
-	timestamp_t startTime = ::GetWallClockTime();
 #endif  // _DEBUG
-
 
 	if (FAILED(m_liveSource->OnVideoFrame(videoFrame)))
 	{
 		DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::OnVideoFrame(): Failed to deliver frame #%I64u"), m_frameCounter));
 	}
-
-#ifdef _DEBUG
-
-	const timestamp_t endTime = ::GetWallClockTime();
-	const double durationUs = (endTime - startTime) / 10.0;
-
-	if (m_frameCounter % 100 == 0)
-	{
-		DbgLog((LOG_TRACE, 1,
-			TEXT("DirectShowMadVRRenderer::OnVideoFrame(#%I64u): Call to deliver took %.1f us"),
-			m_frameCounter,
-			durationUs));
-	}
-#endif
 
 	++m_frameCounter;
 }
@@ -241,6 +231,24 @@ void DirectShowMadVRRenderer::OnSize()
 }
 
 
+int DirectShowMadVRRenderer::GetFrameQueueSize()
+{
+	if (m_state != RendererState::RENDERSTATE_RENDERING)
+		throw std::runtime_error("Invalid state, can only be called while rendering");
+
+	return m_liveSource->GetFrameQueueSize();
+}
+
+
+double DirectShowMadVRRenderer::GetFrameVideoLeadMs()
+{
+	if (m_state != RendererState::RENDERSTATE_RENDERING)
+		throw std::runtime_error("Invalid state, can only be called while rendering");
+
+	return m_liveSource->GetFrameVideoLeadMs();
+}
+
+
 void DirectShowMadVRRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PTR param2)
 {
 	// ! Do not tear down graph here
@@ -258,7 +266,10 @@ void DirectShowMadVRRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PT
 	case EC_USERABORT:
 	case EC_ERRORABORT:
 	case EC_COMPLETE:
-		GraphStop();
+		if (m_state == RendererState::RENDERSTATE_RENDERING)
+		{
+			GraphStop();
+		}
 		break;
 
 	// Catch for unknowns in debug
@@ -273,10 +284,16 @@ void DirectShowMadVRRenderer::SetState(RendererState state)
 	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::SetState(): %s"), ToString(state)));
 
 	assert(state != RendererState::RENDERSTATE_UNKNOWN);
-	assert(m_state != state);
-
-	m_state = state;
-	m_callback.OnRendererState(state);
+	if (m_state != state)
+	{
+		m_state = state;
+		m_callback.OnRendererState(state);
+	}
+	else
+	{
+		// This is an interesting breakpoint moment
+		int a = 1;
+	}
 }
 
 
@@ -331,6 +348,20 @@ void DirectShowMadVRRenderer::GraphBuild()
 	if (FAILED(m_pGraph->QueryInterface(IID_IAMGraphStreams, (void**)&m_amGraphStreams)))
 		throw std::runtime_error("Failed to get IID_IAMGraphStreams interface");
 
+	//
+	// Clock
+	//
+
+	if (m_timingClock)
+	{
+		m_referenceClock = new DirectShowTimingClock(*m_timingClock);
+		m_referenceClock->AddRef();
+		if (FAILED(m_mediaFilter->SetSyncSource(m_referenceClock)))
+			throw std::runtime_error("Failed to set sync source to our reference clock");
+
+		if (FAILED(m_amGraphStreams->SyncUsingStreamOffset(TRUE)))
+			throw std::runtime_error("Failed to call SyncUsingStreamOffset");
+	}
 
 	//
 	// Build conversion dependent stuff
@@ -391,7 +422,10 @@ void DirectShowMadVRRenderer::GraphBuild()
 		m_videoFramFormatter,
 		mediaSubType,
 		m_videoState->displayMode->FrameDuration(),
-		m_timingClock ? m_timingClock->GetTimingClockTicksPerSecond() : 0);
+		m_timingClock,
+		m_timestamp,
+		m_frameQueueMaxSize,
+		m_frameClockOffsetMs);
 
 	if (m_videoState->hdrData)
 		m_liveSource->OnHDRData(m_videoState->hdrData);
@@ -400,21 +434,6 @@ void DirectShowMadVRRenderer::GraphBuild()
 	{
 		m_liveSource->Release();
 		throw std::runtime_error("Failed to add LiveSource to the graph");
-	}
-
-	//
-	// Clock
-	//
-
-	if (m_timingClock)
-	{
-		m_referenceClock = new DirectShowTimingClock(*m_timingClock);
-		m_referenceClock->AddRef();
-		if (FAILED(m_mediaFilter->SetSyncSource(m_referenceClock)))
-			throw std::runtime_error("Failed to set sync source to our reference clock");
-
-		if (FAILED(m_amGraphStreams->SyncUsingStreamOffset(TRUE)))
-			throw std::runtime_error("Failed to call SyncUsingStreamOffset");
 	}
 
 	//
@@ -558,7 +577,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 	pEnum->Release();
 	pEnum = nullptr;
 
-	// TODO: With madVR beta 132 this increases the ref on the live filter by 3, of which 2 I cannot explain
+	// TODO: This increases the ref on the live filter by 3, of which 2 I cannot explain
 	if (FAILED(m_pGraph->ConnectDirect(pLiveSourceOutputPin, pMadVRInputPin, &pmt)))
 	{
 		pLiveSourceOutputPin->Release();
@@ -607,22 +626,8 @@ void DirectShowMadVRRenderer::GraphTeardown()
 	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::GraphTeardown(): Begin")));
 
 	//
-	// Disable output window
+	// Stop sending event notifications
 	//
-	// These can fail if we are terminating and there is no visible window anymore, no problem
-	if (m_videoWindow)
-	{
-		if (FAILED(m_videoWindow->put_Visible(OAFALSE)))
-			throw std::runtime_error("Failed to make video window invisble");
-
-		if (FAILED(m_videoWindow->put_Owner(NULL)))
-			throw std::runtime_error("Failed to remove owner from video window");
-
-		if (FAILED(m_videoWindow->HideCursor(OAFALSE)))
-			throw std::runtime_error("Failed to un-HideCursor from video window");
-	}
-
-	// Stop sending event messages
 	// https://docs.microsoft.com/en-us/windows/win32/directshow/responding-to-events for notes on cleanup
 	if (m_pEvent)
 	{
@@ -632,31 +637,49 @@ void DirectShowMadVRRenderer::GraphTeardown()
 	}
 
 	//
+	// Disable output window
+	// These can fail if we are terminating and there is no visible window anymore, no problem
+	//
+	if (m_videoWindow)
+	{
+		m_videoWindow->put_Visible(OAFALSE);
+		m_videoWindow->put_Owner(NULL);
+		m_videoWindow->HideCursor(OAFALSE);
+	}
+
+	//
 	// Disonnect
 	//
 
-	IEnumPins* pEnum = nullptr;
-	IPin* pLiveSourceOutputPin = nullptr;
+	if (m_liveSource)
+	{
+		IEnumPins* pEnum = nullptr;
+		IPin* pLiveSourceOutputPin = nullptr;
 
-	if (FAILED(m_liveSource->EnumPins(&pEnum)))
-		throw std::runtime_error("Failed to get livesource pin enumerator");
+		if (FAILED(m_liveSource->EnumPins(&pEnum)))
+			throw std::runtime_error("Failed to get livesource pin enumerator");
 
-	if (pEnum->Next(1, &pLiveSourceOutputPin, NULL) != S_OK)
-		throw std::runtime_error("Failed to run next on livesource pin");
+		if (pEnum->Next(1, &pLiveSourceOutputPin, NULL) != S_OK)
+			throw std::runtime_error("Failed to run next on livesource pin");
 
-	pEnum->Release();
-	pEnum = nullptr;
+		pEnum->Release();
+		pEnum = nullptr;
 
-	if (FAILED(m_pGraph->Disconnect(pLiveSourceOutputPin)))
-		throw std::runtime_error("Failed to disconnect pins");
+		if (FAILED(m_pGraph->Disconnect(pLiveSourceOutputPin)))
+			throw std::runtime_error("Failed to disconnect pins");
 
-	pLiveSourceOutputPin->Release();
+		pLiveSourceOutputPin->Release();
+	}
 
 	//
 	// Free
 	//
 
-	// Graph interfaces
+	if (m_pGraph)
+	{
+		m_pGraph->Release();
+		m_pGraph = nullptr;
+	}
 	if (m_pControl)
 	{
 		m_pControl->Release();
@@ -682,7 +705,6 @@ void DirectShowMadVRRenderer::GraphTeardown()
 		m_mediaFilter->Release();
 		m_mediaFilter = nullptr;
 	}
-
 	if (m_amGraphStreams)
 	{
 		m_amGraphStreams->Release();
@@ -695,17 +717,11 @@ void DirectShowMadVRRenderer::GraphTeardown()
 		m_referenceClock = nullptr;
 	}
 
-	if (m_videoFramFormatter)
+	if (m_liveSource)
 	{
-		delete m_videoFramFormatter;
-		m_videoFramFormatter = nullptr;
-	}
-
-	// Graph itself, will auto-remove filters
-	if (m_pGraph)
-	{
-		m_pGraph->Release();
-		m_pGraph = nullptr;
+		// TODO: This has 2 refs too many
+		m_liveSource->Release();
+		m_liveSource = nullptr;
 	}
 
 	if (m_pMVR)
@@ -714,12 +730,10 @@ void DirectShowMadVRRenderer::GraphTeardown()
 		m_pMVR = nullptr;
 	}
 
-	if (m_liveSource)
+	if (m_videoFramFormatter)
 	{
-		// TODO: When calling ConnectDirect() madvr beta 132 gets 3 references to us and never gives them back
-		//       no idea if this is me (probably) but the only way I can fix it is by ending it forefully here.
-		while (m_liveSource->Release());
-		m_liveSource = nullptr;
+		delete m_videoFramFormatter;
+		m_videoFramFormatter = nullptr;
 	}
 
 	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::GraphTeardown(): End")));
@@ -747,6 +761,10 @@ void DirectShowMadVRRenderer::GraphStop()
 	assert(m_pGraph);
 	assert(m_pControl);
 
+	// This is not sent to the outside world but it's used internally to guarantee that we're not
+	// mis-handling events coming out of the DirectShow framework
+	m_state = RendererState::RENDERSTATE_STOPPING;
+
 	// Stop directshow graph
 	if (FAILED(m_pControl->Stop()))
 		throw std::runtime_error("Failed to Stop() graph");
@@ -770,6 +788,8 @@ void DirectShowMadVRRenderer::GraphStop()
 
 	if((FILTER_STATE)filterState != FILTER_STATE::State_Stopped)
 		throw std::runtime_error("Filter graph was not stopped");
+
+	assert(m_liveSource->GetFrameQueueSize() == 0);
 
 	SetState(RendererState::RENDERSTATE_STOPPED);
 }

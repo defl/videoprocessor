@@ -1,15 +1,14 @@
-0.3.0
+NEXT (0.3.0)
 - User-selectable (frame) timing clock, including card hardware clock
 - HDR info is now in CIE image
 - Added final handler for throws which pops up a messagebox upon thrown exceptions, this allows the user to understand what's going on
-- Removed all mutexes, it now runs lock-free with a few atomics to ensure correctness
+- Removed all mutexes (outside of directshow), it now runs lock-free with a few atomics to ensure correctness
 - Version number now in window title
+- Mouse not visible anymore in video render window, both windowed and full-screen
 - FIX: Deadlock situation with blackmagic callbacks
 - FIX: frame timestamps now correct, madVR queues fill up and that leads to smooth video output
-- FIX: Memory leaks at exit
 - FIX: Process name in task list
-- Known issue: Leaks memory at renderer restart, seems related to madVR not properly exiting (tested with beta 132)
-- Known issue: OS clock doesn't seem correct yet
+- Known issue: Memory leaks at exit
 
 0.2.0
 - SSE2 build config, not using AVX anymore until needed

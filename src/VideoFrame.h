@@ -18,18 +18,47 @@ class VideoFrame
 {
 public:
 
-	VideoFrame(const void* const data, timingclocktime_t timingTimestamp);
-	VideoFrame(const VideoFrame&) = delete;
+	/**
+	 * Constructor
+	 *
+	 * This is just a pointer to some data.
+	 * If this data in any way, shape or form might be gone by the time it's used, you can use the
+	 * sourceBuffer argument to have the VideoFrame constr/destr do ref management.
+	 */
+	VideoFrame() {}
+	VideoFrame(
+		const void* const data, uint64_t counter,
+		timingclocktime_t timingTimestamp, IUnknown* sourceBuffer);
+	VideoFrame(const VideoFrame&);
+
+	~VideoFrame();
 
 	// Get frame data
 	// If you're wondering where the size of GetData() is, it can be found by querying
 	// VideoState::BytesPerFrame() which you should get before this gets delivered.
 	const void* const GetData() const { return m_data; }
 
+	// Get counter, this is monotoncally increasing from the capture source
+	uint64_t GetCounter() const { return m_counter; }
+
 	// Timestamp set by the timing clock.
 	timingclocktime_t GetTimingTimestamp() const { return m_timingTimestamp; }
 
+	void SourceBufferAddRef()
+	{
+		m_sourceBuffer->AddRef();
+	}
+	void SourceBufferRelease()
+	{
+		ULONG refCount = m_sourceBuffer->Release();
+		assert(refCount == 0);
+	}
+
+	VideoFrame& operator= (const VideoFrame& videoFrame);
+
 private:
-	const void* const m_data;
-	const timingclocktime_t m_timingTimestamp;
+	const void* m_data;
+	uint64_t m_counter;
+	timingclocktime_t m_timingTimestamp;
+	IUnknown* m_sourceBuffer;
 };

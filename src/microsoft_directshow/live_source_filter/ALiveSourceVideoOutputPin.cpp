@@ -8,19 +8,19 @@
 
 #include <stdafx.h>
 
-#include "CLiveSourceVideoOutputPin.h"
-
 #include <guid.h>
 #include <IMediaSideData.h>
-#include <microsoft_directshow/DirectShowTranslations.h>
+
+#include "ALiveSourceVideoOutputPin.h"
 
 
-#define TARGET_AV_PIX_FMT AV_PIX_FMT_RGB48LE
+const static REFERENCE_TIME REFERENCE_TIME_INVALID = -1;
 
-CLiveSourceVideoOutputPin::CLiveSourceVideoOutputPin(
+
+ALiveSourceVideoOutputPin::ALiveSourceVideoOutputPin(
 	CLiveSource* filter,
 	CCritSec* pLock,
-	HRESULT* phr) :
+	HRESULT* phr):
 	CBaseOutputPin(
 		LIVE_SOURCE_FILTER_NAME, filter, pLock, phr,
 		LIVE_SOURCE_FILTER_VIDEO_OUPUT_PIN_NAME)
@@ -28,18 +28,18 @@ CLiveSourceVideoOutputPin::CLiveSourceVideoOutputPin(
 }
 
 
-CLiveSourceVideoOutputPin::~CLiveSourceVideoOutputPin()
+ALiveSourceVideoOutputPin::~ALiveSourceVideoOutputPin()
 {
-	// TODO: Because we cannot properly delete we hack this
-	assert(m_cRef > 0);
-	m_cRef = 0;
 }
 
 
-void CLiveSourceVideoOutputPin::Initialize(
-	IVideoFrameFormatter* videoFrameFormatter,
+void ALiveSourceVideoOutputPin::Initialize(
+	IVideoFrameFormatter* const videoFrameFormatter,
 	timestamp_t frameDuration,
-	timingclocktime_t timestampTicksPerSecond)
+	ITimingClock* const timingClock,
+	RendererTimestamp timestamp,
+	int frameClockOffsetMs,
+	GUID mediaSubType)
 {
 	if (!videoFrameFormatter)
 		throw std::runtime_error("Cannot set null IVideoFrameFormatter");
@@ -49,42 +49,25 @@ void CLiveSourceVideoOutputPin::Initialize(
 	assert(frameDuration > 50000LL); // 5ms frame is 200Hz, probably a reasonable upper bound
 	assert(frameDuration < 10000000LL);  // 1Hz, reasonable lower bound
 
-	if (timestampTicksPerSecond < 0)
-		throw std::runtime_error("Ticks per second must be >= 0");
+	assert(m_frameClockOffsetMs > -20000);  // 20 sec
+	assert(m_frameClockOffsetMs <  20000);
 
 	m_videoFrameFormatter = videoFrameFormatter;
 	m_frameDuration = frameDuration;
-	m_timestampTicksPerSecond = timestampTicksPerSecond;
-
+	m_timingClock = timingClock;
+	m_timestamp = timestamp;
+	m_frameClockOffsetMs = frameClockOffsetMs;
+	m_mediaSubType = mediaSubType;
 }
 
 
-STDMETHODIMP CLiveSourceVideoOutputPin::NonDelegatingQueryInterface(REFIID riid, void** ppv)
-{
-	if (riid == IID_IAMPushSource)
-	{
-		return GetInterface((IAMPushSource*)this, ppv);
-	}
-	else if (riid == IID_IQualityControl)
-	{
-		return GetInterface((IQualityControl*)this, ppv);
-	}
-	else if (riid == IID_IKsPropertySet)
-	{
-		return GetInterface((IKsPropertySet*)this, ppv);
-	}
-
-	return CUnknown::NonDelegatingQueryInterface(riid, ppv);
-}
-
-
-HRESULT CLiveSourceVideoOutputPin::GetMediaType(int iPosition, CMediaType* pmt)
+HRESULT ALiveSourceVideoOutputPin::GetMediaType(int iPosition, CMediaType* pmt)
 {
 	throw std::runtime_error("GetMediaType() is not supported");
 }
 
 
-HRESULT CLiveSourceVideoOutputPin::CheckMediaType(const CMediaType* pmt)
+HRESULT ALiveSourceVideoOutputPin::CheckMediaType(const CMediaType* pmt)
 {
 	CheckPointer(pmt, E_POINTER);
 
@@ -107,7 +90,7 @@ HRESULT CLiveSourceVideoOutputPin::CheckMediaType(const CMediaType* pmt)
 }
 
 
-HRESULT CLiveSourceVideoOutputPin::DecideAllocator(IMemInputPin* pPin, IMemAllocator** ppAlloc)
+HRESULT ALiveSourceVideoOutputPin::DecideAllocator(IMemInputPin* pPin, IMemAllocator** ppAlloc)
 {
 	HRESULT hr = NOERROR;
 	*ppAlloc = nullptr;
@@ -129,7 +112,6 @@ HRESULT CLiveSourceVideoOutputPin::DecideAllocator(IMemInputPin* pPin, IMemAlloc
 	hr = pPin->GetAllocator(ppAlloc);
 	if (SUCCEEDED(hr))
 	{
-
 		hr = DecideBufferSize(*ppAlloc, &prop);
 		if (SUCCEEDED(hr))
 		{
@@ -151,12 +133,13 @@ HRESULT CLiveSourceVideoOutputPin::DecideAllocator(IMemInputPin* pPin, IMemAlloc
 }
 
 
-HRESULT CLiveSourceVideoOutputPin::DecideBufferSize(IMemAllocator *pAlloc, ALLOCATOR_PROPERTIES *ppropInputRequest)
+HRESULT ALiveSourceVideoOutputPin::DecideBufferSize(IMemAllocator *pAlloc, ALLOCATOR_PROPERTIES *ppropInputRequest)
 {
 	CheckPointer(pAlloc,E_POINTER);
 	CheckPointer(ppropInputRequest,E_POINTER);
 
-	CAutoLock cAutoLock(m_pLock);
+	// TODO: Lock this? In the exmaples there things were locked
+	//CAutoLock cAutoLock(m_pLock);
 	HRESULT hr = NOERROR;
 
 	ppropInputRequest->cBuffers = 1;
@@ -185,14 +168,14 @@ HRESULT CLiveSourceVideoOutputPin::DecideBufferSize(IMemAllocator *pAlloc, ALLOC
 //
 
 
-STDMETHODIMP CLiveSourceVideoOutputPin::GetMaxStreamOffset(REFERENCE_TIME *prtMaxOffset)
+STDMETHODIMP ALiveSourceVideoOutputPin::GetMaxStreamOffset(REFERENCE_TIME *prtMaxOffset)
 {
 	*prtMaxOffset = 0;
 	return S_OK;
 }
 
 
-STDMETHODIMP CLiveSourceVideoOutputPin::GetPushSourceFlags(ULONG *pFlags)
+STDMETHODIMP ALiveSourceVideoOutputPin::GetPushSourceFlags(ULONG *pFlags)
 {
 	// Return (* pFlags) = 0 [if this is a iAMPushSource]
 	// https://docs.microsoft.com/en-us/windows/win32/api/strmif/nn-strmif-ireferenceclock
@@ -201,32 +184,32 @@ STDMETHODIMP CLiveSourceVideoOutputPin::GetPushSourceFlags(ULONG *pFlags)
 }
 
 
-STDMETHODIMP CLiveSourceVideoOutputPin::GetStreamOffset(REFERENCE_TIME *prtOffset)
+STDMETHODIMP ALiveSourceVideoOutputPin::GetStreamOffset(REFERENCE_TIME *prtOffset)
 {
 	*prtOffset = 0;
 	return S_OK;
 }
 
 
-STDMETHODIMP CLiveSourceVideoOutputPin::SetMaxStreamOffset(REFERENCE_TIME rtMaxOffset)
+STDMETHODIMP ALiveSourceVideoOutputPin::SetMaxStreamOffset(REFERENCE_TIME rtMaxOffset)
 {
 	return E_NOTIMPL;
 }
 
 
-STDMETHODIMP CLiveSourceVideoOutputPin::SetPushSourceFlags(ULONG Flags)
+STDMETHODIMP ALiveSourceVideoOutputPin::SetPushSourceFlags(ULONG Flags)
 {
 	return E_NOTIMPL;
 }
 
 
-STDMETHODIMP CLiveSourceVideoOutputPin::SetStreamOffset(REFERENCE_TIME rtOffset)
+STDMETHODIMP ALiveSourceVideoOutputPin::SetStreamOffset(REFERENCE_TIME rtOffset)
 {
 	return E_NOTIMPL;
 }
 
 
-STDMETHODIMP CLiveSourceVideoOutputPin::GetLatency(REFERENCE_TIME *prtLatency)
+STDMETHODIMP ALiveSourceVideoOutputPin::GetLatency(REFERENCE_TIME *prtLatency)
 {
 	// latency in 100-nanosecond units.
 	*prtLatency = 0;  // TODO: Just a guess
@@ -239,14 +222,14 @@ STDMETHODIMP CLiveSourceVideoOutputPin::GetLatency(REFERENCE_TIME *prtLatency)
 //
 
 
-STDMETHODIMP CLiveSourceVideoOutputPin::Notify(IBaseFilter* pSender, Quality q)
+STDMETHODIMP ALiveSourceVideoOutputPin::Notify(IBaseFilter* pSender, Quality q)
 {
 	// TODO
 	return S_OK;
 }
 
 
-HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::SetSink(IQualityControl* piqc)
+HRESULT STDMETHODCALLTYPE ALiveSourceVideoOutputPin::SetSink(IQualityControl* piqc)
 {
 	// TODO
 	return S_OK;
@@ -258,7 +241,7 @@ HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::SetSink(IQualityControl* pi
 //
 
 
-HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::Set(
+HRESULT STDMETHODCALLTYPE ALiveSourceVideoOutputPin::Set(
 	REFGUID guidPropSet, DWORD dwPropID, LPVOID pInstanceData, DWORD cbInstanceData,
 	LPVOID pPropData, DWORD cbPropData)
 {
@@ -267,7 +250,7 @@ HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::Set(
 }
 
 
-HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::Get(
+HRESULT STDMETHODCALLTYPE ALiveSourceVideoOutputPin::Get(
 	REFGUID guidPropSet, DWORD dwPropID, LPVOID pInstanceData,
 	DWORD cbInstanceData, LPVOID pPropData, DWORD cbPropData,
 	DWORD* pcbReturned)
@@ -297,7 +280,7 @@ HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::Get(
 }
 
 
-HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::QuerySupported(
+HRESULT STDMETHODCALLTYPE ALiveSourceVideoOutputPin::QuerySupported(
 	REFGUID guidPropSet, DWORD dwPropID, DWORD* pTypeSupport)
 {
 	// https://docs.microsoft.com/en-us/windows/win32/directshow/pin-requirements-for-capture-filters
@@ -316,7 +299,7 @@ HRESULT STDMETHODCALLTYPE CLiveSourceVideoOutputPin::QuerySupported(
 }
 
 
-void CLiveSourceVideoOutputPin::OnHDRData(HDRDataSharedPtr& hdrData)
+void ALiveSourceVideoOutputPin::OnHDRData(HDRDataSharedPtr& hdrData)
 {
 	if (!hdrData)
 		throw std::runtime_error("Setting HDRData to null is not allowed");
@@ -326,132 +309,181 @@ void CLiveSourceVideoOutputPin::OnHDRData(HDRDataSharedPtr& hdrData)
 }
 
 
-HRESULT CLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
+HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoFrame, IMediaSample* const pSample)
 {
-	BYTE* pData = NULL;
 	HRESULT hr;
 
-	// Get buffer for sample
-	// After measuring this is below detection with windows wall clock time,
-	// no need to try to optimize by using the start/stop arguments.
-	IMediaSample* pSample = NULL;
-	hr = this->GetDeliveryBuffer(&pSample, NULL, NULL, 0);
+	//
+	// Media time and related checked
+	// (= frame counter)
+	//
+
+	//const LONGLONG frameCounter = videoFrame.GetCounter();  // From capture (will jump forward on drops)
+	const LONGLONG frameCounter = m_frameCounter++;  // Internal (guaranteed ++)
+
+	// Set frame counter
+	LONGLONG mediaTimeStart = frameCounter;
+	LONGLONG mediaTimeStop = mediaTimeStart + 1;
+	hr = pSample->SetMediaTime(&mediaTimeStart, &mediaTimeStop);
 	if (FAILED(hr))
-	{
 		return hr;
+
+	// Discontinuity check
+	const bool isDiscontinuity =
+		frameCounter != (m_previousFrameCounter + 1) ||
+		frameCounter == 0;
+	if (isDiscontinuity)
+	{
+		DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(): Frame counter jumped from %I64u to %I64u, discontinuity detected"),
+			m_previousFrameCounter, frameCounter));
+
+		hr = pSample->SetDiscontinuity(TRUE);
+		if (FAILED(hr))
+			return hr;
 	}
 
-	hr = pSample->GetPointer(&pData);
-	if (FAILED(hr))
+	m_previousFrameCounter = frameCounter;
+
+	//
+	// Setting the time
+	//
+
+	switch (m_timestamp)
 	{
-		pSample->Release();
-		return hr;
-	}
+	case RendererTimestamp::RENDERER_TIMESTAMP_NONE:
+		break;
 
-	// Set time if we have a timestamp
-	if (videoFrame.GetTimingTimestamp() > 0)
+	case RendererTimestamp::RENDERER_TIMESTAMP_THEORETICAL:
 	{
-		assert(m_timestampTicksPerSecond > 0);
-
-		REFERENCE_TIME timeStart = videoFrame.GetTimingTimestamp();
-
-		// TODO: I don't like the floating point math here
-		timeStart = timeStart * (10000000.0 / m_timestampTicksPerSecond);
-
-		// Guarantee first frame to start counting at time zero
-		if (m_startTimeOffset == 0)
-		{
-			m_startTimeOffset = timeStart;
-		}
-		timeStart -= m_startTimeOffset;
-
-		assert(m_frameDuration > 0);
+		assert(m_startTimeOffset == 0);
+		REFERENCE_TIME timeStart = (frameCounter * m_frameDuration);
 		REFERENCE_TIME timeStop = timeStart + m_frameDuration;
 
 		hr = pSample->SetTime(&timeStart, &timeStop);
 		if (FAILED(hr))
-		{
-			pSample->Release();
 			return hr;
-		}
+
+		break;
+	}
+
+	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK:
+	{
+		if (videoFrame.GetTimingTimestamp() > 0)
+		{
+			assert(m_timingClock->GetTimingClockTicksPerSecond() > 0);
+
+			// Get frame timestamp as reference time
+			// TODO: I don't like the floating point math here
+			REFERENCE_TIME timeStart =
+				videoFrame.GetTimingTimestamp() *
+				(10000000.0 / m_timingClock->GetTimingClockTicksPerSecond());
+
+			// Guarantee first frame to start counting at time zero
+			// Note that this is against the recommendations of microsoft for directshow but otherwise
+			// madVR doesn't start rendering as it's designed for file based video which starts at 0
+			if (m_startTimeOffset == 0)
+			{
+				m_startTimeOffset = timeStart;
+			}
+
+			// If this is not the first frame, add the m_frameClockOffsetMs as reference time (=100ns)
+			else
+			{
+				timeStart += (REFERENCE_TIME)m_frameClockOffsetMs * 10000LL;
+			}
+
+			timeStart -= m_startTimeOffset;
+
+			assert(m_frameDuration > 0);
+			REFERENCE_TIME timeStop = timeStart + m_frameDuration;
+
+			hr = pSample->SetTime(&timeStart, &timeStop);
+			if (FAILED(hr))
+				return hr;
 
 #ifdef _DEBUG
-		if (m_frameCounter < 10)
-		{
-			DbgLog((LOG_TRACE, 1, TEXT("::OnVideoFrame(): #%I64u, Start: %I64d Stop: %I64d"),
-				m_frameCounter, timeStart, timeStop));
-		}
+			// Every n frames output a bunch of consecutive frames to check start/stop
+			if (frameCounter % 200 < 5)
+			{
+				DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): , Start: %I64d Stop: %I64d"),
+					m_frameCounter, timeStart, timeStop));
+			}
 
-		// In debug keep track of expected timestamps and ensure they're not too far off
-		// allow for a whole bunch of startup frames
-		if (m_frameCounter > 0)
-		{
-			assert(m_previousTimeStop < timeStop);
-			//assert(abs(m_previousTimeStop - timeStart) < 10000);  // Must be under a ms
+			// Check how far we're off
+			if (frameCounter > 0 &&
+				frameCounter % 100 == 0)
+			{
+				assert(m_previousTimeStop < timeStop);
+
+				double previousStopStartDiffMs = (m_previousTimeStop - timeStart) / (double)m_timingClock->GetTimingClockTicksPerSecond() * 1000;
+
+				DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): Diff previous stop to start: %.3f ms"),
+					frameCounter, previousStopStartDiffMs));
+
+				//assert(abs(m_previousTimeStop - timeStart) < 10000);  // Must be under a ms
+			}
+
+			m_previousTimeStop = timeStop;
+#endif // _DEBUG
 		}
-		m_previousTimeStop = timeStop;
-#endif
+		break;
+	}
+	default:
+		assert(false);
 	}
 
-	// Media time is frame counter
-	LONGLONG mediaTimeStart = m_frameCounter;
-	LONGLONG mediaTimeStop = mediaTimeStart + 1;
-	hr = pSample->SetMediaTime(&mediaTimeStart, &mediaTimeStop);
+	//
+	// Data copy/formatting
+	//
+
+	// Get target data buffer
+	BYTE* pData = NULL;
+	hr = pSample->GetPointer(&pData);
 	if (FAILED(hr))
-	{
-		pSample->Release();
 		return hr;
-	}
 
-	// Format (which can just be a copy) the video frame to the DirectShow buffer
+	assert(pData);
+
+	// Format (which can just be a copy or a full decode) the video frame to the
+	// DirectShow buffer
 	// A simple memcpy runs in the 2-4ms range for a decent frame size
 #ifdef _DEBUG
 	timestamp_t startTime = ::GetWallClockTime();
 #endif
 
-	assert(m_videoFrameFormatter);
 	m_videoFrameFormatter->FormatVideoFrame(videoFrame, pData);
 
 #ifdef _DEBUG
-	if (m_frameCounter % 100 == 0)
+	if (videoFrame.GetCounter() % 100 == 0)
 	{
 		DbgLog((LOG_TRACE, 1,
-			TEXT("CLiveSourceVideoOutputPin::OnVideoFrame(#%I64u): Formatter took %.1f us"),
-			m_frameCounter,
+			TEXT("::FillBuffer(#%I64u): Formatter took %.1f us"),
+			videoFrame.GetCounter(),
 			((::GetWallClockTime() - startTime) / 10.0)));
 	}
 #endif
 
 	hr = pSample->SetActualDataLength(m_videoFrameFormatter->GetOutFrameSize());
 	if (FAILED(hr))
-	{
-		pSample->Release();
 		return hr;
-	}
 
-	// First frame is known discontinuity
-	if (m_frameCounter == 0)
-	{
-		hr = pSample->SetDiscontinuity(TRUE);
-		if (FAILED(hr))
-		{
-			pSample->Release();
-			return hr;
-		}
-	}
+	//
+	// Sync
+	//
 
 	// All frames are complete images and hence sync points by definition
 	hr = pSample->SetSyncPoint(TRUE);
 	if (FAILED(hr))
-	{
-		pSample->Release();
 		return hr;
-	}
 
-	// Set HDR data if needed
+	//
+	// HDR metadata
+	//
+
+	// TODO: This is now called from a different thread, warning!
 	if (m_hdrData)
 	{
-		if ((m_frameCounter % 100) == 1 || m_hdrChanged)
+		if ((videoFrame.GetCounter() % 100) == 1 || m_hdrChanged)
 		{
 			IMediaSideData* pMediaSideData = nullptr;
 			if (FAILED(pSample->QueryInterface(&pMediaSideData)))
@@ -483,26 +515,28 @@ HRESULT CLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 		}
 	}
 
-#ifdef _DEBUG
-	startTime = ::GetWallClockTime();
-#endif
+	//
+	// The very last thing we need to do (as close to the renderer as possible) is to
+	// calculate how many ms the last frame start is ahead of the clock. This is called
+	// Video lead time.
+	// - postive means frame to be rendered in the future, which is what we need
+	// - negative means the frame is late, will be rendered immediately
+	//
 
-	// Deliver to madVR can take forver when timestamps are set
-	hr = this->Deliver(pSample);
-
-#ifdef _DEBUG
-	if (m_frameCounter % 100 == 0)
+	if (m_timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK)
 	{
-		DbgLog((LOG_TRACE, 1,
-			TEXT("CLiveSourceVideoOutputPin::OnVideoFrame(#%I64u): Call to deliver took %.1f us"),
-			m_frameCounter,
-			((::GetWallClockTime() - startTime) / 10.0)));
+		REFERENCE_TIME timeStart, timeStop;
+
+		hr = pSample->GetTime(&timeStart, &timeStop);
+		if (FAILED(hr))
+			throw std::runtime_error("Failed to get start time");
+
+		double timeStartMs = (timeStart + m_startTimeOffset) / 10000.0;
+		double clockMs = m_timingClock->GetTimingClockTime() / (double)m_timingClock->GetTimingClockTicksPerSecond() * 1000.0;
+
+		m_lastFrameVideoLeadMs = timeStartMs - clockMs;
 	}
-#endif
-
-	pSample->Release();
-
-	++m_frameCounter;
 
 	return hr;
 }
+
