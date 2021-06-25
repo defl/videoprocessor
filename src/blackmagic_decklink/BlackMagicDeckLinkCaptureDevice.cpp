@@ -698,24 +698,19 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 			}
 		}
 
+		if (videoStateChanged)
+			SendVideoStateCallback();
+
 		void* data;
 		if (FAILED(videoFrame->GetBytes(&data)))
 			throw std::runtime_error("Failed to get video frame bytes");
 
-		// Build video frame
-		VideoFrame vpVideoFrame(data, timingTimestamp);
+		VideoFrame vpVideoFrame(
+			data, m_videoFrameCounter,
+			timingTimestamp, videoFrame);
 
-		// Send to client, must be locked at this point
-		{
-			if (videoStateChanged)
-			{
-				// TODO: This is unlocked with respect to the capture thread which might change this
-				//       while we're reading. Too bad.
-				SendVideoStateCallback();
-			}
+		m_callback->OnCaptureDeviceVideoFrame(vpVideoFrame);
 
-			m_callback->OnCaptureDeviceVideoFrame(vpVideoFrame);
-		}
 	}  // videoFrame
 
 	return S_OK;
