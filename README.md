@@ -112,6 +112,7 @@ Get the source from https://github.com/defl/videoprocessor
  * MSVC 2019 community edition
     * Install MFC libraries
     * Debug builds require the [Visual Leak Detector](https://kinddragon.github.io/vld/) Visual C++ plugin
+ * Note that you also need to build ffmpeg, instructions to do so are in t3rdparty\ffmpeg
 
 **Debugging**
 
@@ -141,16 +142,13 @@ madVR is unique in it's abilities and quality, nothing else comes close. For tho
 - Higher end projectors and OLED TVs often can do 3DLUT internally.
 - There are a lot of lower-end devices which can do 3dLUT, [DisplayCalibrations has a good overview of them](https://displaycalibrations.com/lut_boxes_comparisons.html).
 
-
-
 # License & legal
 
 This application is released under the GNU GPL 3.0, see LICENSE.txt. 
 
 Parts of this code are made and owned by others, for example SDKs and the madVR interface; in all such cases there are LICENSE.txt and README.txt files present to point to sources, attributions and licenses.
 
-I'm not affiliated or connected with any of the firms mentioned above. 
-
+I'm not affiliated or connected with any of the firms mentioned above.
 
 
 ------
