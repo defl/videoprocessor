@@ -17,11 +17,11 @@ VideoProcessor is a one-click solution for this problem allowing live streaming,
 
 There is one snag through, all high quality copyright protected video is protected with High-bandwidth Digital Content Protection (HDCP). No retail capture card is allowed to forward unprotected video data to it's clients. Therefore, if you connect a HDCP source to a capture card the video output will be disabled or blank. VideoProcessor is just a client of your capture card and hence if your capture card does not output video because of HDCP, there is no video to process. VideoProcessor cannot strip, circumvent or work around HDCP in any way, shape or form, it can only process what it is given.
 
-Devices which can remove this protection are available, allowing for HDCP protected sources being captured by your capture card, but their legality depends on your jurisdiction and use. Ensuring compliance with your local laws, and feeding your capture card data it can forward to VideoProcessor, is <u>your</u> responsibility. 
+Devices which can remove this protection are available, allowing for HDCP protected sources being captured by your capture card, but their legality depends on your jurisdiction and use. Ensuring compliance with your local laws, and feeding your capture card data it can forward to VideoProcessor, is your responsibility. 
 
 **madVR**
 
-madVR now has two paths, a limited-free-to-use HTPC edition which MadShi releases on his [website](http://madvr.com/) and a commercial appliance called [Envy](https://madvrenvy.com/) which is designed as a video processor. They have adjusted the license terms of the limited-free-to-use to be illegal for use in video capture applications such as VideoProcessor. You can find an old release (09217) with the previous license mirrored [here](http://www.dennisfleurbaaij.com/temp/madVR%2009217%20-%20old%20license.zip) as MadShi has updated all the officially downloadable releases with the new license, making them illegal to use.
+madVR now has two paths, a limited-free-to-use HTPC edition which MadShi releases on his [website](http://madvr.com/) and a commercial appliance called [Envy](https://madvrenvy.com/) which is designed as a video processor. They have adjusted the license terms of the limited-free-to-use to be illegal for use in video capture applications such as VideoProcessor. You can find an old release (09217) with the previous license mirrored [here](http://www.dennisfleurbaaij.com/temp/madVR%2009217%20-%20old%20license.zip) as MadShi has updated all the officially downloadable releases with the new license, making them illegal to use. madVR is not included in the VideoProcessor download, you are responsible for downloading and installing an appropriate version.
 
 **Showtime!**
 
