@@ -21,7 +21,7 @@ Devices which can remove this protection are available, allowing for HDCP protec
 
 **madVR**
 
-madVR now has two paths, a limited-free-to-use HTPC edition which MadShi releases on his [website](http://madvr.com/) and a commercial appliance called [Envy](https://madvrenvy.com/) by madVR labs. Obviously VideoProcessor is in the same space as their commercial offering and because of this they have adjusted the license terms of the limited-free-to-use to be illegal for use in video capture applications. You can find an old release (09217) with the previous license mirrored [here](http://www.dennisfleurbaaij.com/temp/madVR%2009217%20-%20old%20license.zip) as they have updated all the officially downloadable releases with the new license, making them illegal to use.
+madVR now has two paths, a limited-free-to-use HTPC edition which MadShi releases on his [website](http://madvr.com/) and a commercial appliance called [Envy](https://madvrenvy.com/) which is designed as a video processor. They have adjusted the license terms of the limited-free-to-use to be illegal for use in video capture applications such as VideoProcessor. You can find an old release (09217) with the previous license mirrored [here](http://www.dennisfleurbaaij.com/temp/madVR%2009217%20-%20old%20license.zip) as MadShi has updated all the officially downloadable releases with the new license, making them illegal to use.
 
 **Showtime!**
 
