@@ -76,7 +76,9 @@ The following cards have capable hardware but are not supported; getting them wo
 
 # System requirements
 
-VideoProcessor itself takes very little CPU. The capture card drivers often just take a decent amount of memory up (gigs) and the rest is madVR. MadVR can be a massive resource drain; at maximum settings when working on a 4K high frame rate feed there simply is no available hardware which can sustain it (RTX3090 included).
+VideoProcessor itself takes very little CPU. The capture card drivers often only take a decent amount of memory up (gigs) but little CPU, the rest is madVR. MadVR can be a massive resource drain; at maximum settings when working on a 4K high frame rate feed there simply is no available hardware which can sustain it (RTX3090 included). 
+
+You'll need an AVX capable CPU (which is anything younger than a decade).
 
 Luckily if you tone it down a bit it works well with quite modest hardware. There are quite a few guides on this, as linked above, so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements. Generally Nvidia is strongly preferred.
 
@@ -103,6 +105,14 @@ For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX
 - Yes, >=10 bit capture input, >=10 bit transfer to madVR, 10 bit D3D11 into >=10 bit screen have all been observed working
 - Example: Use a PS4Pro, set up 12 bit RGB mode and hook the output of your video card to a computer monitor. Once you fullscreen you should be seeing 10bit and madVR will tell you so in it's debug output.
 
+**Choppy image**
+
+- Ensure you didn't set madVR to be too resource intensive. look at it's "max stats (5s)" in the on-screen debug and ensure that's not beyond your frame rate
+- Nothing else running?
+- Full screen is generally smooter than windowed
+- Use the queue.
+- Press the reset button after starting the video.
+- If your latency (in the gui) is high then issues will appear. Ensure you have no drops/misses. Ideally your clock lead is positive. Set it by changing the frame offset.
 
 
 # For developers
