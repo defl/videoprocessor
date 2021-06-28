@@ -24,6 +24,10 @@ Devices which can remove this protection are available, allowing for HDCP protec
 With all that out of the way, get the latest release at http://www.videoprocessor.org/ or the code at https://github.com/defl/videoprocessor.
 
 
+# Community and bleeding edge
+
+Note that VideoProcessor is under very heavy development and that there will be many unpublished experimental releases. You can check out the [AVSForum thread "How to play any source / netflix through madVR"](https://www.avsforum.com/threads/how-to-play-any-source-netflix-through-madvr.3124940) for these and for support.
+
 
 # Installing it
 
