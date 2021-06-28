@@ -86,7 +86,7 @@ You'll need an AVX capable CPU (which is anything younger than a decade).
 
 Luckily if you tone it down a bit it works well with quite modest hardware. There are quite a few guides on this, as linked above, so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements. Generally Nvidia is strongly preferred.
 
-For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX 1660 + BlackMagic DeckLink Mini Recorder 4k which is enough for my purposes which is 4K HDR input, 1080p tone mapped output plus some minor enhancements.
+For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX 1660 + BlackMagic DeckLink Mini Recorder 4k which is enough for my purposes which is 4K HDR input, 1080p output, 3d LUT plus some minor enhancements.
 
 
 
