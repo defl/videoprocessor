@@ -8,6 +8,9 @@
 
 // These are extended defines, not found in the original DirectShow
 
+#pragma once
+
+
 #include <dxva.h>
 
 
@@ -46,3 +49,6 @@ static const DXVA_VideoTransferFunction DIRECTSHOW_VIDEOTRANSFUNC_10_rel = (DXVA
 #define US_TO_DSTS(us) ((REFERENCE_TIME)us * 10LL)
 #define MS_TO_DSTS(ms) (US_TO_DSTS(ms) * 1000LL)
 #define S_TO_DSTS(s) (MS_TO_DSTS(s) * 1000LL)
+
+// Reference time
+const static REFERENCE_TIME REFERENCE_TIME_INVALID = -1;

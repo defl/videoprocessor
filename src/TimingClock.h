@@ -9,35 +9,12 @@
 #pragma once
 
 
-#include <atlstr.h>
+#include <stdint.h>
 
 
-/**
- * This enum is used to determin which clock will be used for
- * timing.
- */
-enum TimingClockType
-{
-	// Nothing set
-	TIMING_CLOCK_UNKNOWN = -1,
-
-	// No timing clock (freerunning output)
-	TIMING_CLOCK_NONE = 0,
-
-	// Time comes from OS. Taken at first possible opportunity
-	TIMING_CLOCK_OS = 1,
-
-	// Time comes from capture device video stream
-	TIMING_CLOCK_VIDEO_STREAM = 2
-};
+typedef int64_t timingclocktime_t;
 
 
-// All from the enum above in descending order of preference
-static const TimingClockType TimingClockTypes[] = {
-	TIMING_CLOCK_VIDEO_STREAM,
-	TIMING_CLOCK_OS,
-	TIMING_CLOCK_NONE
-};
-
-
-const TCHAR* ToString(const TimingClockType timingClock);
+// Return the dif in various units of time from a to b and expressed in ms.
+// If stop > start then the result will be positive
+double TimingClockDiffMs(timingclocktime_t start, timingclocktime_t stop, timingclocktime_t ticksPerSecond);

@@ -8,8 +8,9 @@
 
 #include <stdafx.h>
 
-#include "CUnbufferedLiveSourceVideoOutputPin.h"
 #include "CBufferedLiveSourceVideoOutputPin.h"
+#include "CUnbufferedLiveSourceVideoOutputPin.h"
+
 
 #include "CLiveSource.h"
 
@@ -20,31 +21,6 @@ CLiveSource::CLiveSource(
 	CBaseFilter(LIVE_SOURCE_FILTER_NAME, pUnk, &m_critSec, CLSID_CLiveSource)
 {
 	HRESULT hr = S_OK;
-
-	//m_videoOutputPin = new CUnbufferedLiveSourceVideoOutputPin(
-	//	this,
-	//	&m_critSec,
-	//	&hr);
-
-	m_videoOutputPin = new CBufferedLiveSourceVideoOutputPin(
-		this,
-		&m_critSec,
-		&hr);
-
-
-	if (hr != S_OK)
-		throw std::runtime_error("Failed to construct pin");
-
-	if (phr)
-	{
-		if (m_videoOutputPin == nullptr)
-			*phr = E_OUTOFMEMORY;
-		else
-			*phr = S_OK;
-	}
-
-	if(m_videoOutputPin)
-		m_videoOutputPin->AddRef();
 }
 
 
@@ -81,23 +57,48 @@ STDMETHODIMP CLiveSource::Initialize(
 	timestamp_t frameDuration,
 	ITimingClock* timingClock,
 	RendererTimestamp timestamp,
-	size_t frameQueueMaxSize,
-	int frameClockOffsetMs)
+	bool useFrameQueue,
+	size_t frameQueueMaxSize)
 {
+	assert(!m_videoOutputPin);
 	assert(videoFrameFormatter);
 	assert(mediaSubType.Data1 > 0);
 	assert(frameDuration > 0);
-	assert(-5000 < frameClockOffsetMs < 5000);
+
+	HRESULT hr = S_OK;
+
+	if (useFrameQueue)
+	{
+		m_videoOutputPin = new CBufferedLiveSourceVideoOutputPin(
+			this,
+			&m_critSec,
+			&hr);
+	}
+	else
+	{
+		m_videoOutputPin = new CUnbufferedLiveSourceVideoOutputPin(
+			this,
+			&m_critSec,
+			&hr);
+	}
+
+	if (!m_videoOutputPin || hr != S_OK)
+		throw std::runtime_error("Failed to construct pin");
+
+	if (m_videoOutputPin)
+		m_videoOutputPin->AddRef();
 
 	m_videoOutputPin->Initialize(
 		videoFrameFormatter,
 		frameDuration,
 		timingClock,
 		timestamp,
-		frameClockOffsetMs,
 		m_mediaSubType);
 
-	m_videoOutputPin->SetFrameQueueMaxSize(frameQueueMaxSize);
+	if (useFrameQueue)
+	{
+		m_videoOutputPin->SetFrameQueueMaxSize(frameQueueMaxSize);
+	}
 
 	m_mediaSubType = mediaSubType;
 	return S_OK;
@@ -114,6 +115,23 @@ STDMETHODIMP CLiveSource::OnHDRData(HDRDataSharedPtr& hdrData)
 STDMETHODIMP CLiveSource::OnVideoFrame(VideoFrame& videoFrame)
 {
 	return m_videoOutputPin->OnVideoFrame(videoFrame);
+}
+
+
+STDMETHODIMP CLiveSource::SetFrameQueueMaxSize(size_t frameQueueMaxSize)
+{
+	if (frameQueueMaxSize < 1)
+		throw std::runtime_error("Queue must be >= 1");
+
+	m_videoOutputPin->SetFrameQueueMaxSize(frameQueueMaxSize);
+	return S_OK;
+}
+
+
+STDMETHODIMP CLiveSource::Reset()
+{
+	m_videoOutputPin->Reset();
+	return S_OK;
 }
 
 
@@ -165,7 +183,25 @@ int CLiveSource::GetFrameQueueSize()
 }
 
 
-double CLiveSource::GetFrameVideoLeadMs()
+double CLiveSource::ExitLatencyMs() const
+{
+	return m_videoOutputPin->ExitLatencyMs();
+}
+
+
+double CLiveSource::GetFrameVideoLeadMs() const
 {
 	return m_videoOutputPin->GetFrameVideoLeadMs();
+}
+
+
+uint64_t CLiveSource::DroppedFrameCount() const
+{
+	return m_videoOutputPin->DroppedFrameCount();
+}
+
+
+uint64_t CLiveSource::MissingFrameCount() const
+{
+	return m_videoOutputPin->MissingFrameCount();
 }

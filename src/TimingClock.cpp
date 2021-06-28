@@ -6,24 +6,16 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see < https://www.gnu.org/licenses/>.
  */
 
+
 #include <stdafx.h>
 
 #include "TimingClock.h"
 
 
-const TCHAR* ToString(const TimingClockType timingClock)
+double TimingClockDiffMs(timingclocktime_t start, timingclocktime_t stop, timingclocktime_t ticksPerSecond)
 {
-	switch (timingClock)
-	{
-	case TimingClockType::TIMING_CLOCK_NONE:
-		return TEXT("None");
+	const timingclocktime_t diff = stop - start;
+	const double ticksPerMs = ticksPerSecond / 1000.0;
 
-	case TimingClockType::TIMING_CLOCK_OS:
-		return TEXT("OS");
-
-	case TimingClockType::TIMING_CLOCK_VIDEO_STREAM:
-		return TEXT("Video stream");
-	}
-
-	throw std::runtime_error("UNSPECIFIED TimingClock");
+	return diff / ticksPerMs;
 }

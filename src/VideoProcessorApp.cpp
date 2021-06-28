@@ -41,6 +41,11 @@ BOOL CVideoProcessorApp::InitInstance()
 	if (iNumOfArgs >= 2 && wcscmp(pArgs[1], L"/fullscreen") == 0)
 		startFullScreen = true;
 
+	// Set set ourselves to high prio.
+	// move over everybody, epic video coming through!
+	if (!SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS))
+		throw std::runtime_error("Failed to set process priority");
+
 	CVideoProcessorDlg dlg(startFullScreen);
 	m_pMainWnd = &dlg;
 

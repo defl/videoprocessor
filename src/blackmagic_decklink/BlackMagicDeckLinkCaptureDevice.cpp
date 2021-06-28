@@ -303,29 +303,67 @@ CaptureInputs BlackMagicDeckLinkCaptureDevice::SupportedCaptureInputs()
 
 void BlackMagicDeckLinkCaptureDevice::SetCaptureInput(const CaptureInputId captureInputId)
 {
-	m_captureInputId = static_cast<BMDVideoConnection>(captureInputId);
-
 	DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::SetCaptureInput() to %i (only used in StartCapture())"), m_captureInputId));
+
+	m_captureInputId = static_cast<BMDVideoConnection>(captureInputId);
 }
 
 
-int BlackMagicDeckLinkCaptureDevice::GetSupportedTimingClocks()
+ITimingClock* BlackMagicDeckLinkCaptureDevice::GetTimingClock()
 {
-	return
-		TimingClockType::TIMING_CLOCK_NONE |
-		TimingClockType::TIMING_CLOCK_OS |
-		TimingClockType::TIMING_CLOCK_VIDEO_STREAM;
+	// WARNING: m_state will be updated by some internal capture thread so this might be a race
+	//          condition. Probably only an academic problem given that the clients of this will
+	//          only be requesting it after they see the capture state
+	if (m_state != CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
+		return nullptr;
+
+	return this;
 }
 
 
-void BlackMagicDeckLinkCaptureDevice::SetTimingClock(const TimingClockType timingClock)
+void BlackMagicDeckLinkCaptureDevice::SetFrameOffsetMs(int frameOffsetMs)
 {
-	if (timingClock == TimingClockType::TIMING_CLOCK_UNKNOWN)
-		throw std::runtime_error("TIMING_CLOCK_UNKNOWN not allowed to be set");
+	DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::SetFrameOffsetMs() to %i"), frameOffsetMs));
 
-	m_timingClock = timingClock;
+	static_assert(DECKLINK_CLOCK_MAX_TICKS_SECOND % 1000 == 0, "DECKLINK_CLOCK_MAX_TICKS_SECOND  must be mod 1k for optimization here");
+	const timingclocktime_t ticksPerMs = DECKLINK_CLOCK_MAX_TICKS_SECOND / 1000;
+	m_frameOffsetTicks = frameOffsetMs * ticksPerMs;
+}
 
-	DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::SetTimingClock() to %s"), ToString(timingClock)));
+
+//
+// ITimingClock
+//
+
+
+timingclocktime_t BlackMagicDeckLinkCaptureDevice::TimingClockNow()
+{
+	assert(m_deckLinkInput);
+	assert(m_state == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);  // Might be too strict
+
+	BMDTimeValue currentTimeTicks;
+	IF_NOT_S_OK(m_deckLinkInput->GetHardwareReferenceClock(
+		TimingClockTicksPerSecond(),
+		&currentTimeTicks,
+		nullptr, nullptr))
+		throw std::runtime_error("Could not get the hardware clock timestamp");
+
+	return currentTimeTicks;
+}
+
+
+timingclocktime_t BlackMagicDeckLinkCaptureDevice::TimingClockTicksPerSecond() const
+{
+	// This is hard-coded, we can also take a more course approach by using the exact frame-frequency muliplied by 1000
+	// as shown in the DeckLink examples. Given that we most likely want to convert it to a DirectShow timestamp,
+	// which is 100ns the choice here is to go for maximum usable resolution.
+	return DECKLINK_CLOCK_MAX_TICKS_SECOND;
+}
+
+
+const TCHAR* BlackMagicDeckLinkCaptureDevice::TimingClockDescription()
+{
+	return TEXT("DeckLink hardware clock");
 }
 
 
@@ -470,9 +508,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 	if (m_videoDisplayMode == BMD_DISPLAY_MODE_INVALID)
 		return -1;
 
-	timestamp_t timingTimestamp = 0;
-	if(m_timingClock == TimingClockType::TIMING_CLOCK_OS)
-		timingTimestamp = ::GetWallClockTime();
+	timingclocktime_t timingClockFrameTime = 0;
 
 	bool videoStateChanged = false;
 
@@ -482,29 +518,20 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 		assert(m_timeScale != BMD_TIME_SCALE_INVALID);
 		++m_videoFrameCounter;
 
-#ifdef _DEBUG
-		// Every every so often show the difference between the captured timestamp and the current timestamp
-		// according to the card.
-		if(m_videoFrameCounter % 100 == 0)
+		// Get timestamp
+		IF_NOT_S_OK(videoFrame->GetHardwareReferenceTimestamp(TimingClockTicksPerSecond(), &timingClockFrameTime, nullptr))
+			throw std::runtime_error("Could not get the video frame hardware timestamp");
+
+		// Every every so often get the hardware latency.
+		// TODO: Change to framerate?
+		if(m_videoFrameCounter % 20 == 0)
 		{
-			BMDTimeValue frameTimeTicks;
-			IF_NOT_S_OK(videoFrame->GetHardwareReferenceTimestamp(GetTimingClockTicksPerSecond(), &frameTimeTicks, nullptr))
-				throw std::runtime_error("Could not get the video frame hardware timestamp");
-
-			BMDTimeValue currentTimeTicks = GetTimingClockTime();
-
-			const double timeDeltaMs = (currentTimeTicks - frameTimeTicks) / (double)GetTimingClockTicksPerSecond() * 1000.0;
-
-			DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrived(#%I64u): Capture->Now: %.03f ms"),
-				m_videoFrameCounter, timeDeltaMs));
+			timingclocktime_t timingClockNow = TimingClockNow();
+			m_hardwareLatencyMs = TimingClockDiffMs(timingClockFrameTime, timingClockNow, TimingClockTicksPerSecond());
 		}
-#endif  // _DEBUG
 
-		if (m_timingClock == TimingClockType::TIMING_CLOCK_VIDEO_STREAM)
-		{
-			IF_NOT_S_OK(videoFrame->GetHardwareReferenceTimestamp(GetTimingClockTicksPerSecond(), &timingTimestamp, nullptr))
-				throw std::runtime_error("Could not get the video frame hardware timestamp");
-		}
+		// Offset timestamp. Do this after getting the hardware latency else it'll account for this as well
+		timingClockFrameTime += m_frameOffsetTicks;
 
 		// Check if vertical inverted
 		const bool videoInvertedVertical = (videoFrame->GetFlags() & bmdFrameFlagFlipVertical) != 0;
@@ -707,7 +734,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 
 		VideoFrame vpVideoFrame(
 			data, m_videoFrameCounter,
-			timingTimestamp, videoFrame);
+			timingClockFrameTime, videoFrame);
 
 		m_callback->OnCaptureDeviceVideoFrame(vpVideoFrame);
 
@@ -771,30 +798,6 @@ HRESULT BlackMagicDeckLinkCaptureDevice::Notify(BMDNotifications topic, uint64_t
 	}
 
 	return S_OK;
-}
-
-
-//
-// ITimingClock
-//
-
-
-timingclocktime_t BlackMagicDeckLinkCaptureDevice::GetTimingClockTime()
-{
-	BMDTimeValue currentTimeTicks;
-	IF_NOT_S_OK(m_deckLinkInput->GetHardwareReferenceClock(GetTimingClockTicksPerSecond(), &currentTimeTicks, nullptr, nullptr))
-		throw std::runtime_error("Could not get the hardware clock timestamp");
-
-	return currentTimeTicks;
-}
-
-
-timingclocktime_t BlackMagicDeckLinkCaptureDevice::GetTimingClockTicksPerSecond() const
-{
-	// This is hard-coded, we can also take a more course approach by using the exact frame-frequency muliplied by 1000
-	// as shown in the DeckLink examples. Given that we most likely want to convert it to a DirectShow timestamp,
-	// which is 100ns the choice here is to go for maximum usable resolution.
-	return DECKLINK_CLOCK_MAX_TICKS_SECOND;
 }
 
 

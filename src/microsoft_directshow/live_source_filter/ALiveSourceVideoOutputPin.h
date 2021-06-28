@@ -11,6 +11,7 @@
 
 #include <IVideoFrameFormatter.h>
 #include <IRenderer.h>    // TODO: Pull out timestamp?
+#include <microsoft_directshow/DirectShowDefines.h>
 
 #include "CLiveSource.h"
 
@@ -39,7 +40,6 @@ public:
 		timestamp_t frameDuration,
 		ITimingClock* const timingClock,
 		RendererTimestamp timestamp,
-		int frameClockOffsetMs,
 		GUID mediaSubType);
 
 	// CBaseOutputPin overrides
@@ -84,35 +84,57 @@ public:
 	// Zero means no queueing going on.
 	virtual size_t GetFrameQueueSize() = 0;
 
+	// Reset the internal state and the video stream.
+	virtual void Reset();
+
+	//
+	// Metrics
+	//
+
+	// Get the exit latency in ms, which the amount of time between the frame timestamp
+	// and when the frame is delivered to the DirectShow renderer.
+	// This is sampled.
+	double ExitLatencyMs() const { return m_exitLatencyMs;  }
+
 	// Get the current "video lead" in milliseconds
 	// Video lead is how many ms the last frame start is ahead of the clock.
 	double GetFrameVideoLeadMs() const { return m_lastFrameVideoLeadMs; }
 
+	// Get the amount of dropped frames due to queue actions
+	uint64_t DroppedFrameCount() const { return m_droppedFrameCount; }
+
+	// Get the amount of missing frames. Both dropped but also large gaps
+	// in timestamps count towards these.
+	uint64_t MissingFrameCount() const { return m_missingFrameCounter; }
+
 protected:
+
+	uint64_t m_droppedFrameCount = 0;
 
 	// Render function to render a videoFrame onto a IMediaSample.
 	// Will not release the sample or dec videoframe nor do the Deliver()
 	HRESULT RenderVideoFrameIntoSample(VideoFrame&, IMediaSample* const);
 
-private:
+	// Get the next frame timestamp. If it doesn't know it's invalid. Overridden by implementations
+	virtual REFERENCE_TIME NextFrameTimestamp() const { return REFERENCE_TIME_INVALID; }
 
-	// Constructor
 	IVideoFrameFormatter* m_videoFrameFormatter;
 	timestamp_t m_frameDuration;
 	ITimingClock* m_timingClock;
 	RendererTimestamp m_timestamp;
-	int m_frameClockOffsetMs;
 	GUID m_mediaSubType;
 
-#ifdef _DEBUG
 	REFERENCE_TIME m_previousTimeStop = 0;
-#endif
 	timestamp_t m_startTimeOffset = 0;
+	uint64_t m_frameCounterOffset = 0;
 	uint64_t m_frameCounter = 0;
+	uint64_t m_missingFrameCounter = 0;
 	uint64_t m_previousFrameCounter = 0;
+	bool m_newSegment = false;
 
 	HDRDataSharedPtr m_hdrData = nullptr;
 	bool m_hdrChanged = false;
 
+	double m_exitLatencyMs = 0.0;
 	double m_lastFrameVideoLeadMs = 0.0;  // how many ms the last frame start is ahead of the clock.
 };

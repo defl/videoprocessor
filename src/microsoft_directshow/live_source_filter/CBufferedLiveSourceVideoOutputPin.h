@@ -11,6 +11,7 @@
 
 #include <deque>
 
+#include <microsoft_directshow/DirectShowDefines.h>
 #include "ALiveSourceVideoOutputPin.h"
 
 #include "CLiveSource.h"
@@ -42,6 +43,8 @@ public:
 	HRESULT OnVideoFrame(VideoFrame&) override;
 	void SetFrameQueueMaxSize(size_t) override;
 	size_t GetFrameQueueSize() override;
+	void Reset() override;
+	REFERENCE_TIME NextFrameTimestamp() const override { return m_nextVideoFrameStartTime; }
 
 private:
 
@@ -51,6 +54,8 @@ private:
 	std::atomic_bool m_isActive = false;
 
 	CCritSec m_filterCritSec;
+
+	REFERENCE_TIME m_nextVideoFrameStartTime = REFERENCE_TIME_INVALID;
 
 	// Thread function, upon return thread exist.
 	// Return codes > 0 indicate an error occured

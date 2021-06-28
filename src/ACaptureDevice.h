@@ -25,7 +25,6 @@
 #include <CaptureInput.h>
 #include <VideoFrame.h>
 #include <VideoState.h>
-#include <TimingClock.h>
 
 
 typedef std::vector<CaptureInput> CaptureInputs;
@@ -171,14 +170,27 @@ public:
 	// Clock
 	//
 
-	// Get an int which is a bitset of the TimingClock values
-	// that this devices supports.
-	virtual int GetSupportedTimingClocks() = 0;
+	// Get the timing clock used to time the frames and to get a current timestamp from
+	// This clock might not always be available. It is required to be available when the
+	// state is CAPTUREDEVICESTATE_CAPTURING. If not available this will return a nullptr.
+	virtual ITimingClock* GetTimingClock() = 0;
 
-	// Set the clock to use for timing.
-	// Can be changed while capturing but be aware that your renderer might not like that at all.
-	// This will affect what values will go into a VideoFrame.
-	virtual void SetTimingClock(const TimingClockType) = 0;
+	// Offset the timestamp used for timestamping the frames. This is useful becasue
+	// with capture the timestamp will always be old and hence renderers will always
+	// render immeidately rather than exact, this introduces system jitter into the
+	// pipeline. With this you can static-offset the timestamp to be more in the future
+	// if postitive (or more in the past, but that makes little sense).
+	// Value in whole milliseconds
+	virtual void SetFrameOffsetMs(int) = 0;
+
+	//
+	// Metrics
+	//
+
+	// Get the time it took in milliseconds from the capture timestamp to the start
+	// of the capture function. This is the hardware delay.
+	// This value does not need to be per frame, sampling is fine
+	virtual double HardwareLatencyMs() const = 0;
 };
 
 

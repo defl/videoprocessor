@@ -11,24 +11,32 @@
 
 #include <stdint.h>
 
-
-typedef int64_t timingclocktime_t;
+#include <TimingClock.h>
 
 
 /**
- * Interface for objects which are a timing clock
+ * Interface for objects which are a timing clock. Timing clocks are used for
+ * frame and data timestamping and rendering.
+ *
+ * They need to be constant rate and convertable to a second,
+ * there is no requirement for conversion to wall-clock time.
  */
 class ITimingClock
 {
 public:
 
 	/**
-	 * Get the timestamp of the timing clock
+	 * Get the current time of the timing clock.
 	 */
-	virtual timingclocktime_t GetTimingClockTime() = 0;
+	virtual timingclocktime_t TimingClockNow() = 0;
 
 	/**
 	 * Get ticks/second from the timing clock
 	 */
-	virtual timingclocktime_t GetTimingClockTicksPerSecond() const = 0;
+	virtual timingclocktime_t TimingClockTicksPerSecond() const = 0;
+
+	/**
+	 * Get a description of what the clock represents.
+	 */
+	virtual const TCHAR* TimingClockDescription() = 0;
 };

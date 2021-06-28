@@ -38,8 +38,8 @@ public:
 		ITimingClock* timingClock,
 		VideoStateComPtr& videoState,
 		RendererTimestamp timestamp,
+		bool useFrameQueue,
 		size_t frameQueueMaxSize,
-		int frameClockOffsetMs,
 		DXVA_NominalRange forceNominalRange,
 		DXVA_VideoTransferFunction forceVideoTransferFunction,
 		DXVA_VideoTransferMatrix forceVideoTransferMatrix,
@@ -54,10 +54,16 @@ public:
 	void Build() override;
 	void Start() override;
 	void Stop() override;
+	void Reset() override;
 	void OnPaint() override;
 	void OnSize() override;
-	int GetFrameQueueSize() override;
-	double GetFrameVideoLeadMs() override;
+	void SetFrameQueueMaxSize(size_t) override;
+	size_t GetFrameQueueSize() override;
+	double EntryLatencyMs() const override;
+	double ExitLatencyMs() const override;
+	double GetFrameVideoLeadMs() const override;
+	uint64_t DroppedFrameCount() const override;
+	uint64_t MissingFrameCount() const override;
 
 private:
 	IRendererCallback& m_callback;
@@ -67,12 +73,12 @@ private:
 	ITimingClock* m_timingClock;
 	VideoStateComPtr m_videoState;
 	RendererTimestamp m_timestamp;
+	bool m_useFrameQueue;
 	size_t m_frameQueueMaxSize;
-	int m_frameClockOffsetMs;
-	DXVA_NominalRange m_forceNominalRange = DXVA_NominalRange_Unknown;  // Unknown means not force
-	DXVA_VideoTransferFunction m_forceVideoTransferFunction = DXVA_VideoTransFunc_Unknown;  // Unknown means not force
-	DXVA_VideoTransferMatrix m_forceVideoTransferMatrix = DXVA_VideoTransferMatrix_Unknown;  // Unknown means not force
-	DXVA_VideoPrimaries m_forceVideoPrimaries = DXVA_VideoPrimaries_Unknown;  // Unknown means not force
+	DXVA_NominalRange m_forceNominalRange;
+	DXVA_VideoTransferFunction m_forceVideoTransferFunction;
+	DXVA_VideoTransferMatrix m_forceVideoTransferMatrix;
+	DXVA_VideoPrimaries m_forceVideoPrimaries;
 
 	LONG m_renderBoxWidth = 0;
 	LONG m_renderBoxHeight = 0;
@@ -96,6 +102,8 @@ private:
 #endif
 
 	uint64_t m_frameCounter = 0;
+	uint64_t m_missingFrameCounter = 0;
+	double m_frameLatencyEntry = 0.0;
 
 	// Handle Directshow graph events
 	void OnGraphEvent(long evCode, LONG_PTR param1, LONG_PTR param2);

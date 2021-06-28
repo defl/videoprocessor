@@ -14,9 +14,6 @@
 #include "ALiveSourceVideoOutputPin.h"
 
 
-const static REFERENCE_TIME REFERENCE_TIME_INVALID = -1;
-
-
 ALiveSourceVideoOutputPin::ALiveSourceVideoOutputPin(
 	CLiveSource* filter,
 	CCritSec* pLock,
@@ -38,7 +35,6 @@ void ALiveSourceVideoOutputPin::Initialize(
 	timestamp_t frameDuration,
 	ITimingClock* const timingClock,
 	RendererTimestamp timestamp,
-	int frameClockOffsetMs,
 	GUID mediaSubType)
 {
 	if (!videoFrameFormatter)
@@ -49,14 +45,10 @@ void ALiveSourceVideoOutputPin::Initialize(
 	assert(frameDuration > 50000LL); // 5ms frame is 200Hz, probably a reasonable upper bound
 	assert(frameDuration < 10000000LL);  // 1Hz, reasonable lower bound
 
-	assert(m_frameClockOffsetMs > -20000);  // 20 sec
-	assert(m_frameClockOffsetMs <  20000);
-
 	m_videoFrameFormatter = videoFrameFormatter;
 	m_frameDuration = frameDuration;
 	m_timingClock = timingClock;
 	m_timestamp = timestamp;
-	m_frameClockOffsetMs = frameClockOffsetMs;
 	m_mediaSubType = mediaSubType;
 }
 
@@ -309,20 +301,52 @@ void ALiveSourceVideoOutputPin::OnHDRData(HDRDataSharedPtr& hdrData)
 }
 
 
+void ALiveSourceVideoOutputPin::Reset()
+{
+	// TODO: Not sure if these are needed
+	if (FAILED(DeliverBeginFlush()))
+		throw std::runtime_error("Failed to deliver beginflush");
+
+	if (m_hdrData)
+		m_hdrChanged = true;
+
+	m_newSegment = true;
+
+	m_frameCounter = 0;
+	m_previousFrameCounter = 0;
+	m_startTimeOffset = 0;
+	m_frameCounterOffset = 0;
+	m_previousTimeStop = 0;
+	m_droppedFrameCount = 0;
+	m_missingFrameCounter = 0;
+
+	if (FAILED(DeliverEndFlush()))
+		throw std::runtime_error("Failed to deliver endflush");
+}
+
+
 HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoFrame, IMediaSample* const pSample)
 {
+	assert(videoFrame.GetTimingTimestamp() > 0);
+	assert(m_frameDuration > 0);
+	assert(m_timingClock->TimingClockTicksPerSecond() > 0);
+
+	++m_frameCounter;
+
 	HRESULT hr;
 
 	//
-	// Media time and related checked
-	// (= frame counter)
+	// Media time
 	//
 
-	//const LONGLONG frameCounter = videoFrame.GetCounter();  // From capture (will jump forward on drops)
-	const LONGLONG frameCounter = m_frameCounter++;  // Internal (guaranteed ++)
+	// Guarantee first frame to start counting at zero
+	uint64_t streamFrameCounter = videoFrame.GetCounter();
+	if (m_frameCounterOffset == 0)
+		m_frameCounterOffset = streamFrameCounter;
+	streamFrameCounter -= m_frameCounterOffset;
 
 	// Set frame counter
-	LONGLONG mediaTimeStart = frameCounter;
+	LONGLONG mediaTimeStart = streamFrameCounter;
 	LONGLONG mediaTimeStop = mediaTimeStart + 1;
 	hr = pSample->SetMediaTime(&mediaTimeStart, &mediaTimeStop);
 	if (FAILED(hr))
@@ -330,23 +354,26 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 
 	// Discontinuity check
 	const bool isDiscontinuity =
-		frameCounter != (m_previousFrameCounter + 1) ||
-		frameCounter == 0;
+		videoFrame.GetCounter() != (m_previousFrameCounter + 1) ||
+		m_frameCounter == 1;
 	if (isDiscontinuity)
 	{
-		DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(): Frame counter jumped from %I64u to %I64u, discontinuity detected"),
-			m_previousFrameCounter, frameCounter));
+		DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): Frame counter jumped from %I64u (stream frame %I64u), discontinuity detected"),
+			videoFrame.GetCounter(), m_previousFrameCounter, streamFrameCounter));
 
 		hr = pSample->SetDiscontinuity(TRUE);
 		if (FAILED(hr))
 			return hr;
 	}
 
-	m_previousFrameCounter = frameCounter;
+	m_previousFrameCounter = videoFrame.GetCounter();
 
 	//
 	// Setting the time
 	//
+
+	REFERENCE_TIME timeStart = REFERENCE_TIME_INVALID;
+	REFERENCE_TIME timeStop = REFERENCE_TIME_INVALID;
 
 	switch (m_timestamp)
 	{
@@ -356,8 +383,8 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 	case RendererTimestamp::RENDERER_TIMESTAMP_THEORETICAL:
 	{
 		assert(m_startTimeOffset == 0);
-		REFERENCE_TIME timeStart = (frameCounter * m_frameDuration);
-		REFERENCE_TIME timeStop = timeStart + m_frameDuration;
+		timeStart = (streamFrameCounter * m_frameDuration);
+		timeStop = timeStart + m_frameDuration;
 
 		hr = pSample->SetTime(&timeStart, &timeStop);
 		if (FAILED(hr))
@@ -366,71 +393,117 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 		break;
 	}
 
-	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK:
+	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_THEO:
 	{
-		if (videoFrame.GetTimingTimestamp() > 0)
-		{
-			assert(m_timingClock->GetTimingClockTicksPerSecond() > 0);
+		// Get frame timestamp as reference time
+		// TODO: I don't like the floating point math here
+		timeStart =
+			videoFrame.GetTimingTimestamp() *
+			(10000000.0 / m_timingClock->TimingClockTicksPerSecond());
 
-			// Get frame timestamp as reference time
-			// TODO: I don't like the floating point math here
-			REFERENCE_TIME timeStart =
-				videoFrame.GetTimingTimestamp() *
-				(10000000.0 / m_timingClock->GetTimingClockTicksPerSecond());
+		// Guarantee first frame to start counting at time zero
+		// Note that this is against the recommendations of microsoft for directshow but otherwise
+		// madVR doesn't start rendering as it's designed for file based video which starts at 0
+		if (m_startTimeOffset == 0)
+			m_startTimeOffset = timeStart;
+		timeStart -= m_startTimeOffset;
 
-			// Guarantee first frame to start counting at time zero
-			// Note that this is against the recommendations of microsoft for directshow but otherwise
-			// madVR doesn't start rendering as it's designed for file based video which starts at 0
-			if (m_startTimeOffset == 0)
-			{
-				m_startTimeOffset = timeStart;
-			}
+		timeStop = timeStart + m_frameDuration;
 
-			// If this is not the first frame, add the m_frameClockOffsetMs as reference time (=100ns)
-			else
-			{
-				timeStart += (REFERENCE_TIME)m_frameClockOffsetMs * 10000LL;
-			}
+		hr = pSample->SetTime(&timeStart, &timeStop);
+		if (FAILED(hr))
+			return hr;
 
-			timeStart -= m_startTimeOffset;
-
-			assert(m_frameDuration > 0);
-			REFERENCE_TIME timeStop = timeStart + m_frameDuration;
-
-			hr = pSample->SetTime(&timeStart, &timeStop);
-			if (FAILED(hr))
-				return hr;
+		// Count missing frames based on timestamp gap
+		// Note that screwing with the frame-clock, as can be done with the ACaptureDevice will trigger this
+		const int missingFrames = round((timeStart - m_previousTimeStop) / (double)m_frameDuration);
+		assert(missingFrames >= 0);
+		if (missingFrames > 0)
+			m_missingFrameCounter += missingFrames;
 
 #ifdef _DEBUG
-			// Every n frames output a bunch of consecutive frames to check start/stop
-			if (frameCounter % 200 < 5)
-			{
-				DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): , Start: %I64d Stop: %I64d"),
-					m_frameCounter, timeStart, timeStop));
-			}
+		// Every n frames output a bunch of consecutive frames to check start/stop
+		if (m_frameCounter % 200 < 5)
+		{
+			const double durationMs = (timeStop - timeStart) / 10000.0;
+			const double diffStopMs = (timeStart - m_previousTimeStop) / 10000.0;
 
-			// Check how far we're off
-			if (frameCounter > 0 &&
-				frameCounter % 100 == 0)
-			{
-				assert(m_previousTimeStop < timeStop);
-
-				double previousStopStartDiffMs = (m_previousTimeStop - timeStart) / (double)m_timingClock->GetTimingClockTicksPerSecond() * 1000;
-
-				DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): Diff previous stop to start: %.3f ms"),
-					frameCounter, previousStopStartDiffMs));
-
-				//assert(abs(m_previousTimeStop - timeStart) < 10000);  // Must be under a ms
-			}
-
-			m_previousTimeStop = timeStop;
-#endif // _DEBUG
+			DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): StartTS: %I64d StopTS: %I64d, duration: %.02f, diffPrevStopStartMs: %.02f, missing: %i"),
+				videoFrame.GetCounter(), timeStart, timeStop, durationMs, diffStopMs, missingFrames));
 		}
+#endif // _DEBUG
+
+		// TODO: Some sort of metric that says something about the clock stability?
+
+		m_previousTimeStop = timeStop;
 		break;
 	}
+
+	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK:
+	{
+		// Get frame timestamp as reference time
+		// TODO: I don't like the floating point math here
+		timeStart =
+			videoFrame.GetTimingTimestamp() *
+			(10000000.0 / m_timingClock->TimingClockTicksPerSecond());
+
+		assert(m_frameDuration > 0);
+		timeStop = NextFrameTimestamp();
+		assert(timeStop != REFERENCE_TIME_INVALID);
+		assert(timeStop > timeStart);
+
+		// Guarantee first frame to start counting at time zero
+		// Note that this is against the recommendations of microsoft for directshow but otherwise
+		// madVR doesn't start rendering as it's designed for file based video which starts at 0
+		if (m_startTimeOffset == 0)
+			m_startTimeOffset = timeStart;
+
+		timeStart -= m_startTimeOffset;
+		timeStop -= m_startTimeOffset;
+
+		hr = pSample->SetTime(&timeStart, &timeStop);
+		if (FAILED(hr))
+			return hr;
+
+		// Count missing frames based on duration
+		// Note that screwing with the frame-clock, as can be done with the ACaptureDevice will trigger this
+		const int missingFrames = round((timeStop - timeStart) / (double)m_frameDuration) - 1;
+		if (missingFrames > 0)
+			m_missingFrameCounter += missingFrames;
+
+#ifdef _DEBUG
+		// Every n frames output a bunch of consecutive frames to check start/stop
+		if (m_frameCounter % 200 < 5)
+		{
+			const double durationMs = (timeStop - timeStart) / 10000.0;
+
+			DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): StartTS: %I64d StopTS: %I64d, duration: %.02f, missing: %i"),
+				videoFrame.GetCounter(), timeStart, timeStop, durationMs, missingFrames));
+		}
+#endif // _DEBUG
+
+		break;
+	}
+
 	default:
 		assert(false);
 	}
+
+	//
+	// New segment
+	//
+
+	//if (m_newSegment &&
+	//	timeStart != REFERENCE_TIME_INVALID)
+	//{
+	//	DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): New segment"),
+	//		videoFrame.GetCounter()));
+
+	//	if (FAILED(DeliverNewSegment(timeStart, 0, 1.0)))
+	//		throw std::runtime_error("Failed to deliver new segment");
+
+	//	m_newSegment = false;
+	//}
 
 	//
 	// Data copy/formatting
@@ -454,7 +527,7 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 	m_videoFrameFormatter->FormatVideoFrame(videoFrame, pData);
 
 #ifdef _DEBUG
-	if (videoFrame.GetCounter() % 100 == 0)
+	if (streamFrameCounter % 100 == 0)
 	{
 		DbgLog((LOG_TRACE, 1,
 			TEXT("::FillBuffer(#%I64u): Formatter took %.1f us"),
@@ -483,7 +556,7 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 	// TODO: This is now called from a different thread, warning!
 	if (m_hdrData)
 	{
-		if ((videoFrame.GetCounter() % 100) == 1 || m_hdrChanged)
+		if ((streamFrameCounter % 100) == 1 || m_hdrChanged)
 		{
 			IMediaSideData* pMediaSideData = nullptr;
 			if (FAILED(pSample->QueryInterface(&pMediaSideData)))
@@ -515,26 +588,37 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 		}
 	}
 
-	//
-	// The very last thing we need to do (as close to the renderer as possible) is to
-	// calculate how many ms the last frame start is ahead of the clock. This is called
-	// Video lead time.
-	// - postive means frame to be rendered in the future, which is what we need
-	// - negative means the frame is late, will be rendered immediately
-	//
-
-	if (m_timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK)
+	if (m_frameCounter % 20 == 0)
 	{
-		REFERENCE_TIME timeStart, timeStop;
+		//
+		// Calculate how many ms the last frame start is ahead of the clock. This is called
+		// Video lead time.
+		// - postive means frame to be rendered in the future, which is what we need
+		// - negative means the frame is late, will be rendered immediately
+		//
+		const timingclocktime_t now = m_timingClock->TimingClockNow();
 
-		hr = pSample->GetTime(&timeStart, &timeStop);
-		if (FAILED(hr))
-			throw std::runtime_error("Failed to get start time");
+		if (m_timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_THEO ||
+			m_timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK)
+		{
+			const double nowMs = now / (double)m_timingClock->TimingClockTicksPerSecond() * 1000.0;
 
-		double timeStartMs = (timeStart + m_startTimeOffset) / 10000.0;
-		double clockMs = m_timingClock->GetTimingClockTime() / (double)m_timingClock->GetTimingClockTicksPerSecond() * 1000.0;
+			REFERENCE_TIME timeStart, timeStop;
+			hr = pSample->GetTime(&timeStart, &timeStop);
+			if (FAILED(hr))
+				throw std::runtime_error("Failed to get start time");
 
-		m_lastFrameVideoLeadMs = timeStartMs - clockMs;
+			double timeStartMs = (timeStart + m_startTimeOffset) / 10000.0;
+			m_lastFrameVideoLeadMs = timeStartMs - nowMs;
+		}
+
+		//
+		// Calculate the exit latency, which is right before we hand-off to the DirectShow
+		// renderer.
+		//
+
+		m_exitLatencyMs = TimingClockDiffMs(
+			videoFrame.GetTimingTimestamp(), now, m_timingClock->TimingClockTicksPerSecond());
 	}
 
 	return hr;

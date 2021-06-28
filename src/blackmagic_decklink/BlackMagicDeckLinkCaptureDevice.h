@@ -53,8 +53,14 @@ public:
 	CaptureInputId CurrentCaptureInputId() override;
 	CaptureInputs SupportedCaptureInputs() override;
 	void SetCaptureInput(const CaptureInputId) override;
-	int GetSupportedTimingClocks() override;
-	void SetTimingClock(const TimingClockType) override;
+	ITimingClock* GetTimingClock() override;
+	void SetFrameOffsetMs(int) override;
+	double HardwareLatencyMs() const override { return m_hardwareLatencyMs; }
+
+	// ITimingClock
+	timingclocktime_t TimingClockNow() override;
+	timingclocktime_t TimingClockTicksPerSecond() const override;
+	const TCHAR* TimingClockDescription() override;
 
 	// IDeckLinkInputCallback
 	HRESULT VideoInputFormatChanged(BMDVideoInputFormatChangedEvents notificationEvents, IDeckLinkDisplayMode* newDisplayMode, BMDDetectedVideoInputFormatFlags detectedSignalFlags) override;
@@ -66,10 +72,6 @@ public:
 
 	// IDeckLinkNotificationCallback
 	HRESULT Notify(BMDNotifications topic, uint64_t param1, uint64_t param2) override;
-
-	// ITimingClock
-	timingclocktime_t GetTimingClockTime() override;
-	timingclocktime_t GetTimingClockTicksPerSecond() const override;
 
 	// IUnknown
 	HRESULT	QueryInterface(REFIID iid, LPVOID* ppv) override;
@@ -86,7 +88,9 @@ private:
 	CComQIPtr<IDeckLinkStatus> m_deckLinkStatus;
 	bool m_canCapture = true;
 	std::vector<CaptureInput> m_captureInputSet;
-	TimingClockType m_timingClock = TimingClockType::TIMING_CLOCK_NONE;
+
+	timingclocktime_t m_frameOffsetTicks = 0;
+	double m_hardwareLatencyMs = 0;
 
 	// If false this will not send any more frames out.
 	std::atomic_bool m_outputCaptureData = false;

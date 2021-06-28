@@ -33,8 +33,8 @@ DirectShowMadVRRenderer::DirectShowMadVRRenderer(
 	ITimingClock* timingClock,
 	VideoStateComPtr& videoState,
 	RendererTimestamp timestamp,
+	bool useFrameQueue,
 	size_t frameQueueMaxSize,
-	int frameClockOffsetMs,
 	DXVA_NominalRange forceNominalRange,
 	DXVA_VideoTransferFunction forceVideoTransferFunction,
 	DXVA_VideoTransferMatrix forceVideoTransferMatrix,
@@ -46,7 +46,7 @@ DirectShowMadVRRenderer::DirectShowMadVRRenderer(
 	m_timingClock(timingClock),
 	m_videoState(videoState),
 	m_timestamp(timestamp),
-	m_frameClockOffsetMs(frameClockOffsetMs),
+	m_useFrameQueue(useFrameQueue),
 	m_frameQueueMaxSize(frameQueueMaxSize),
 	m_forceNominalRange(forceNominalRange),
 	m_forceVideoTransferFunction(forceVideoTransferFunction),
@@ -62,7 +62,7 @@ DirectShowMadVRRenderer::DirectShowMadVRRenderer(
 	if (!videoState)
 		throw std::runtime_error("Invalid videoState object");
 
-	if (timingClock && timingClock->GetTimingClockTicksPerSecond() < 1000LL)
+	if (timingClock && timingClock->TimingClockTicksPerSecond() < 1000LL)
 		throw std::runtime_error("TimingClock needs resolution of at least millisecond level");
 }
 
@@ -108,45 +108,20 @@ bool DirectShowMadVRRenderer::OnVideoState(VideoStateComPtr& videoState)
 
 void DirectShowMadVRRenderer::OnVideoFrame(VideoFrame& videoFrame)
 {
-	// Called from some unknown thread, but with promize that Start() has completed
+	// Called from some unknown thread, but with promise that Start() has completed
 
 	assert(m_state == RendererState::RENDERSTATE_RENDERING);
 	assert(m_videoState);
+	assert(videoFrame.GetTimingTimestamp() > 0);
 
-#ifdef _DEBUG
-
-	if (m_timingClock)
+	// Get delay until now once in a while
+	if (m_frameCounter % 20 == 0)
 	{
 		const timingclocktime_t frameTime = videoFrame.GetTimingTimestamp();
-		const timingclocktime_t clockTime = m_timingClock->GetTimingClockTime();
+		const timingclocktime_t clockTime = m_timingClock->TimingClockNow();
 
-		// Time must go forward
-		assert(clockTime >= frameTime);
-
-		// Get frame-gap
-		assert(m_previousFrameTime < frameTime);
-		const timingclocktime_t previousFrameDiff = frameTime - m_previousFrameTime;
-		double previousFrameDiffMs = previousFrameDiff / (double)m_timingClock->GetTimingClockTicksPerSecond() * 1000.0;
-		m_previousFrameTime = frameTime;
-
-		// Get latency from start to here
-		timingclocktime_t captureNowTimeDiff = clockTime - frameTime;
-		double timeDeltaMs = captureNowTimeDiff / (double)m_timingClock->GetTimingClockTicksPerSecond() * 1000.0;
-
-		// Clock should be within 20s or so, captures both wrong clocks but also massive buffering
-		assert(captureNowTimeDiff < 20 * m_timingClock->GetTimingClockTicksPerSecond());
-
-		// Display once in a while
-		if (m_frameCounter % 100 == 0)
-		{
-			DbgLog((LOG_TRACE, 1, TEXT(
-				"DirectShowMadVRRenderer::OnVideoFrame(#%I64u): Capture->now: %.03f ms, Prev-current: %.03f ms"),
-				m_frameCounter,
-				timeDeltaMs,
-				previousFrameDiffMs));
-		}
+		m_frameLatencyEntry = TimingClockDiffMs(frameTime, clockTime, m_timingClock->TimingClockTicksPerSecond());
 	}
-#endif  // _DEBUG
 
 	if (FAILED(m_liveSource->OnVideoFrame(videoFrame)))
 	{
@@ -205,6 +180,22 @@ void DirectShowMadVRRenderer::Stop()
 }
 
 
+void DirectShowMadVRRenderer::Reset()
+{
+	// Stop directshow graph
+	if (FAILED(m_pControl->Stop()))
+		throw std::runtime_error("Failed to Stop() graph");
+
+	m_liveSource->Reset();
+
+	m_frameCounter = 0;
+
+	// Run directshow graph again
+	if (FAILED(m_pControl->Run()))
+		throw std::runtime_error("Failed to Run() graph");
+}
+
+
 void DirectShowMadVRRenderer::OnPaint()
 {
 	if (m_pMVR)
@@ -230,7 +221,13 @@ void DirectShowMadVRRenderer::OnSize()
 }
 
 
-int DirectShowMadVRRenderer::GetFrameQueueSize()
+void DirectShowMadVRRenderer::SetFrameQueueMaxSize(size_t frameMaxQueueSize)
+{
+	// TODO
+}
+
+
+size_t DirectShowMadVRRenderer::GetFrameQueueSize()
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		throw std::runtime_error("Invalid state, can only be called while rendering");
@@ -239,12 +236,48 @@ int DirectShowMadVRRenderer::GetFrameQueueSize()
 }
 
 
-double DirectShowMadVRRenderer::GetFrameVideoLeadMs()
+double DirectShowMadVRRenderer::EntryLatencyMs() const
+{
+	if (m_state != RendererState::RENDERSTATE_RENDERING)
+		throw std::runtime_error("Invalid state, can only be called while rendering");
+
+	return m_frameLatencyEntry;
+}
+
+
+double DirectShowMadVRRenderer::ExitLatencyMs() const
+{
+	if (m_state != RendererState::RENDERSTATE_RENDERING)
+		throw std::runtime_error("Invalid state, can only be called while rendering");
+
+	return m_liveSource->ExitLatencyMs();
+}
+
+
+double DirectShowMadVRRenderer::GetFrameVideoLeadMs() const
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		throw std::runtime_error("Invalid state, can only be called while rendering");
 
 	return m_liveSource->GetFrameVideoLeadMs();
+}
+
+
+uint64_t DirectShowMadVRRenderer::DroppedFrameCount() const
+{
+	if (m_state != RendererState::RENDERSTATE_RENDERING)
+		throw std::runtime_error("Invalid state, can only be called while rendering");
+
+	return m_liveSource->DroppedFrameCount();
+}
+
+
+uint64_t DirectShowMadVRRenderer::MissingFrameCount() const
+{
+	if (m_state != RendererState::RENDERSTATE_RENDERING)
+		throw std::runtime_error("Invalid state, can only be called while rendering");
+
+	return m_liveSource->MissingFrameCount();
 }
 
 
@@ -283,16 +316,10 @@ void DirectShowMadVRRenderer::SetState(RendererState state)
 	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::SetState(): %s"), ToString(state)));
 
 	assert(state != RendererState::RENDERSTATE_UNKNOWN);
-	if (m_state != state)
-	{
-		m_state = state;
-		m_callback.OnRendererState(state);
-	}
-	else
-	{
-		// This is an interesting breakpoint moment
-		int a = 1;
-	}
+	assert(m_state != state);
+
+	m_state = state;
+	m_callback.OnRendererState(state);
 }
 
 
@@ -423,8 +450,8 @@ void DirectShowMadVRRenderer::GraphBuild()
 		m_videoState->displayMode->FrameDuration(),
 		m_timingClock,
 		m_timestamp,
-		m_frameQueueMaxSize,
-		m_frameClockOffsetMs);
+		m_useFrameQueue,
+		m_frameQueueMaxSize);
 
 	if (m_videoState->hdrData)
 		m_liveSource->OnHDRData(m_videoState->hdrData);

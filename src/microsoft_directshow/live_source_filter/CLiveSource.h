@@ -66,16 +66,21 @@ public:
 		timestamp_t frameDuration,
 		ITimingClock* timingClock,
 		RendererTimestamp timestamp,
-		size_t frameQueueMaxSize,
-		int frameClockOffsetMs) override;
+		bool useFrameQueue,
+		size_t frameQueueMaxSize) override;
 	STDMETHODIMP OnHDRData(HDRDataSharedPtr&) override;
 	STDMETHODIMP OnVideoFrame(VideoFrame&) override;
+	STDMETHODIMP SetFrameQueueMaxSize(size_t) override;
+	STDMETHODIMP Reset() override;
 
-	// CBaseFilter
 	// CBaseFilter
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv) override;
 	int GetPinCount() override;
 	CBasePin* GetPin(int n) override;
+
+	// Get the video output pin
+	// Can only be called after Initialize()
+	ALiveSourceVideoOutputPin* GetVideoOutputPin() const { return m_videoOutputPin; }
 
 	// IAMFilterMiscFlags
 	ULONG STDMETHODCALLTYPE GetMiscFlags(void) override;
@@ -83,18 +88,37 @@ public:
 	// Get the MediaSubType the data will represent
 	GUID GetMediaSubType();
 
+	//
+	// Queue
+	//
+
 	// Get the current frame queue size, negative means no queue
+	// Can only be called after Initialize()
 	int GetFrameQueueSize();
+
+	//
+	// Metrics
+	//
+
+	// Get the exit latency in ms, which the amount of time between the frame timestamp
+	// and when the frame is delivered to the DirectShow renderer.
+	// This is sampled.
+	double ExitLatencyMs() const;
 
 	// Get the current "video lead" in milliseconds
 	// Video lead is how many ms the last frame start is ahead of the clock.
-	double GetFrameVideoLeadMs();
+	// Can only be called after Initialize()
+	double GetFrameVideoLeadMs() const;
 
-	// Get the video output pint
-	ALiveSourceVideoOutputPin* GetVideoOutputPin() const { return m_videoOutputPin; }
+	// Get the amount of dropped frames due to queue actions
+	uint64_t DroppedFrameCount() const;
+
+	// Get the amount of missing frames. Both dropped but also large gaps
+	// in timestamps count towards these.
+	uint64_t MissingFrameCount() const;
 
 private:
-	ALiveSourceVideoOutputPin* m_videoOutputPin;
+	ALiveSourceVideoOutputPin* m_videoOutputPin = nullptr;
 
 	GUID m_mediaSubType;
 

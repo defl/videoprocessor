@@ -159,13 +159,7 @@
     <ClInclude Include="microsoft_directshow\DirectShowTimingClock.h">
       <Filter>Header Files\microsoft_directshow</Filter>
     </ClInclude>
-    <ClInclude Include="TimingClock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ITimingClock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OSTimingClock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="version.h">
@@ -179,6 +173,9 @@
     </ClInclude>
     <ClInclude Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.h">
       <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
+    </ClInclude>
+    <ClInclude Include="TimingClock.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -275,12 +272,6 @@
     <ClCompile Include="microsoft_directshow\DirectShowTimingClock.cpp">
       <Filter>Source Files\microsoft_directshow</Filter>
     </ClCompile>
-    <ClCompile Include="TimingClock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OSTimingClock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="IRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -295,6 +286,9 @@
     </ClCompile>
     <ClCompile Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.cpp">
       <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
+    </ClCompile>
+    <ClCompile Include="TimingClock.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

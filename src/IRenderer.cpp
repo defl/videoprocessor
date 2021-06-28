@@ -15,8 +15,11 @@ const TCHAR* ToString(const RendererTimestamp rendererTimestamp)
 {
 	switch (rendererTimestamp)
 	{
-	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK:
-		return TEXT("Clock");
+	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_THEO:
+		return TEXT("Clock+Theo");
+
+	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK:
+		return TEXT("Clock+Clock");
 
 	case RendererTimestamp::RENDERER_TIMESTAMP_THEORETICAL:
 		return TEXT("Theo");

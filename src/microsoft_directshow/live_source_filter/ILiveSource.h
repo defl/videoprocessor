@@ -31,8 +31,8 @@ DECLARE_INTERFACE_(ILiveSource, IUnknown)
 		timestamp_t frameDuration,
 		ITimingClock * timingClock,
 		RendererTimestamp timestamp,
-		size_t frameQueueMaxSize,
-		int m_frameClockOffsetMs) PURE;
+		bool useFrameQueue,
+		size_t frameQueueMaxSize) PURE;
 
 	// HDR data can change dynamically on a frame-by-frame basis. If you call
 	// this then the next frame sent through OnVideoFrame() will carry the information
@@ -41,4 +41,12 @@ DECLARE_INTERFACE_(ILiveSource, IUnknown)
 	// New video frame to send out.
 	// OnVideoState() has to have been called before this
 	STDMETHOD(OnVideoFrame)(VideoFrame&) PURE;
+
+	// Set the video frame queue max size.
+	// Only valid te be called if the RendererState called back RENDERSTATE_RENDERING
+	// Queues might not be implemented by all renderers, this will throw if it cannot be set
+	STDMETHOD(SetFrameQueueMaxSize)(size_t) PURE;
+
+	// Reset the internal state and the video stream.
+	STDMETHOD(Reset)(void) PURE;
 };

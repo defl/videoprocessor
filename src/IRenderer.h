@@ -31,12 +31,18 @@ enum RendererState
 const TCHAR* ToString(const RendererState rendererState);
 
 
+// TODO: Rename because it's not really the timestamp but more time range of the frame
 enum RendererTimestamp
 {
-	// Use the given clock
-	RENDERER_TIMESTAMP_CLOCK,
+	// Use the given clock for start plus the theorized frame length for stop,
+	// this has the advantage that you don't need a queued frame
+	RENDERER_TIMESTAMP_CLOCK_THEO,
 
-	// Theoretical timestamp based on frame
+	// Use the given clock for start plus the start of the next frame for the stop
+	// time.
+	RENDERER_TIMESTAMP_CLOCK_CLOCK,
+
+	// Theoretical timestamp based on frame duration
 	RENDERER_TIMESTAMP_THEORETICAL,
 
 	// Don't set timestamps (and use clock)
@@ -91,20 +97,61 @@ public:
 	// through the IRendererCallback
 	virtual void Stop() = 0;
 
+	// Reset the internal state and the video stream.
+	virtual void Reset() = 0;
+
+	//
+	// GUI
+	//
+
 	// Handle onpaint event
 	virtual void OnPaint() = 0;
 
 	// Handle window resize event
 	virtual void OnSize() = 0;
 
+	//
+	// Queues
+	//
+
+	// Set the video frame queue max size.
+	// Only valid te be called if the RendererState called back RENDERSTATE_RENDERING
+	// Queues might not be implemented by all renderers, this will throw if it cannot be set
+	virtual void SetFrameQueueMaxSize(size_t) = 0;
+
 	// Get the current frame queue size, negative means no queue
 	// Only valid te be called if the RendererState called back RENDERSTATE_RENDERING
-	virtual int GetFrameQueueSize() = 0;
+	// Queues might not be implemented by all renderers, this will return 0 if there is no queueing possible.
+	virtual size_t GetFrameQueueSize() = 0;
+
+	//
+	// Metrics
+	//
+
+	// Get the time it took in milliseconds from the frame's capture timestamp to the entry of the renderer
+	// as measured by the given clock.
+	// This value does not need to be per frame, sampling is fine
+	// Only valid te be called if the RendererState called back RENDERSTATE_RENDERING
+	virtual double EntryLatencyMs() const = 0;
+
+	// Get the time it took in milliseconds from the frame's capture timestamp to the point where we hand it
+	// over to the bit which puts the image on the wire. It's the furthest possible timestamp we can take.
+	// This value does not need to be per frame, sampling is fine
+	// Only valid te be called if the RendererState called back RENDERSTATE_RENDERING
+	virtual double ExitLatencyMs() const = 0;
 
 	// Get the current "video lead" in milliseconds
 	// Video lead is how many ms the last frame start is ahead of the clock.
-	// - postive means frame to be rendered in the future, which is what we need
-	// - negative means the frame is late, will be rendered immediately
+	// - postive means frame to be rendered in the future
+	// - negative by more than a frame means the frame is late, will be rendered immediately
+	// This value does not need to be per frame, sampling is fine
 	// Only valid te be called if the RendererState called back RENDERSTATE_RENDERING
-	virtual double GetFrameVideoLeadMs() = 0;
+	virtual double GetFrameVideoLeadMs() const = 0;
+
+	// Get the amount of dropped frames due to queue actions
+	virtual uint64_t DroppedFrameCount() const = 0;
+
+	// Get the amount of missing frames. Both dropped but also large gaps
+	// in timestamps count towards these.
+	virtual uint64_t MissingFrameCount() const = 0;
 };

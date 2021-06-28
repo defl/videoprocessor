@@ -100,13 +100,29 @@ HRESULT CBufferedLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 		if (!m_isActive)
 			return S_OK;
 
+		// If this frame's timestamp is lower or equal to the one before it,
+		// erase that earlier one
+		while (!m_videoFrameQueue.empty())
+		{
+			VideoFrame lastFrame = m_videoFrameQueue.back();
+
+			// Previous one was younger, nothing to do
+			if (videoFrame.GetTimingTimestamp() > lastFrame.GetTimingTimestamp())
+				break;
+
+			// Previous one was older or equal, erase
+			lastFrame.SourceBufferRelease();
+			m_videoFrameQueue.pop_back();
+			++m_droppedFrameCount;
+		}
+
 		// If full throw away oldest to make space
 		if (m_videoFrameQueue.size() >= m_frameQueueMaxSize)
 		{
 			VideoFrame popFrame = m_videoFrameQueue.front();
 			popFrame.SourceBufferRelease();
-
 			m_videoFrameQueue.pop_front();
+			++m_droppedFrameCount;
 		}
 
 		// Prevent from getting cleaned up and add to queue
@@ -144,6 +160,13 @@ size_t CBufferedLiveSourceVideoOutputPin::GetFrameQueueSize()
 }
 
 
+void CBufferedLiveSourceVideoOutputPin::Reset()
+{
+	PurgeQueue();
+	ALiveSourceVideoOutputPin::Reset();
+}
+
+
 DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 {
 	// ! WARNING: Runs in inner thread
@@ -164,13 +187,34 @@ DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 			if (!m_isActive)
 				break;
 
-			// Nothing to do
-			if (m_videoFrameQueue.empty())
-				continue;
+			// For most timing empty is really empty, however for the clock-to-clock
+			// we need to keep one frame in
+			if (m_timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK)
+			{
+				if (m_videoFrameQueue.size() <= 1)
+					continue;
+			}
+			else
+			{
+				if (m_videoFrameQueue.empty())
+					continue;
+			}
 
 			// Get the front frame (oldest)
 			videoFrame = m_videoFrameQueue.front();
 			m_videoFrameQueue.pop_front();
+
+			// Get the current front's start time
+			if (m_timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK)
+			{
+				assert(!m_videoFrameQueue.empty());
+
+				VideoFrame videoFrame2 = m_videoFrameQueue.front();
+
+				m_nextVideoFrameStartTime =
+					videoFrame2.GetTimingTimestamp() *
+					(10000000.0 / m_timingClock->TimingClockTicksPerSecond());
+			}
 		}
 
 		// Get buffer for sample
@@ -224,8 +268,8 @@ void CBufferedLiveSourceVideoOutputPin::PurgeQueue()
 		{
 			VideoFrame popFrame = m_videoFrameQueue.front();
 			popFrame.SourceBufferRelease();
-
 			m_videoFrameQueue.pop_front();
+			++m_droppedFrameCount;
 		}
 	}
 }

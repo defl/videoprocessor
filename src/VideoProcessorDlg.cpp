@@ -49,7 +49,6 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	// UI element messages
 	ON_CBN_SELCHANGE(IDC_CAPTURE_DEVICE_COMBO, &CVideoProcessorDlg::OnCaptureDeviceSelected)
 	ON_CBN_SELCHANGE(IDC_CAPTURE_INPUT_COMBO, &CVideoProcessorDlg::OnCaptureInputSelected)
-	ON_CBN_SELCHANGE(IDC_TIMING_CLOCK_TYPE_COMBO, &CVideoProcessorDlg::OnClockSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_TIMESTAMP_COMBO, &CVideoProcessorDlg::OnRendererTimestampSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_NOMINAL_RANGE_COMBO, &CVideoProcessorDlg::OnRendererNominalRangeSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_TRANSFER_FUNCTION_COMBO, &CVideoProcessorDlg::OnRendererTransferFunctionSelected)
@@ -57,6 +56,8 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_RENDERER_PRIMARIES_COMBO, &CVideoProcessorDlg::OnRendererPrimariesSelected)
 	ON_BN_CLICKED(IDC_FULL_SCREEN_BUTTON, &CVideoProcessorDlg::OnBnClickedFullScreenButton)
 	ON_BN_CLICKED(IDC_RENDERER_RESTART_BUTTON, &CVideoProcessorDlg::OnBnClickedRendererRestart)
+	ON_BN_CLICKED(IDC_RENDERER_RESET_BUTTON, &CVideoProcessorDlg::OnBnClickedRendererReset)
+	ON_BN_CLICKED(IDC_RENDERER_VIDEO_FRAME_USE_QUEUE_CHECK, &CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck)
 
 	// Command handlers
 	ON_COMMAND(ID_COMMAND_FULLSCREEN_TOGGLE, &CVideoProcessorDlg::OnCommandFullScreenToggle)
@@ -66,7 +67,8 @@ END_MESSAGE_MAP()
 
 static const std::vector<std::pair<LPCTSTR, RendererTimestamp>> RENDERER_TIMESTAMP_OPTIONS =
 {
-	std::make_pair(TEXT("Use clock"),   RendererTimestamp::RENDERER_TIMESTAMP_CLOCK),
+	std::make_pair(TEXT("Clock-clock"), RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK),
+	std::make_pair(TEXT("Clock+Theo"),  RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_THEO),
 	std::make_pair(TEXT("Theoretical"), RendererTimestamp::RENDERER_TIMESTAMP_THEORETICAL),
 	std::make_pair(TEXT("None"),        RendererTimestamp::RENDERER_TIMESTAMP_NONE),
 };
@@ -196,24 +198,6 @@ void CVideoProcessorDlg::OnCaptureInputSelected()
 }
 
 
-void CVideoProcessorDlg::OnClockSelected()
-{
-	assert(m_captureDevice);
-
-	const int clockIndex = m_timingClockTypeCombo.GetCurSel();
-	if (clockIndex < 0)
-		return;
-
-	const TimingClockType timingClock = (TimingClockType)m_timingClockTypeCombo.GetItemData(clockIndex);
-	assert(timingClock != TimingClockType::TIMING_CLOCK_UNKNOWN);
-
-	m_timingClockType = timingClock;
-
-	m_wantToRestartRenderer = true;
-	UpdateState();
-}
-
-
 void CVideoProcessorDlg::OnRendererTimestampSelected()
 {
 	OnBnClickedRendererRestart();
@@ -268,23 +252,54 @@ void CVideoProcessorDlg::OnClose()
 
 void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 {
+	CString cstring;
+
 	if (m_rendererState == RendererState::RENDERSTATE_RENDERING)
 	{
-		assert(m_renderer);
-
-		CString cstring;
-
-		cstring.Format(_T("%i"), m_renderer->GetFrameQueueSize());
+		cstring.Format(_T("%lu"), m_renderer->GetFrameQueueSize());
 		m_rendererVideoFrameQueueSize.SetWindowText(cstring);
 
 		cstring.Format(_T("%.01f"), m_renderer->GetFrameVideoLeadMs());
 		m_rendererVideoLeadMs.SetWindowText(cstring);
+
+		cstring.Format(_T("%.01f"), m_renderer->EntryLatencyMs());
+		m_latencyToRendererText.SetWindowText(cstring);
+
+		cstring.Format(_T("%.01f"), m_renderer->ExitLatencyMs());
+		m_latencyToMadVRText.SetWindowText(cstring);
+
+		cstring.Format(_T("%lu"), m_renderer->DroppedFrameCount());
+		m_rendererDroppedFrameCountText.SetWindowText(cstring);
+
+		cstring.Format(_T("%lu"), m_renderer->MissingFrameCount());
+		m_rendererMissingFrameCountText.SetWindowText(cstring);
+	}
+	else
+	{
+		m_rendererVideoFrameQueueSize.SetWindowText(_T(""));
+		m_rendererVideoLeadMs.SetWindowText(_T(""));
+		m_latencyToRendererText.SetWindowText(_T(""));
+		m_latencyToMadVRText.SetWindowText(_T(""));
+		m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
+		m_rendererMissingFrameCountText.SetWindowText(TEXT(""));
+	}
+
+	if (m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
+	{
+		cstring.Format(_T("%.01f"), m_captureDevice->HardwareLatencyMs());
+		m_latencyCaptureText.SetWindowText(cstring);
+	}
+	else
+	{
+		m_latencyCaptureText.SetWindowText(_T(""));
 	}
 }
 
 
 void CVideoProcessorDlg::OnBnClickedFullScreenButton()
 {
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedFullScreenButton()")));
+
 	assert(!m_rendererfullScreen);  // Can happen in debug mode where the UI remains visible
 	m_rendererfullScreen = true;
 
@@ -299,6 +314,28 @@ void CVideoProcessorDlg::OnBnClickedRendererRestart()
 
 	if (m_rendererState == RendererState::RENDERSTATE_FAILED)
 		m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
+
+	m_wantToRestartRenderer = true;
+	UpdateState();
+}
+
+
+void CVideoProcessorDlg::OnBnClickedRendererReset()
+{
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedRendererReset()")));
+
+	if (!m_renderer)
+		return;
+
+	m_renderer->Reset();
+}
+
+
+void CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck()
+{
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck()")));
+
+	const bool useQueue = m_rendererVideoFrameUseQeueue.GetCheck();
 
 	m_wantToRestartRenderer = true;
 	UpdateState();
@@ -364,59 +401,20 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(WPARAM wParam, LPA
 
 	m_captureDeviceState = newState;
 
-	bool enableClockCombo = false;
-	bool updateClockCombo = false;
-
 	switch (newState)
 	{
 	case CaptureDeviceState::CAPTUREDEVICESTATE_READY:
-		enableClockCombo = true;
-		updateClockCombo = true;
 		m_captureDeviceStateText.SetWindowText(TEXT("Ready"));
 		break;
 
 	case CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING:
-		enableClockCombo = true;
 		m_captureDeviceStateText.SetWindowText(TEXT("Capturing"));
+		m_timingClockDescriptionText.SetWindowText(m_captureDevice->GetTimingClock()->TimingClockDescription());
 		break;
 
 	default:
 		throw std::runtime_error("Unexpected state received from capture device");
 	}
-
-	if (updateClockCombo)
-	{
-		assert(m_captureDevice);
-
-		m_timingClockTypeCombo.ResetContent();
-
-		// Get clocks
-		const int cardSupportedTimingClocks = m_captureDevice->GetSupportedTimingClocks();
-		for (const TimingClockType tc : TimingClockTypes)
-		{
-			if ((cardSupportedTimingClocks & tc) > 0)
-			{
-				const int index = m_timingClockTypeCombo.AddString(ToString(tc));
-				m_timingClockTypeCombo.SetItemDataPtr(index, (void*)tc);
-			}
-		}
-
-		// Add NONE clock
-		{
-			const int index = m_timingClockTypeCombo.AddString(ToString(TimingClockType::TIMING_CLOCK_NONE));
-			m_timingClockTypeCombo.SetItemDataPtr(index, (void*)TimingClockType::TIMING_CLOCK_NONE);
-		}
-
-		// Select first clock if none selected
-		const int index = m_timingClockTypeCombo.GetCurSel();
-		if (index == CB_ERR)
-		{
-			m_timingClockTypeCombo.SetCurSel(0);
-			OnClockSelected();
-		}
-	}
-
-	m_timingClockTypeCombo.EnableWindow(enableClockCombo);
 
 	UpdateState();
 
@@ -604,6 +602,7 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 
 	m_rendererFullscreenButton.EnableWindow(enableButtons);
 	m_rendererRestartButton.EnableWindow(enableButtons);
+	m_rendererResetButton.EnableWindow(enableButtons);
 
 	UpdateState();
 
@@ -1127,6 +1126,9 @@ void CVideoProcessorDlg::CaptureGUIClear()
 	m_videoEotfText.SetWindowText(TEXT(""));
 	m_videoColorSpaceText.SetWindowText(TEXT(""));
 
+	// Timing clock
+	m_timingClockDescriptionText.SetWindowText(TEXT(""));
+
 	// ColorSpace group
 	m_colorspaceCie1931xy.SetColorSpace(ColorSpace::UNKNOWN);
 	m_colorspaceCie1931xy.SetHDRData(nullptr);
@@ -1153,7 +1155,7 @@ void CVideoProcessorDlg::RenderStart()
 	m_rendererState = RendererState::RENDERSTATE_STARTING;
 
 	// Get selected options
-	RendererTimestamp rendererTimestamp = RendererTimestamp::RENDERER_TIMESTAMP_CLOCK;
+	RendererTimestamp rendererTimestamp = RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK;
 	DXVA_NominalRange forceNominalRange = DXVA_NominalRange::DXVA_NominalRange_Unknown;
 	DXVA_VideoTransferFunction forceVideoTransferFunction = DXVA_VideoTransferFunction::DXVA_VideoTransFunc_Unknown;
 	DXVA_VideoTransferMatrix forceVideoTransferMatrix = DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_Unknown;
@@ -1181,24 +1183,10 @@ void CVideoProcessorDlg::RenderStart()
 	if (i >= 0)
 		forceVideoPrimaries = (DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
 
-	// Only update the capture's timing clock before we start a new renderer
-	assert(m_timingClockType != TimingClockType::TIMING_CLOCK_UNKNOWN);
-	m_captureDevice->SetTimingClock(m_timingClockType);
-
-	// Get timing clock
-	ITimingClock* timingClock = nullptr;
-	switch (m_timingClockType)
-	{
-	case TimingClockType::TIMING_CLOCK_OS:
-		timingClock = &m_osTimingClock;
-		break;
-
-	case TimingClockType::TIMING_CLOCK_VIDEO_STREAM:
-		assert(m_captureDevice);
-		timingClock = dynamic_cast<ITimingClock*>(m_captureDevice.p);
-		if (!timingClock)
-			throw std::runtime_error("Capture device is not a timing clock");
-	}
+	// Capture card always provides the clock
+	ITimingClock* timingClock = m_captureDevice->GetTimingClock();
+	if (!timingClock)
+		throw std::runtime_error("Failed to get timing clock from capture card");
 
 	// Renderer
 	try
@@ -1214,8 +1202,8 @@ void CVideoProcessorDlg::RenderStart()
 			timingClock,
 			m_captureDeviceVideoState,
 			rendererTimestamp,
+			GetRendererVideoFrameUseQueue(),
 			GetRendererVideoFrameQueueSizeMax(),
-			GetRendererVideoFrameClockOffsetMs(),
 			forceNominalRange,
 			forceVideoTransferFunction,
 			forceVideoTransferMatrix,
@@ -1306,6 +1294,8 @@ void CVideoProcessorDlg::RenderGUIClear()
 {
 	m_rendererVideoFrameQueueSize.SetWindowText(TEXT(""));
 	m_rendererVideoLeadMs.SetWindowText(TEXT(""));
+	m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
+	m_rendererMissingFrameCountText.SetWindowText(TEXT(""));
 }
 
 
@@ -1351,17 +1341,34 @@ HWND CVideoProcessorDlg::GetRenderWindow()
 
 size_t CVideoProcessorDlg::GetRendererVideoFrameQueueSizeMax()
 {
+	// Note that this field is marked as numbers only so guaranteed to convert corrrectly
+
 	CString text;
 	m_rendererVideoFrameQueueSizeMaxEdit.GetWindowText(text);
 	return _ttoi(text);
 }
 
 
-int CVideoProcessorDlg::GetRendererVideoFrameClockOffsetMs()
+bool CVideoProcessorDlg::GetRendererVideoFrameUseQueue()
+{
+	return m_rendererVideoFrameUseQeueue.GetCheck();
+}
+
+
+int CVideoProcessorDlg::GetTimingClockFrameOffsetMs()
 {
 	CString text;
-	m_rendererClockOffsetEdit.GetWindowText(text);
-	return _ttoi(text);
+	m_timingClockFrameOffsetEdit.GetWindowText(text);
+
+	const int frameOffsetMs = _ttoi(text);
+
+	// ttoi throws non-parsed stuff away so in case there is crap set the output to the
+	// used value, this way the user always knows what's going on.
+	CString cstring;
+	cstring.Format(_T("%i"), frameOffsetMs);
+	m_timingClockFrameOffsetEdit.SetWindowText(cstring);
+
+	return frameOffsetMs;
 }
 
 
@@ -1393,8 +1400,9 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_VIDEO_EOTF_STATIC, m_videoEotfText);
 	DDX_Control(pDX, IDC_VIDEO_COLORSPACE_STATIC, m_videoColorSpaceText);
 
-	// Clock group
-	DDX_Control(pDX, IDC_TIMING_CLOCK_TYPE_COMBO, m_timingClockTypeCombo);
+	// Timing clock group
+	DDX_Control(pDX, IDC_TIMING_CLOCK_DESCRIPTION_STATIC, m_timingClockDescriptionText);
+	DDX_Control(pDX, IDC_TIMING_CLOCK_FRAME_OFFSET_EDIT, m_timingClockFrameOffsetEdit);
 
 	// ColorSpace group
 	DDX_Control(pDX, IDC_CIE1931XY_GRAPH, m_colorspaceCie1931xy);
@@ -1404,6 +1412,11 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_HDR_MAX_CLL_STATIC, m_hdrMaxCll);
 	DDX_Control(pDX, IDC_HDR_MAX_FALL_STATIC, m_hdrMaxFall);
 
+	// Latency group
+	DDX_Control(pDX, IDC_LATENCY_CAPTURE_STATIC, m_latencyCaptureText);
+	DDX_Control(pDX, IDC_LATENCY_TO_RENDERER_STATIC, m_latencyToRendererText);
+	DDX_Control(pDX, IDC_LATENCY_TO_MADVR_STATIC, m_latencyToMadVRText);
+
 	// Renderer group
 	DDX_Control(pDX, IDC_RENDERER_TIMESTAMP_COMBO, m_rendererTimestampCombo);
 	DDX_Control(pDX, IDC_RENDERER_NOMINAL_RANGE_COMBO, m_rendererNominalRangeCombo);
@@ -1412,18 +1425,16 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_RENDERER_PRIMARIES_COMBO, m_rendererPrimariesCombo);
 	DDX_Control(pDX, IDC_FULL_SCREEN_BUTTON, m_rendererFullscreenButton);
 	DDX_Control(pDX, IDC_RENDERER_RESTART_BUTTON, m_rendererRestartButton);
+	DDX_Control(pDX, IDC_RENDERER_RESET_BUTTON, m_rendererResetButton);
 	DDX_Control(pDX, IDC_RENDERER_STATE_STATIC, m_rendererStateText);
+	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_USE_QUEUE_CHECK, m_rendererVideoFrameUseQeueue);
 	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_STATIC, m_rendererVideoFrameQueueSize);
 	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_MAX_EDIT, m_rendererVideoFrameQueueSizeMaxEdit);
 	DDX_Control(pDX, IDC_RENDERER_VIDEO_LEAD_STATIC, m_rendererVideoLeadMs);
-	DDX_Control(pDX, IDC_RENDERER_CLOCK_OFFSET_EDIT, m_rendererClockOffsetEdit);
+	DDX_Control(pDX, IDC_RENDERER_DROPPED_FRAME_COUNT_STATIC, m_rendererDroppedFrameCountText);
+	DDX_Control(pDX, IDC_RENDERER_MISSING_FRAME_COUNT_STATIC, m_rendererMissingFrameCountText);
 	DDX_Control(pDX, IDC_RENDERER_BOX, m_rendererBox);
 }
-
-
-//
-// Generated message map functions
-//
 
 
 // Called when the dialog box is initialized
@@ -1449,7 +1460,6 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	// Disable the interface
 	m_captureDeviceCombo.EnableWindow(FALSE);
 	m_captureInputCombo.EnableWindow(FALSE);
-	m_timingClockTypeCombo.EnableWindow(FALSE);
 
 	// Fill renderer selection boxes
 	for (const auto& p : RENDERER_TIMESTAMP_OPTIONS)
@@ -1501,7 +1511,8 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	RenderGUIClear();
 
 	m_rendererVideoFrameQueueSizeMaxEdit.SetWindowText(TEXT("32"));
-	m_rendererClockOffsetEdit.SetWindowText(TEXT("0"));
+	m_timingClockFrameOffsetEdit.SetWindowText(TEXT("9"));
+	m_rendererVideoFrameUseQeueue.SetCheck(true);
 
 	return TRUE;
 }
@@ -1517,6 +1528,41 @@ BOOL CVideoProcessorDlg::PreTranslateMessage(MSG* pMsg)
 	}
 
 	return CDialog::PreTranslateMessage(pMsg);
+}
+
+void CVideoProcessorDlg::OnOK()
+{
+	// Called if the user presses enter somewhere
+
+	CWnd* pwndCtrl = GetFocus();
+	int ctrl_ID = pwndCtrl->GetDlgCtrlID();
+
+	switch (ctrl_ID)
+	{
+		case IDC_TIMING_CLOCK_FRAME_OFFSET_EDIT:
+			if (m_captureDevice)
+			{
+				m_captureDevice->SetFrameOffsetMs(GetTimingClockFrameOffsetMs());
+			}
+			if (m_renderer)
+			{
+				m_renderer->Reset();
+			}
+			break;
+
+		case IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_MAX_EDIT:
+			if (m_renderer)
+			{
+				m_renderer->SetFrameQueueMaxSize(GetRendererVideoFrameQueueSizeMax());
+			}
+			break;
+
+		default:
+			m_wantToRestartRenderer = true;
+			UpdateState();
+	}
+
+	// Don't call the super implmenetation as that will close the window
 }
 
 
@@ -1580,3 +1626,4 @@ void CVideoProcessorDlg::OnGetMinMaxInfo(MINMAXINFO* minMaxInfo)
 	minMaxInfo->ptMinTrackSize.x = std::max(minMaxInfo->ptMinTrackSize.x, m_minDialogSize.cx);
 	minMaxInfo->ptMinTrackSize.y = std::max(minMaxInfo->ptMinTrackSize.y, m_minDialogSize.cy);
 }
+

@@ -18,7 +18,6 @@
 #include <IRenderer.h>
 #include <VideoFrame.h>
 #include <FullscreenWindow.h>
-#include <OSTimingClock.h>
 
 #include "resource.h"
 
@@ -52,7 +51,6 @@ public:
 	// UI-related handlers
 	afx_msg void OnCaptureDeviceSelected();
 	afx_msg void OnCaptureInputSelected();
-	afx_msg void OnClockSelected();
 	afx_msg void OnRendererTimestampSelected();
 	afx_msg void OnRendererNominalRangeSelected();
 	afx_msg void OnRendererTransferFunctionSelected();
@@ -60,6 +58,8 @@ public:
 	afx_msg void OnRendererPrimariesSelected();
 	afx_msg void OnBnClickedFullScreenButton();
 	afx_msg void OnBnClickedRendererRestart();
+	afx_msg void OnBnClickedRendererReset();
+	afx_msg void OnBnClickedRendererVideoFrameUseQueueCheck();
 
 	// Custom message handlers
 	afx_msg LRESULT OnMessageCaptureDeviceFound(WPARAM wParam, LPARAM lParam);
@@ -112,8 +112,9 @@ protected:
 	CStatic m_videoEotfText;
 	CStatic m_videoColorSpaceText;
 
-	// Clock group
-	CComboBox m_timingClockTypeCombo;
+	// Timing clock group
+	CStatic m_timingClockDescriptionText;
+	CEdit m_timingClockFrameOffsetEdit;
 
 	// ColorSpace group
 	CCie1931Control m_colorspaceCie1931xy;
@@ -123,6 +124,11 @@ protected:
 	CStatic	m_hdrMaxCll;
 	CStatic	m_hdrMaxFall;
 
+	// Latency group
+	CStatic m_latencyCaptureText;
+	CStatic m_latencyToRendererText;
+	CStatic m_latencyToMadVRText;
+
 	// Renderer group
 	CComboBox m_rendererTimestampCombo;
 	CComboBox m_rendererNominalRangeCombo;
@@ -131,11 +137,14 @@ protected:
 	CComboBox m_rendererPrimariesCombo;
 	CButton m_rendererFullscreenButton;
 	CButton m_rendererRestartButton;
+	CButton m_rendererResetButton;
 	CStatic m_rendererStateText;
+	CButton m_rendererVideoFrameUseQeueue;  // This is a checkbox
 	CStatic m_rendererVideoFrameQueueSize;
 	CEdit m_rendererVideoFrameQueueSizeMaxEdit;
 	CStatic m_rendererVideoLeadMs;
-	CEdit m_rendererClockOffsetEdit;
+	CStatic m_rendererDroppedFrameCountText;
+	CStatic m_rendererMissingFrameCountText;
 	CStatic	m_rendererBox;  // This is the small renderer window
 
 	CSize m_minDialogSize;
@@ -162,15 +171,12 @@ protected:
 
 	std::atomic_bool m_deliverCaptureDataToRenderer = false;
 
-	OSTimingClock m_osTimingClock;
-
 	// We often have to wait for devices to come back etc. Hence many functions can't complete
 	// immediately. We solve this by setting a desired capture device and input and calling UpdateState()
 	// at various points which will work towards our desired state
 	CComPtr<ACaptureDevice>	m_desiredCaptureDevice = nullptr;
 	CaptureInputId m_desiredCaptureInputId = INVALID_CAPTURE_INPUT_ID;
 	//PixelValueRange m_desiredRendererPixelValueRange = PixelValueRange::PIXELVALUERANGE_UNKNOWN;  // = let render decide
-	TimingClockType m_timingClockType = TimingClockType::TIMING_CLOCK_UNKNOWN;
 	bool m_wantToRestartCapture = false;
 	bool m_wantToRestartRenderer = false;
 	bool m_wantToTerminate = false;
@@ -191,20 +197,22 @@ protected:
 	void FullScreenWindowDestroy();
 	HWND GetRenderWindow();
 	size_t GetRendererVideoFrameQueueSizeMax();
-	int GetRendererVideoFrameClockOffsetMs();
+	bool GetRendererVideoFrameUseQueue();
+	int GetTimingClockFrameOffsetMs();
 
 	// CDialog
-	virtual void DoDataExchange(CDataExchange* pDX) override;
+	void DoDataExchange(CDataExchange* pDX) override;
+	BOOL OnInitDialog() override;
+	BOOL PreTranslateMessage(MSG* pMsg) override;
+	void OnOK() override;
+	void OnPaint();
+	void OnSize(UINT nType, int cx, int cy);
+	void OnSetFocus(CWnd* pOldWnd);
+	void OnClose();
+	void OnTimer(UINT_PTR nIDEvent);
+	HCURSOR	OnQueryDragIcon();
+	void OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
 
-	// Generated message map functions
-	virtual BOOL OnInitDialog() override;
-	virtual BOOL PreTranslateMessage(MSG* pMsg) override;
-	afx_msg void OnPaint();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	afx_msg void OnClose();
-	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	afx_msg HCURSOR	OnQueryDragIcon();
-	afx_msg void OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
+
 	DECLARE_MESSAGE_MAP()
 };
