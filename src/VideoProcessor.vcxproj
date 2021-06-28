@@ -124,7 +124,7 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <AdditionalIncludeDirectories>.;..\3rdparty\blackmagic_decklink;..\3rdparty\madvr;..\3rdparty\microsoft_directshow_baseclasses;..\3rdparty\lavfilters;..\3rdparty\ffmpeg\include</AdditionalIncludeDirectories>
       <ControlFlowGuard>Guard</ControlFlowGuard>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <CallingConvention>Cdecl</CallingConvention>
@@ -191,7 +191,7 @@
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>.;..\3rdparty\blackmagic_decklink;..\3rdparty\madvr;..\3rdparty\microsoft_directshow_baseclasses;..\3rdparty\lavfilters;..\3rdparty\ffmpeg\include</AdditionalIncludeDirectories>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -229,11 +229,10 @@
     <ClInclude Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.h" />
     <ClInclude Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.h" />
     <ClInclude Include="microsoft_directshow\live_source_filter\CUnbufferedLiveSourceVideoOutputPin.h" />
-    <ClInclude Include="OSTimingClock.h" />
-    <ClInclude Include="TimingClock.h" />
     <ClInclude Include="CaptureInput.h" />
     <ClInclude Include="CCie1931Control.h" />
     <ClInclude Include="cie.h" />
+    <ClInclude Include="TimingClock.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="WallClock.h" />
     <ClInclude Include="CNoopVideoFrameFormatter.h" />
@@ -288,11 +287,10 @@
     <ClCompile Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.cpp" />
     <ClCompile Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.cpp" />
     <ClCompile Include="microsoft_directshow\live_source_filter\CUnbufferedLiveSourceVideoOutputPin.cpp" />
-    <ClCompile Include="OSTimingClock.cpp" />
-    <ClCompile Include="TimingClock.cpp" />
     <ClCompile Include="CaptureInput.cpp" />
     <ClCompile Include="CCie1931Control.cpp" />
     <ClCompile Include="cie.cpp" />
+    <ClCompile Include="TimingClock.cpp" />
     <ClCompile Include="version.cpp" />
     <ClCompile Include="WallClock.cpp" />
     <ClCompile Include="CNoopVideoFrameFormatter.cpp" />
