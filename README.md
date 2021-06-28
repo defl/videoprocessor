@@ -19,6 +19,10 @@ There is one snag through, all high quality copyright protected video is protect
 
 Devices which can remove this protection are available, allowing for HDCP protected sources being captured by your capture card, but their legality depends on your jurisdiction and use. Ensuring compliance with your local laws, and feeding your capture card data it can forward to VideoProcessor, is <u>your</u> responsibility. 
 
+**madVR**
+
+madVR now has two paths, a limited-free-to-use HTPC edition which MadShi releases on his [website](http://madvr.com/) and a commercial appliance called [Envy](https://madvrenvy.com/) by madVR labs. Obviously VideoProcessor is in the same space as their commercial offering and because of this they have adjusted the license terms of the limited-free-to-use to be illegal for use in video capture applications. You can find an old release (09217) with the previous license mirrored [here](http://www.dennisfleurbaaij.com/temp/madVR%2009217%20-%20old%20license.zip) as they have updated all the officially downloadable releases with the new license, making them illegal to use.
+
 **Showtime!**
 
 With all that out of the way, get the latest release at http://www.videoprocessor.org/ or the code at https://github.com/defl/videoprocessor.
