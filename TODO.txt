@@ -3,8 +3,9 @@ Roadmap
 
 0.3.0: Clocks
 - Cleanup TODOs
-- Re-generate version.rc and use that somehow?
 - Check PS4 image (invertedVertical in video state should automatically do the right thing now)
+- Memory leaks at exit
+- Clock-clock does not work with no-queue
 
 0.3.1: GUI
 - Add context information to all throws
@@ -46,3 +47,4 @@ Ideas for later:
 - Use NVIDIA GRID to get the rendered frame and get the egress timestamp it so that we can build a feedback system going.
   This actually seems possible to get us timestamps of point of frame-render. If the egress delay from there is reasonably
   constant we can probably get a near constant-time renderer going.
+- Build a git version to version.rc generator and use that to set VS_VERSION_INFO version etc
