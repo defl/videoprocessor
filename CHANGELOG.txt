@@ -13,11 +13,10 @@ NEXT (0.3.0)
 - There are new frame-interval determination modes, clock-clock, clock-theo, theo and none
 - Renderer reset button, which stops, clears the queue and start again
 - AVX required (requires < 10-year old CPU)
+- Disable screen saver/power save when running
 - FIX: Deadlock situation with blackmagic callbacks
 - FIX: frame timestamps now correct, madVR queues fill up and that leads to smooth video output
-- FIX: Process name in task list
-- Known issue: Memory leaks at exit
-- Known issue: Clock-clock does not work with no-queue
+- FIX: Correct process name in task list
 
 0.2.0
 - SSE2 build config, not using AVX anymore until needed

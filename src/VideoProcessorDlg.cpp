@@ -298,6 +298,14 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 
 		m_latencyCaptureText.SetWindowText(_T(""));
 	}
+
+	// Prevent screensaver, this should be called "periodically" for whatever that means
+	if (m_timerSeconds % 60 == 0)
+	{
+		SetThreadExecutionState(ES_DISPLAY_REQUIRED);
+	}
+
+	++m_timerSeconds;
 }
 
 
@@ -1511,7 +1519,7 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	if (!m_accelerator)
 		throw std::runtime_error("Failed to load accelerator");
 
-	// Start timer
+	// Start timers
 	SetTimer(TIMER_ID_1SECOND, 1000, nullptr);
 
 	CaptureGUIClear();

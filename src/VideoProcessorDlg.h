@@ -172,6 +172,8 @@ protected:
 
 	std::atomic_bool m_deliverCaptureDataToRenderer = false;
 
+	uint32_t m_timerSeconds = 0;
+
 	// We often have to wait for devices to come back etc. Hence many functions can't complete
 	// immediately. We solve this by setting a desired capture device and input and calling UpdateState()
 	// at various points which will work towards our desired state
