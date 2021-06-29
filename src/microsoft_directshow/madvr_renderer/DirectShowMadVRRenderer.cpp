@@ -64,6 +64,9 @@ DirectShowMadVRRenderer::DirectShowMadVRRenderer(
 
 	if (timingClock && timingClock->TimingClockTicksPerSecond() < 1000LL)
 		throw std::runtime_error("TimingClock needs resolution of at least millisecond level");
+
+	if (!useFrameQueue && timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK)
+		throw std::runtime_error("No queue cannot be used with clock-clock, pick another mode and restart");
 }
 
 
