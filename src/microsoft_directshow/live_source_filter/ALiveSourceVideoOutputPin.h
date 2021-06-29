@@ -31,7 +31,7 @@ public:
 		CLiveSource* filter,
 		CCritSec* pLock,
 		HRESULT* phr);
-	virtual ~ALiveSourceVideoOutputPin();
+	virtual ~ALiveSourceVideoOutputPin() {}
 
 	DECLARE_IUNKNOWN;
 

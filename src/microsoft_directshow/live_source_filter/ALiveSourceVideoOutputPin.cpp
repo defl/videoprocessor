@@ -25,11 +25,6 @@ ALiveSourceVideoOutputPin::ALiveSourceVideoOutputPin(
 }
 
 
-ALiveSourceVideoOutputPin::~ALiveSourceVideoOutputPin()
-{
-}
-
-
 void ALiveSourceVideoOutputPin::Initialize(
 	IVideoFrameFormatter* const videoFrameFormatter,
 	timestamp_t frameDuration,

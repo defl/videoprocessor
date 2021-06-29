@@ -20,18 +20,12 @@ CLiveSource::CLiveSource(
 	HRESULT* phr):
 	CBaseFilter(LIVE_SOURCE_FILTER_NAME, pUnk, &m_critSec, CLSID_CLiveSource)
 {
-	HRESULT hr = S_OK;
 }
 
 
 CLiveSource::~CLiveSource()
 {
-	if (m_videoOutputPin)
-	{
-		ULONG refCount = m_videoOutputPin->Release();
-		assert(refCount == 0);
-		m_videoOutputPin = nullptr;
-	}
+	assert(!m_videoOutputPin);  // Didn't call Destroy()
 }
 
 
@@ -101,6 +95,19 @@ STDMETHODIMP CLiveSource::Initialize(
 	}
 
 	m_mediaSubType = mediaSubType;
+	return S_OK;
+}
+
+
+STDMETHODIMP CLiveSource::Destroy()
+{
+	if (m_videoOutputPin)
+	{
+		ULONG refCount = m_videoOutputPin->Release();
+		delete m_videoOutputPin;  // Pin's release() does not delete at last one
+		m_videoOutputPin = nullptr;
+	}
+
 	return S_OK;
 }
 

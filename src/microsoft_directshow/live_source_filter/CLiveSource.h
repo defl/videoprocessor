@@ -68,6 +68,7 @@ public:
 		RendererTimestamp timestamp,
 		bool useFrameQueue,
 		size_t frameQueueMaxSize) override;
+	STDMETHODIMP Destroy() override;
 	STDMETHODIMP OnHDRData(HDRDataSharedPtr&) override;
 	STDMETHODIMP OnVideoFrame(VideoFrame&) override;
 	STDMETHODIMP SetFrameQueueMaxSize(size_t) override;

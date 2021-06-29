@@ -739,7 +739,7 @@ void DirectShowMadVRRenderer::GraphTeardown()
 
 	if (m_liveSource)
 	{
-		// TODO: This has 2 refs too many
+		m_liveSource->Destroy();
 		m_liveSource->Release();
 		m_liveSource = nullptr;
 	}
@@ -788,6 +788,8 @@ void DirectShowMadVRRenderer::GraphStop()
 	// Stop directshow graph
 	if (FAILED(m_pControl->Stop()))
 		throw std::runtime_error("Failed to Stop() graph");
+
+	m_liveSource->Reset();
 
 	// Check if madVR is stopped
 	CComQIPtr<IMadVRInfo> pMVRI = m_pMVR;

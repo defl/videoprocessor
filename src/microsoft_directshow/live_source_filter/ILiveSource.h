@@ -34,6 +34,9 @@ DECLARE_INTERFACE_(ILiveSource, IUnknown)
 		bool useFrameQueue,
 		size_t frameQueueMaxSize) PURE;
 
+	// Destroy, can only be called once
+	STDMETHOD(Destroy)(void) PURE;
+
 	// HDR data can change dynamically on a frame-by-frame basis. If you call
 	// this then the next frame sent through OnVideoFrame() will carry the information
 	STDMETHOD(OnHDRData)(HDRDataSharedPtr&) PURE;
