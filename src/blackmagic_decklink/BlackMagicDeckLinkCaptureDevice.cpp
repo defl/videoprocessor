@@ -448,7 +448,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 		ResetVideoState();
 		m_pixelFormat = pixelFormat;
 		m_videoDisplayMode = newMode->GetDisplayMode();
-		m_timeScale = TranslateDisplayModeToTimeScale(m_videoDisplayMode);
+		m_ticksPerFrame = (1.0 / FPS(m_videoDisplayMode)) * TimingClockTicksPerSecond();
 
 		// Inform callback handlers that stream will be invalid before re-starting
 		// Must be locked!
@@ -508,23 +508,36 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 	if (m_videoDisplayMode == BMD_DISPLAY_MODE_INVALID)
 		return -1;
 
-	timingclocktime_t timingClockFrameTime = 0;
-
 	bool videoStateChanged = false;
 
 	if (videoFrame)
 	{
 		assert(m_videoDisplayMode);
-		assert(m_timeScale != BMD_TIME_SCALE_INVALID);
-		++m_videoFrameCounter;
+
+		timingclocktime_t timingClockFrameTime = 0;
 
 		// Get timestamp
 		IF_NOT_S_OK(videoFrame->GetHardwareReferenceTimestamp(TimingClockTicksPerSecond(), &timingClockFrameTime, nullptr))
 			throw std::runtime_error("Could not get the video frame hardware timestamp");
 
+		// Figure out how many frames fit in the interval
+		if (m_previousTimingClockFrameTime != TIMING_CLOCK_TIME_INVALID)
+		{
+			assert(m_previousTimingClockFrameTime < timingClockFrameTime);
+
+			const double frameDiffTicks = timingClockFrameTime - m_previousTimingClockFrameTime;
+			const int frames = (int)round(frameDiffTicks / m_ticksPerFrame);
+			assert(frames >= 1);
+
+			m_capturedVideoFrameCount += frames;
+			m_missedVideoFrameCount += (frames - 1);
+		}
+
+		m_previousTimingClockFrameTime = timingClockFrameTime;
+
 		// Every every so often get the hardware latency.
 		// TODO: Change to framerate?
-		if(m_videoFrameCounter % 20 == 0)
+		if(m_capturedVideoFrameCount % 20 == 0)
 		{
 			timingclocktime_t timingClockNow = TimingClockNow();
 			m_hardwareLatencyMs = TimingClockDiffMs(timingClockFrameTime, timingClockNow, TimingClockTicksPerSecond());
@@ -733,11 +746,10 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 			throw std::runtime_error("Failed to get video frame bytes");
 
 		VideoFrame vpVideoFrame(
-			data, m_videoFrameCounter,
+			data, m_capturedVideoFrameCount,
 			timingClockFrameTime, videoFrame);
 
 		m_callback->OnCaptureDeviceVideoFrame(vpVideoFrame);
-
 	}  // videoFrame
 
 	return S_OK;
@@ -853,7 +865,6 @@ void BlackMagicDeckLinkCaptureDevice::ResetVideoState()
 	m_videoFrameSeen = false;
 	m_pixelFormat = BMD_PIXEL_FORMAT_INVALID;
 	m_videoDisplayMode = BMD_DISPLAY_MODE_INVALID;
-	m_timeScale = BMD_TIME_SCALE_INVALID;
 	m_videoHasInputSource = false;
 	m_videoEotf = BMD_EOTF_INVALID;
 	m_videoColorSpace = BMD_COLOR_SPACE_INVALID;

@@ -270,9 +270,6 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 
 		cstring.Format(_T("%lu"), m_renderer->DroppedFrameCount());
 		m_rendererDroppedFrameCountText.SetWindowText(cstring);
-
-		cstring.Format(_T("%lu"), m_renderer->MissingFrameCount());
-		m_rendererMissingFrameCountText.SetWindowText(cstring);
 	}
 	else
 	{
@@ -281,16 +278,24 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 		m_latencyToRendererText.SetWindowText(_T(""));
 		m_latencyToMadVRText.SetWindowText(_T(""));
 		m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
-		m_rendererMissingFrameCountText.SetWindowText(TEXT(""));
 	}
 
 	if (m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
 	{
+		cstring.Format(_T("%lu"), m_captureDevice->VideoFrameCapturedCount());
+		m_inputVideoFrameCountText.SetWindowText(cstring);
+
+		cstring.Format(_T("%lu"), m_captureDevice->VideoFrameMissedCount());
+		m_inputVideoFrameMissedText.SetWindowText(cstring);
+
 		cstring.Format(_T("%.01f"), m_captureDevice->HardwareLatencyMs());
 		m_latencyCaptureText.SetWindowText(cstring);
 	}
 	else
 	{
+		m_inputVideoFrameCountText.SetWindowText(TEXT(""));
+		m_inputVideoFrameMissedText.SetWindowText(TEXT(""));
+
 		m_latencyCaptureText.SetWindowText(_T(""));
 	}
 }
@@ -1118,6 +1123,8 @@ void CVideoProcessorDlg::CaptureGUIClear()
 	m_inputDisplayModeText.SetWindowText(TEXT(""));
 	m_inputEncodingText.SetWindowText(TEXT(""));
 	m_inputBitDepthText.SetWindowText(TEXT(""));
+	m_inputVideoFrameCountText.SetWindowText(TEXT(""));
+	m_inputVideoFrameMissedText.SetWindowText(TEXT(""));
 
 	// Captured video group
 	m_videoValidText.SetWindowText(TEXT(""));
@@ -1295,7 +1302,6 @@ void CVideoProcessorDlg::RenderGUIClear()
 	m_rendererVideoFrameQueueSize.SetWindowText(TEXT(""));
 	m_rendererVideoLeadMs.SetWindowText(TEXT(""));
 	m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
-	m_rendererMissingFrameCountText.SetWindowText(TEXT(""));
 }
 
 
@@ -1392,6 +1398,8 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_INPUT_DISPLAY_MODE_STATIC, m_inputDisplayModeText);
 	DDX_Control(pDX, IDC_INPUT_ENCODING_STATIC, m_inputEncodingText);
 	DDX_Control(pDX, IDC_INPUT_BIT_DEPTH_STATIC, m_inputBitDepthText);
+	DDX_Control(pDX, IDC_INPUT_VIDEO_FRAME_COUNT_STATIC, m_inputVideoFrameCountText);
+	DDX_Control(pDX, IDC_INPUT_VIDEO_FRAME_MISSED_STATIC, m_inputVideoFrameMissedText);
 
 	// Captured video group
 	DDX_Control(pDX, IDC_VIDEO_VALID_STATIC, m_videoValidText);
@@ -1432,7 +1440,6 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_MAX_EDIT, m_rendererVideoFrameQueueSizeMaxEdit);
 	DDX_Control(pDX, IDC_RENDERER_VIDEO_LEAD_STATIC, m_rendererVideoLeadMs);
 	DDX_Control(pDX, IDC_RENDERER_DROPPED_FRAME_COUNT_STATIC, m_rendererDroppedFrameCountText);
-	DDX_Control(pDX, IDC_RENDERER_MISSING_FRAME_COUNT_STATIC, m_rendererMissingFrameCountText);
 	DDX_Control(pDX, IDC_RENDERER_BOX, m_rendererBox);
 }
 

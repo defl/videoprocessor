@@ -103,10 +103,6 @@ public:
 	// Get the amount of dropped frames due to queue actions
 	uint64_t DroppedFrameCount() const { return m_droppedFrameCount; }
 
-	// Get the amount of missing frames. Both dropped but also large gaps
-	// in timestamps count towards these.
-	uint64_t MissingFrameCount() const { return m_missingFrameCounter; }
-
 protected:
 
 	uint64_t m_droppedFrameCount = 0;
@@ -128,7 +124,6 @@ protected:
 	timestamp_t m_startTimeOffset = 0;
 	uint64_t m_frameCounterOffset = 0;
 	uint64_t m_frameCounter = 0;
-	uint64_t m_missingFrameCounter = 0;
 	uint64_t m_previousFrameCounter = 0;
 	bool m_newSegment = false;
 

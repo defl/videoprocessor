@@ -56,6 +56,8 @@ public:
 	ITimingClock* GetTimingClock() override;
 	void SetFrameOffsetMs(int) override;
 	double HardwareLatencyMs() const override { return m_hardwareLatencyMs; }
+	uint64_t VideoFrameCapturedCount() const override { return m_capturedVideoFrameCount; }
+	uint64_t VideoFrameMissedCount() const override { return m_missedVideoFrameCount; }
 
 	// ITimingClock
 	timingclocktime_t TimingClockNow() override;
@@ -109,14 +111,16 @@ private:
 	bool m_videoFrameSeen = false;
 	BMDPixelFormat m_pixelFormat = BMD_PIXEL_FORMAT_INVALID;
 	BMDDisplayMode m_videoDisplayMode = BMD_DISPLAY_MODE_INVALID;
-	BMDTimeScale m_timeScale = BMD_TIME_SCALE_INVALID;
+	timingclocktime_t m_ticksPerFrame = TIMING_CLOCK_TIME_INVALID;
 	bool m_videoHasInputSource = false;
 	bool m_videoInvertedVertical = false;
 	LONGLONG m_videoEotf = BMD_EOTF_INVALID;
 	LONGLONG m_videoColorSpace = BMD_COLOR_SPACE_INVALID;
 	bool m_videoHasHdrData = false;
 	HDRData m_videoHdrData;
-	uint64_t m_videoFrameCounter = 0;
+	uint64_t m_capturedVideoFrameCount = 0;
+	uint64_t m_missedVideoFrameCount = 0;
+	timingclocktime_t m_previousTimingClockFrameTime = TIMING_CLOCK_TIME_INVALID;
 
 	void ResetVideoState();
 	void SendVideoStateCallback();

@@ -113,10 +113,6 @@ public:
 	// Get the amount of dropped frames due to queue actions
 	uint64_t DroppedFrameCount() const;
 
-	// Get the amount of missing frames. Both dropped but also large gaps
-	// in timestamps count towards these.
-	uint64_t MissingFrameCount() const;
-
 private:
 	ALiveSourceVideoOutputPin* m_videoOutputPin = nullptr;
 

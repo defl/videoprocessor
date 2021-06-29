@@ -63,7 +63,6 @@ public:
 	double ExitLatencyMs() const override;
 	double GetFrameVideoLeadMs() const override;
 	uint64_t DroppedFrameCount() const override;
-	uint64_t MissingFrameCount() const override;
 
 private:
 	IRendererCallback& m_callback;

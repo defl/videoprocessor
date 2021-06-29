@@ -150,8 +150,4 @@ public:
 
 	// Get the amount of dropped frames due to queue actions
 	virtual uint64_t DroppedFrameCount() const = 0;
-
-	// Get the amount of missing frames. Both dropped but also large gaps
-	// in timestamps count towards these.
-	virtual uint64_t MissingFrameCount() const = 0;
 };

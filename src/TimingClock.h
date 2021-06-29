@@ -10,9 +10,12 @@
 
 
 #include <stdint.h>
+#include <limits>
 
 
 typedef int64_t timingclocktime_t;
+
+const static timingclocktime_t TIMING_CLOCK_TIME_INVALID = std::numeric_limits<timingclocktime_t>::min();
 
 
 // Return the dif in various units of time from a to b and expressed in ms.

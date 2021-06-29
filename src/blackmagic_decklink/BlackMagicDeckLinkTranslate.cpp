@@ -293,11 +293,11 @@ DisplayModeSharedPtr Translate(BMDDisplayMode displayMode)
 }
 
 
-BMDTimeScale TranslateDisplayModeToTimeScale(BMDDisplayMode displayMode)
+double FPS(BMDDisplayMode displayMode)
 {
 	const auto& it = BD_DISPLAY_MODE_DATA.find(displayMode);
 	if (it == BD_DISPLAY_MODE_DATA.end())
 		throw std::runtime_error("Unknown BMDDisplayMode");
 
-	return it->second.timeScale;
+	return (double)(it->second.timeScale) / (double)(it->second.frameDuration);
 }

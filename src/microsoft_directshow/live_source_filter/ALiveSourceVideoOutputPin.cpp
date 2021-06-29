@@ -318,7 +318,6 @@ void ALiveSourceVideoOutputPin::Reset()
 	m_frameCounterOffset = 0;
 	m_previousTimeStop = 0;
 	m_droppedFrameCount = 0;
-	m_missingFrameCounter = 0;
 
 	if (FAILED(DeliverEndFlush()))
 		throw std::runtime_error("Failed to deliver endflush");
@@ -414,13 +413,6 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 		if (FAILED(hr))
 			return hr;
 
-		// Count missing frames based on timestamp gap
-		// Note that screwing with the frame-clock, as can be done with the ACaptureDevice will trigger this
-		const int missingFrames = round((timeStart - m_previousTimeStop) / (double)m_frameDuration);
-		assert(missingFrames >= 0);
-		if (missingFrames > 0)
-			m_missingFrameCounter += missingFrames;
-
 #ifdef _DEBUG
 		// Every n frames output a bunch of consecutive frames to check start/stop
 		if (m_frameCounter % 200 < 5)
@@ -428,8 +420,8 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 			const double durationMs = (timeStop - timeStart) / 10000.0;
 			const double diffStopMs = (timeStart - m_previousTimeStop) / 10000.0;
 
-			DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): StartTS: %I64d StopTS: %I64d, duration: %.02f, diffPrevStopStartMs: %.02f, missing: %i"),
-				videoFrame.GetCounter(), timeStart, timeStop, durationMs, diffStopMs, missingFrames));
+			DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): StartTS: %I64d StopTS: %I64d, duration: %.02f, diffPrevStopStartMs: %.02f"),
+				videoFrame.GetCounter(), timeStart, timeStop, durationMs, diffStopMs));
 		}
 #endif // _DEBUG
 
@@ -465,20 +457,14 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 		if (FAILED(hr))
 			return hr;
 
-		// Count missing frames based on duration
-		// Note that screwing with the frame-clock, as can be done with the ACaptureDevice will trigger this
-		const int missingFrames = round((timeStop - timeStart) / (double)m_frameDuration) - 1;
-		if (missingFrames > 0)
-			m_missingFrameCounter += missingFrames;
-
 #ifdef _DEBUG
 		// Every n frames output a bunch of consecutive frames to check start/stop
 		if (m_frameCounter % 200 < 5)
 		{
 			const double durationMs = (timeStop - timeStart) / 10000.0;
 
-			DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): StartTS: %I64d StopTS: %I64d, duration: %.02f, missing: %i"),
-				videoFrame.GetCounter(), timeStart, timeStop, durationMs, missingFrames));
+			DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): StartTS: %I64d StopTS: %I64d, duration: %.02f"),
+				videoFrame.GetCounter(), timeStart, timeStop, durationMs));
 		}
 #endif // _DEBUG
 

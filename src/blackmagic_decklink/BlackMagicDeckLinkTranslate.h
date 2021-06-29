@@ -31,4 +31,4 @@ ColorSpace Translate(BMDColorspace, uint32_t verticalLines);
 
 DisplayModeSharedPtr Translate(BMDDisplayMode);
 
-BMDTimeScale TranslateDisplayModeToTimeScale(BMDDisplayMode displayMode);
+double FPS(BMDDisplayMode displayMode);

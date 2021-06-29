@@ -104,6 +104,8 @@ protected:
 	CStatic m_inputDisplayModeText;
 	CStatic m_inputEncodingText;
 	CStatic m_inputBitDepthText;
+	CStatic m_inputVideoFrameCountText;
+	CStatic m_inputVideoFrameMissedText;
 
 	// Captured video group
 	CStatic m_videoValidText;
@@ -144,7 +146,6 @@ protected:
 	CEdit m_rendererVideoFrameQueueSizeMaxEdit;
 	CStatic m_rendererVideoLeadMs;
 	CStatic m_rendererDroppedFrameCountText;
-	CStatic m_rendererMissingFrameCountText;
 	CStatic	m_rendererBox;  // This is the small renderer window
 
 	CSize m_minDialogSize;

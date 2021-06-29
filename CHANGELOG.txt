@@ -1,5 +1,6 @@
 NEXT (0.3.0)
-- User-selectable (frame) timing clock, including card hardware clock
+- User-selectable (frame) interval method
+- Always uses the best (=card hardware clock)
 - HDR info is now in CIE image
 - Added final handler for throws which pops up a messagebox upon thrown exceptions, this allows the user to understand what's going on
 - Removed all mutexes (outside of directshow), it now runs lock-free with a few atomics to ensure correctness

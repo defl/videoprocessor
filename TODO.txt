@@ -5,7 +5,6 @@ Roadmap
 - Cleanup TODOs
 - Re-generate version.rc and use that somehow?
 - Check PS4 image (invertedVertical in video state should automatically do the right thing now)
-- no video for no clock shows no image
 
 0.3.1: GUI
 - Add context information to all throws

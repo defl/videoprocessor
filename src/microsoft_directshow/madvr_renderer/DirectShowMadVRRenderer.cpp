@@ -272,15 +272,6 @@ uint64_t DirectShowMadVRRenderer::DroppedFrameCount() const
 }
 
 
-uint64_t DirectShowMadVRRenderer::MissingFrameCount() const
-{
-	if (m_state != RendererState::RENDERSTATE_RENDERING)
-		throw std::runtime_error("Invalid state, can only be called while rendering");
-
-	return m_liveSource->MissingFrameCount();
-}
-
-
 void DirectShowMadVRRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PTR param2)
 {
 	// ! Do not tear down graph here

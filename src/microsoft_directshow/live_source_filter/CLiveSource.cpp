@@ -199,9 +199,3 @@ uint64_t CLiveSource::DroppedFrameCount() const
 {
 	return m_videoOutputPin->DroppedFrameCount();
 }
-
-
-uint64_t CLiveSource::MissingFrameCount() const
-{
-	return m_videoOutputPin->MissingFrameCount();
-}

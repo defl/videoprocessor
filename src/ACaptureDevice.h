@@ -191,6 +191,14 @@ public:
 	// of the capture function. This is the hardware delay.
 	// This value does not need to be per frame, sampling is fine
 	virtual double HardwareLatencyMs() const = 0;
+
+	// Get the amount of (successfully) captured video frames
+	virtual uint64_t VideoFrameCapturedCount() const = 0;
+
+	// Get the amount of missed video frames, if possible.
+	// Some hardware supports this, sometimes directly and sometimes it can be derived from
+	// gaps in the the hardware clock timestamps
+	virtual uint64_t VideoFrameMissedCount() const = 0;
 };
 
 
