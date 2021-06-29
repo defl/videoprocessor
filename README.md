@@ -21,7 +21,7 @@ Devices which can remove this protection are available, allowing for HDCP protec
 
 **madVR**
 
-madVR now has two paths, a limited-free-to-use HTPC edition which MadShi releases on his [website](http://madvr.com/) and a commercial appliance called [Envy](https://madvrenvy.com/) which is designed as a video processor. Because of the conflict of interest this causes, they have adjusted the license terms of the limited-free-to-use to be illegal for use in video capture applications such as VideoProcessor. You can find an old release (09217) with the previous license mirrored [here](http://www.dennisfleurbaaij.com/temp/madVR%2009217%20-%20old%20license.zip) as MadShi has updated all the officially downloadable releases with the new license, making them illegal to use. madVR is not included in the VideoProcessor download, you are responsible for downloading and installing an appropriate version.
+madVR has two paths, a limited-free-to-use DirectShow library which MadShi releases on his [website](http://madvr.com/) and a commercial appliance called [Envy](https://madvrenvy.com/) which is a video processor. Because of the conflict of interest this causes, madVR has adjusted the license terms of the limited-free-to-use to be illegal for use in video capture applications such as VideoProcessor. You can find an original old release (09217), which has the previous license, mirrored [here](http://www.dennisfleurbaaij.com/temp/madVR%2009217%20-%20old%20license.zip) as madVR has updated all the downloadable releases with the new license that prohibits its use in VideoProcessor. madVR is not included in the VideoProcessor download, you are responsible for downloading and installing an appropriate version.
 
 **Showtime!**
 
@@ -84,14 +84,11 @@ The following cards have capable hardware but are not supported; getting them wo
 
 # System requirements
 
-VideoProcessor itself takes very little CPU. The capture card drivers often only take a decent amount of memory up (gigs) but little CPU, the rest is madVR. MadVR can be a massive resource drain; at maximum settings when working on a 4K high frame rate feed there simply is no available hardware which can sustain it (RTX3090 included). 
-
-You'll need an AVX capable CPU (which is anything younger than a decade).
+VideoProcessor itself takes very little CPU. The capture card drivers often only take a decent amount of memory (gigs) but little CPU, the rest is madVR. MadVR can be a massive resource drain; at maximum settings when working on a 4K high frame rate feed there simply is no available hardware which can sustain it (RTX3090 included). You'll need an AVX capable CPU (which is anything younger than a decade).
 
 Luckily if you tone it down a bit it works well with quite modest hardware. There are quite a few guides on this, as linked above, so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements. Generally Nvidia is strongly preferred.
 
-For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX 1660 + BlackMagic DeckLink Mini Recorder 4k which is enough for my purposes which is 4K HDR input, 1080p output, 3d LUT plus some minor enhancements.
-
+For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX 1660 + BlackMagic DeckLink Mini Recorder 4k which is enough for my purposes which is 4K HDR input, 1080p SDR output, 3d LUT plus some minor enhancements.
 
 
 # FAQ
@@ -111,7 +108,7 @@ For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX
 - Full screen is generally smooter than windowed
 - Use the queue.
 - Press the reset button after starting the video.
-- If your latency (in the gui) is high then issues will appear. Ensure you have no drops/misses. Ideally your clock lead is positive. Set it by changing the frame offset.
+- If your capture latency (in the gui) is high (anything over 20ms) then issues will appear. Ensure you have no drops/misses. Ideally your clock lead is very slightly positive, set it by changing the frame offset.
 
 **Can this display >=10bit?**
 
@@ -126,7 +123,7 @@ Get the source from https://github.com/defl/videoprocessor
  * MSVC 2019 community edition
     * Install MFC libraries
     * Debug builds require the [Visual Leak Detector](https://kinddragon.github.io/vld/) Visual C++ plugin
- * Note that you also need to build ffmpeg, instructions to do so are in t3rdparty\ffmpeg
+ * You also need to build a special branch of ffmpeg, instructions to do so are in 3rdparty\ffmpeg
 
 **Debugging**
 
@@ -168,6 +165,3 @@ I'm not affiliated or connected with any of the firms mentioned above.
 ------
 
  Copyright 2021 [Dennis Fleurbaaij](mailto:mail@dennisfleurbaaij.com)
-
-
-
