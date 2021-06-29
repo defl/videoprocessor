@@ -10,7 +10,7 @@
 
 #include <afxstr.h>
 #include <memory>
-#include <WallClock.h>  // TODO: Extract timestamp_t to somewhere we don't need the clock
+#include <WallClock.h>
 
 
 /**
@@ -21,9 +21,7 @@
  *  - https://lurkertech.com/lg/fields/
  *  - https://docs.microsoft.com/en-us/windows/win32/medfound/video-interlacing
  *
- * TODO: Interleaved formats are not supported, only progressive.
- *
- * (It dees not store how the data is compressed, see the PixelFormat enum for that.)
+ * (It does not store how the data is compressed, see the PixelFormat enum for that.)
  */
 class DisplayMode
 {

@@ -32,7 +32,7 @@ HRESULT CUnbufferedLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame
 	HRESULT hr;
 
 	// Get buffer for sample
-	// TODO: the 2 null pointers here point to the start and end of the sample, use that in cooperation with the captured time?
+	// Note you can fill in start and stop time, but following the code shows that they are unused.
 	IMediaSample* pSample = NULL;
 	hr = this->GetDeliveryBuffer(&pSample, NULL, NULL, 0);
 	if (FAILED(hr))

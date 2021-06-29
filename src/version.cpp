@@ -10,7 +10,7 @@
 
 #include "version.h"
 
-// In release mode we don't accept dirty versions
+// In release mode we don't accept dirty versions, sorry
 #ifndef _DEBUG
-// TODO: Enable me again static_assert(!VERSION_DIRTY, "Version cannot be dirty in release builds");
+static_assert(!VERSION_DIRTY, "Version cannot be dirty in release builds");
 #endif

@@ -473,17 +473,6 @@ void DirectShowMadVRRenderer::GraphBuild()
 	if (FAILED(m_pGraph->AddFilter(m_pMVR, L"madVR")))
 		throw std::runtime_error("Failed to add madVR to the graph");
 
-	// TODO: Setting minimal queue sizes will always fail as they fall outside of the valid range for madVR
-	//       Should talk to madshi to get lower values accepted.
-	//
-	//CComQIPtr<IMadVRSettings> pMVRSettings = m_pMVR;
-	//if(!pMVRSettings)
-	//	throw std::runtime_error("Failed to get MadVR IMadVRSettings");
-	//
-	//pMVRSettings->SettingsSetInteger(L"cpuQueueSize", 1);
-	//pMVRSettings->SettingsSetInteger(L"gpuQueueSize", 1);
-	//pMVRSettings->SettingsSetInteger(L"preRenderFrames", 3);
-
 	//
 	// Build media type for connect
 	//
@@ -597,7 +586,6 @@ void DirectShowMadVRRenderer::GraphBuild()
 	pEnum->Release();
 	pEnum = nullptr;
 
-	// TODO: This increases the ref on the live filter by 3, of which 2 I cannot explain
 	if (FAILED(m_pGraph->ConnectDirect(pLiveSourceOutputPin, pMadVRInputPin, &pmt)))
 	{
 		pLiveSourceOutputPin->Release();
