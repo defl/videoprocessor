@@ -32,6 +32,7 @@ const TCHAR* ToString(const RendererState rendererState);
 
 
 // TODO: Rename because it's not really the timestamp but more time range of the frame
+// TODO: Put in own file
 enum RendererTimestamp
 {
 	// Use the given clock for start plus the theorized frame length for stop,
