@@ -3,15 +3,7 @@ Video Processor
 
 ***Video Processor: High-end video processing on live data for the rest of us.***
 
-Video Processor is a Windows application which couples a capture card to to a DirectShow renderer and takes care of all the plumbing in such a way the metadata stays intact. This allows advanced renderers to do things like 3d LUT, HDR tone mapping, scaling, deinterlacing and much more which can significantly improve image quality on the majority of displays. It is especially useful for accurate color-correction and HDR-like display on low lumen devices like projectors.
-
-**Background**
-
-The madVR renderer is legendary for it's video processing prowess, but its not a complete solution - it is only  a DirectShow renderer not a full player. A variety of players and sources are available, but as it stands only file-based sources (ripped Blue-rays etc) have the HDR metadata which allows madVR to determine what it is actually displaying. To date, none of the capture card vendors have implemented the required metadata in their sources and hence none of the players works correctly out of the box as the data simply is not there.
-
-A solution for this problem already exists in the form of the [directshow_metadata_injector_filter](https://github.com/defl/directshow_metadata_injector_filter), which is a DirectShow filter that can inject the correct metadata between the source and the renderer. It is significantly less user-friendly than this application as it requires manual configuration or external hardware and scripting. 
-
-VideoProcessor is a one-click solution for this problem allowing live streaming, processing and glorious rendering of anything from low-end PAL to high end 4k HDR sources.
+Video Processor is a Windows live-video player; it couples a capture card to to a DirectShow renderer and takes care of all the plumbing in such a way the metadata stays intact. This allows advanced renderers to do things like 3d LUT, HDR tone mapping, scaling, deinterlacing and much more which can significantly improve image quality on the majority of displays. It is especially useful for accurate color-correction and HDR-like display on low lumen devices like projectors.
 
 **HDCP**
 
