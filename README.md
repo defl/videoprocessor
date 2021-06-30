@@ -11,10 +11,6 @@ There is one snag through, all high quality copyright protected video is protect
 
 Devices which can remove this protection are available, allowing for HDCP protected sources being captured by your capture card, but their legality depends on your jurisdiction and use. Ensuring compliance with your local laws, and feeding your capture card data it can forward to VideoProcessor, is your responsibility. 
 
-**madVR**
-
-The most well known, and in my opinion best, renderer is madVR. Though before using it you must understand the legal situation. madVR has two paths, a limited-free-to-use DirectShow library which MadShi releases on his [website](http://madvr.com/) and a commercial appliance called [Envy](https://madvrenvy.com/) which is a video processor software hardware combination. Because of the conflict of interest this causes, madVR has adjusted the license terms of the limited-free-to-use to be illegal for use in video capture applications such as VideoProcessor. madVR has updated all downloadable releases with the new license that prohibits its use in VideoProcessor. 
-You can find an original old release (09217), which has the previous license, mirrored [here](http://www.dennisfleurbaaij.com/temp/madVR%2009217%20-%20old%20license.zip). madVR is not included in the VideoProcessor download, you are responsible for downloading and installing an appropriate version.
 
 **Showtime!**
 
@@ -28,18 +24,11 @@ Note that VideoProcessor is under very heavy development and that there will be 
 
 # Installing it
 
-- Build a madVR capable computer
-  - [AVSForum: Guide: Building a 4k HTPC for madVR](https://www.avsforum.com/threads/guide-building-a-4k-htpc-for-madvr.2364113/)
-  - Add capture card, see below
+- Build a computer capable of rendering + add capture card, see below
 - Install VS2019 x64 runtime
 - Install capture card (see below) and drivers, verify the card and capture works by running the vendor's capture application.
 - Download VideoProcessor.exe 
-- Configure madVR
-  - [KODI: Set up madVR](https://forum.kodi.tv/showthread.php?tid=259188) - very complete guide besides newer things like tonemapping
-  - [ronaldverlaan.nl/download/htpc.pdf](http://www.ronaldverlaan.nl/download/htpc.pdf) - recent and very complete but in Dutch
 - Enjoy
-- (After this there will be lots of madVR fiddling and probably ordering a bigger GPU because you've figured out that the highest settings are just a bit better. Welcome to the hobby.)
-
 
 
 # Capture cards
@@ -77,9 +66,9 @@ The following cards have capable hardware but are not supported; getting them wo
 
 # System requirements
 
-VideoProcessor itself takes very little CPU. The capture card drivers often only take a decent amount of memory (gigs) but little CPU, the rest is madVR. MadVR can be a massive resource drain; at maximum settings when working on a 4K high frame rate feed there simply is no available hardware which can sustain it (RTX3090 included). You'll need an AVX capable CPU (which is anything younger than a decade).
+VideoProcessor itself takes very little CPU. The capture card drivers often only take a decent amount of memory (gigs) but little CPU, the rest is the renderer. Some renderers  can be a massive resource drain; at maximum settings when working on a 4K high frame rate feed there simply is no available hardware which can sustain them (RTX3090 included). You'll need an AVX capable CPU (which is anything younger than a decade).
 
-Luckily if you tone it down a bit it works well with quite modest hardware. There are quite a few guides on this, as linked above, so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements. Generally Nvidia is strongly preferred.
+Luckily if you tone it down a bit it works well with quite modest hardware. There are quite a few guides on tuning your system and renderer of choice, so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements. Generally Nvidia is strongly preferred.
 
 For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX 1660 + BlackMagic DeckLink Mini Recorder 4k which is enough for my purposes which is 4K HDR input, 1080p SDR output, 3d LUT plus some minor enhancements.
 
@@ -89,24 +78,23 @@ For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX
 **Renderer shows black screen - with valid input**
 
 - Are you sure you're capturing something which is outside of what the card can pass along? For example 4k>30 with Blackmagic Recorder 4K mini will lead to this.
-- Did you set the correct output display modes in madVR? (2160p23, 2160p24 etc)?
+- Did you set the correct output display modes in your renderer? Some renderers do refresh rate switching only correctly if you configure it.
 
 **I have frame drops, jitter, choppy image or similar performance problems**
 
 - You are using an Nvidia card right? Intel GPUs will not cut it and lead to all sorts of drops.
 - Ensure your capture card is not sharing it's PCIe bandwidth with something else. Specifically your graphics card.
 - Ensure that your card is getting it's full PCIe bandwidth. The BlackMagic cards will show their bandwidth in the Capture Device -> Other properties which has to be link >=2 and width >=4.
-- Ensure you didn't set madVR to be too resource intensive. look at it's "max stats (5s)" in the on-screen debug and ensure that's not beyond your frame rate
+- Ensure you didn't set your renderer to be too resource intensive.
 - Do not run other high (memory) bandwidth applications at the same time. 4k30 12 bit is pushing over 13gbps and that data needs to be in RAM and processed by your CPU several times, which can load up your memory bus quite a bit
 - Full screen is generally smooter than windowed
 - Use the queue.
 - Press the reset button after starting the video.
 - If your capture latency (in the gui) is high (anything over 20ms) then issues will appear. Ensure you have no drops/misses. Ideally your clock lead is very slightly positive, set it by changing the frame offset.
 
-**Can this display >=10bit?**
+**Can this capture, process and display >=10bit?**
 
-- Yes, >=10 bit capture input, >=10 bit transfer to madVR, 10 bit D3D11 into >=10 bit screen have all been observed working
-- Example: Use a PS4Pro, set up 12 bit RGB mode and hook the output of your video card to a computer monitor. Once you fullscreen you should be seeing 10bit and madVR will tell you so in it's debug output.
+- Yes.
 
 
 # For developers
@@ -133,14 +121,7 @@ Get the source from https://github.com/defl/videoprocessor
 
 # Commercial alternatives
 
-The people behind madVR also have a commercial offering called [MadVR Envy](https://madvrenvy.com/). It does what this program does but is a complete device, offers support, will be better, has more magic and it's HDCP certified meaning it can show HDCP protected content out of the box AND there is no DIY-ing involved. 
-
-*If you have the means I would recommend you buy their product and support madVR development*
-
-**Partial solutions**
-
-madVR is unique in it's abilities and quality, nothing else comes close. For those of you who don't want everything and are on a budget (relatively speaking) the following might be of interest:
-
+- madVR labs makes a device called the [Envy](https://madvrenvy.com/) which can do both HDR tonemapping and 3d luts
 - Lumagen makes a device called the [Radiance Pro](http://www.lumagen.com/testindex.php?module=radiancepro_details) which can also do HDR tonemapping.
 - Higher end JVC projectors can do HDR tonemapping internally.
 - Higher end projectors and OLED TVs often can do 3DLUT internally.
@@ -150,10 +131,9 @@ madVR is unique in it's abilities and quality, nothing else comes close. For tho
 
 This application is released under the GNU GPL 3.0, see LICENSE.txt. 
 
-Parts of this code are made and owned by others, for example SDKs and the madVR interface; in all such cases there are LICENSE.txt and README.txt files present to point to sources, attributions and licenses.
+Parts of this code are made and owned by others, for example SDKs; in all such cases there are LICENSE.txt and README.txt files present to point to sources, attributions and licenses.
 
 I'm not affiliated or connected with any of the firms mentioned above.
-
 
 ------
 
