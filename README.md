@@ -26,12 +26,12 @@ You can find an original old release (09217), which has the previous license, mi
 
 **Showtime!**
 
-With all that out of the way, get the latest release at http://www.videoprocessor.org/ or the code at https://github.com/defl/videoprocessor.
+With all that out of the way, get grab the latest release from https://github.com/defl/videoprocessor and enjoy :)
 
 
 # Community and bleeding edge
 
-Note that VideoProcessor is under very heavy development and that there will be many unpublished experimental releases. You can check out the [AVSForum thread "How to play any source / netflix through madVR"](https://www.avsforum.com/threads/how-to-play-any-source-netflix-through-madvr.3124940) for these and for support.
+Note that VideoProcessor is under very heavy development and that there will be many unpublished experimental releases. You can check out the [AVSForum VideoProcessor thread](https://www.avsforum.com/threads/videoprocessor.3206050/) for these and for support.
 
 
 # Installing it
