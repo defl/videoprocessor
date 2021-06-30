@@ -1,4 +1,11 @@
-                    GNU GENERAL PUBLIC LICENSE
+Commercial usage of this application is prohibited, both stand-alone or
+as part of a combination with hardware where the intent is to offer a
+a device suitable for video processing.
+
+For non-commercial use the GPL-3.0 is applicable.
+
+
+                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
