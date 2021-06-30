@@ -27,12 +27,13 @@ DECLARE_INTERFACE_(ILiveSource, IUnknown)
 	// Initialize, can only be called once
 	STDMETHOD(Initialize)(
 		IVideoFrameFormatter* videoFrameFormatter,
-		GUID mediaSubType,
+		const AM_MEDIA_TYPE& mediaSubType,
 		timestamp_t frameDuration,
 		ITimingClock * timingClock,
 		RendererTimestamp timestamp,
 		bool useFrameQueue,
-		size_t frameQueueMaxSize) PURE;
+		size_t frameQueueMaxSize,
+		bool useHDRData) PURE;
 
 	// Destroy, can only be called once
 	STDMETHOD(Destroy)(void) PURE;

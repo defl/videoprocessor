@@ -6,13 +6,20 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see < https://www.gnu.org/licenses/>.
  */
 
- // Resources for this:
+
+
+#pragma once
+
+
+#include <guiddef.h>
+
+
+//
+// Media subtypes
 //  - http://www.sikyi.net/2018/10/31/c-directshow-list-of-guids/
 //  - https://github.com/manoreken2/projects/blob/23e970f7d0bc903d657f9ccee0bab29d3861c128/Common/MLAVICommon.h
 //  - https://forum.doom9.org/showpost.php?p=1597068&postcount=12553
-#pragma once
-
-#include <guiddef.h>
+//
 
 DEFINE_GUID(MEDIASUBTYPE_2YUV,
 	0x32767579, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
@@ -44,22 +51,31 @@ DEFINE_GUID(MEDIASUBTYPE_R12L,
 DEFINE_GUID(MEDIASUBTYPE_hev1,
 	0x68657631, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
 
-// MadShi @ https://forum.doom9.org/showpost.php?p=1597068&postcount=12553
-// Currently madVR supports the following for 16bit-per-component RGB:
-// They're all totally straight forward. The only thing you'll have to experiment
-// with is the order of the 3 or 4 channels. And for the Big Endian variants of
-// course you have to swap the 2 bytes for each word.
-// b48r and b64a are also Big Endian.
+DEFINE_GUID(MEDIASUBTYPE_HDYC,
+	0x43594448, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
 
 DEFINE_GUID(MEDIASUBTYPE_RGB48LE,
 	'0BGR', 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+
 DEFINE_GUID(MEDIASUBTYPE_RGB48BE,
 	'BGR0', 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+
 DEFINE_GUID(MEDIASUBTYPE_b48r,
 	'r84b', 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+
 DEFINE_GUID(MEDIASUBTYPE_RGBA64LE,
 	'@ABR', 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+
 DEFINE_GUID(MEDIASUBTYPE_RGBA64BE,
 	'ABR@', 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+
 DEFINE_GUID(MEDIASUBTYPE_b64a,
 	'a46b', 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+
+
+//
+// Known renderers
+//
+
+DEFINE_GUID(CLSID_madVR,
+	0xe1a8b82a, 0x32ce, 0x4b0d, 0xbe, 0x0d, 0xaa, 0x68, 0xc7, 0x72, 0xe4, 0x23);

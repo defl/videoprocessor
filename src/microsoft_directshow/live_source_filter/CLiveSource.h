@@ -62,12 +62,13 @@ public:
 	// ILiveSource
 	STDMETHODIMP Initialize(
 		IVideoFrameFormatter* videoFrameFormatter,
-		GUID mediaSubType,
+		const AM_MEDIA_TYPE& mediaType,
 		timestamp_t frameDuration,
 		ITimingClock* timingClock,
 		RendererTimestamp timestamp,
 		bool useFrameQueue,
-		size_t frameQueueMaxSize) override;
+		size_t frameQueueMaxSize,
+		bool useHDRData) override;
 	STDMETHODIMP Destroy() override;
 	STDMETHODIMP OnHDRData(HDRDataSharedPtr&) override;
 	STDMETHODIMP OnVideoFrame(VideoFrame&) override;
@@ -85,9 +86,6 @@ public:
 
 	// IAMFilterMiscFlags
 	ULONG STDMETHODCALLTYPE GetMiscFlags(void) override;
-
-	// Get the MediaSubType the data will represent
-	GUID GetMediaSubType();
 
 	//
 	// Queue
@@ -116,8 +114,6 @@ public:
 
 private:
 	ALiveSourceVideoOutputPin* m_videoOutputPin = nullptr;
-
-	GUID m_mediaSubType;
 
 	CCritSec m_critSec;
 };

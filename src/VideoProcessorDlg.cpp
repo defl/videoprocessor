@@ -12,13 +12,16 @@
 #include <algorithm>
 #include <vector>
 #include <dxva.h>
+#include <propvarutil.h>
 
 #include <version.h>
 #include <cie.h>
 #include <resource.h>
 #include <VideoProcessorApp.h>
-#include <microsoft_directshow/madvr_renderer/DirectShowMadVRRenderer.h>
+#include <microsoft_directshow/CVideoInfo1DirectShowRenderer.h>
+#include <microsoft_directshow/CVideoInfo2DirectShowRenderer.h>
 #include <microsoft_directshow/DirectShowDefines.h>
+#include <guid.h>
 
 #include "VideoProcessorDlg.h"
 
@@ -49,6 +52,7 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	// UI element messages
 	ON_CBN_SELCHANGE(IDC_CAPTURE_DEVICE_COMBO, &CVideoProcessorDlg::OnCaptureDeviceSelected)
 	ON_CBN_SELCHANGE(IDC_CAPTURE_INPUT_COMBO, &CVideoProcessorDlg::OnCaptureInputSelected)
+	ON_CBN_SELCHANGE(IDC_RENDERER_COMBO, &CVideoProcessorDlg::OnRendererSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_TIMESTAMP_COMBO, &CVideoProcessorDlg::OnRendererTimestampSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_NOMINAL_RANGE_COMBO, &CVideoProcessorDlg::OnRendererNominalRangeSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_TRANSFER_FUNCTION_COMBO, &CVideoProcessorDlg::OnRendererTransferFunctionSelected)
@@ -198,6 +202,12 @@ void CVideoProcessorDlg::OnCaptureInputSelected()
 }
 
 
+void CVideoProcessorDlg::OnRendererSelected()
+{
+	OnBnClickedRendererRestart();
+}
+
+
 void CVideoProcessorDlg::OnRendererTimestampSelected()
 {
 	OnBnClickedRendererRestart();
@@ -263,10 +273,10 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 		m_rendererVideoLeadMs.SetWindowText(cstring);
 
 		cstring.Format(_T("%.01f"), m_renderer->EntryLatencyMs());
-		m_latencyToRendererText.SetWindowText(cstring);
+		m_latencyToVPRendererText.SetWindowText(cstring);
 
 		cstring.Format(_T("%.01f"), m_renderer->ExitLatencyMs());
-		m_latencyToMadVRText.SetWindowText(cstring);
+		m_latencyToDSRendererText.SetWindowText(cstring);
 
 		cstring.Format(_T("%lu"), m_renderer->DroppedFrameCount());
 		m_rendererDroppedFrameCountText.SetWindowText(cstring);
@@ -275,8 +285,8 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 	{
 		m_rendererVideoFrameQueueSize.SetWindowText(_T(""));
 		m_rendererVideoLeadMs.SetWindowText(_T(""));
-		m_latencyToRendererText.SetWindowText(_T(""));
-		m_latencyToMadVRText.SetWindowText(_T(""));
+		m_latencyToVPRendererText.SetWindowText(_T(""));
+		m_latencyToDSRendererText.SetWindowText(_T(""));
 		m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
 	}
 
@@ -1166,71 +1176,95 @@ void CVideoProcessorDlg::RenderStart()
 	assert(m_captureDevice);
 	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
 
-	// Update internal state before call to StartCapture as that might be synchronous
-	m_rendererState = RendererState::RENDERSTATE_STARTING;
-
-	// Get selected options
-	RendererTimestamp rendererTimestamp = RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK;
-	DXVA_NominalRange forceNominalRange = DXVA_NominalRange::DXVA_NominalRange_Unknown;
-	DXVA_VideoTransferFunction forceVideoTransferFunction = DXVA_VideoTransferFunction::DXVA_VideoTransFunc_Unknown;
-	DXVA_VideoTransferMatrix forceVideoTransferMatrix = DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_Unknown;
-	DXVA_VideoPrimaries forceVideoPrimaries = DXVA_VideoPrimaries::DXVA_VideoPrimaries_Unknown;
-
 	int i;
 
+	i = m_rendererCombo.GetCurSel();
+
+	// No renderer picked yet, ignore
+	if (i < 0)
+		return;
+
+	GUID* rendererClSID= (GUID*)m_rendererCombo.GetItemData(i);
+
+	// Get timestamp
 	i = m_rendererTimestampCombo.GetCurSel();
-	if (i >= 0)
-		rendererTimestamp = (RendererTimestamp)m_rendererTimestampCombo.GetItemData(i);
-
-	i = m_rendererNominalRangeCombo.GetCurSel();
-	if (i >= 0)
-		forceNominalRange = (DXVA_NominalRange)m_rendererNominalRangeCombo.GetItemData(i);
-
-	i = m_rendererTransferFunctionCombo.GetCurSel();
-	if (i >= 0)
-		forceVideoTransferFunction = (DXVA_VideoTransferFunction)m_rendererTransferFunctionCombo.GetItemData(i);
-
-	i = m_rendererTransferMatrixCombo.GetCurSel();
-	if (i >= 0)
-		forceVideoTransferMatrix = (DXVA_VideoTransferMatrix)m_rendererTransferMatrixCombo.GetItemData(i);
-
-	i = m_rendererPrimariesCombo.GetCurSel();
-	if (i >= 0)
-		forceVideoPrimaries = (DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
+	assert(i >= 0);
+	RendererTimestamp rendererTimestamp = (RendererTimestamp)m_rendererTimestampCombo.GetItemData(i);
 
 	// Capture card always provides the clock
 	ITimingClock* timingClock = m_captureDevice->GetTimingClock();
 	if (!timingClock)
 		throw std::runtime_error("Failed to get timing clock from capture card");
 
-	// Renderer
+	m_rendererBox.SetWindowTextW(TEXT("Starting..."));
+	m_rendererState = RendererState::RENDERSTATE_STARTING;
+
+	// Try to construct and start the renderer
 	try
 	{
 		assert(!m_renderer);
 		assert(m_captureDevice);
 
-		m_renderer = new DirectShowMadVRRenderer(
-			*this,
-			GetRenderWindow(),
-			this->GetSafeHwnd(),
-			WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
-			timingClock,
-			m_captureDeviceVideoState,
-			rendererTimestamp,
-			GetRendererVideoFrameUseQueue(),
-			GetRendererVideoFrameQueueSizeMax(),
-			forceNominalRange,
-			forceVideoTransferFunction,
-			forceVideoTransferMatrix,
-			forceVideoPrimaries);
+		// Determine which renderer (that is, ours, not the DirectShow one) to use, more
+		// advanced DirectShow renderers can handle VideoInfo2, all others by default
+		// get the older VideoInfo metadata. There is no way DirectShow renders can
+		// tell us this upfront, so unfortunately we need hand-maintained list here.
+		if (IsEqualGUID(*rendererClSID, CLSID_madVR))
+		{
+			i = m_rendererNominalRangeCombo.GetCurSel();
+			assert(i >= 0);
+			DXVA_NominalRange forceNominalRange = (DXVA_NominalRange)m_rendererNominalRangeCombo.GetItemData(i);
+
+			i = m_rendererTransferFunctionCombo.GetCurSel();
+			assert(i >= 0);
+			DXVA_VideoTransferFunction forceVideoTransferFunction = (DXVA_VideoTransferFunction)m_rendererTransferFunctionCombo.GetItemData(i);
+
+			i = m_rendererTransferMatrixCombo.GetCurSel();
+			assert(i >= 0);
+			DXVA_VideoTransferMatrix forceVideoTransferMatrix = (DXVA_VideoTransferMatrix)m_rendererTransferMatrixCombo.GetItemData(i);
+
+			i = m_rendererPrimariesCombo.GetCurSel();
+			assert(i >= 0);
+			DXVA_VideoPrimaries forceVideoPrimaries = (DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
+
+			m_renderer = new CVideoInfo2DirectShowRenderer(
+				*rendererClSID,
+				*this,
+				GetRenderWindow(),
+				this->GetSafeHwnd(),
+				WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
+				timingClock,
+				m_captureDeviceVideoState,
+				rendererTimestamp,
+				GetRendererVideoFrameUseQueue(),
+				GetRendererVideoFrameQueueSizeMax(),
+				forceNominalRange,
+				forceVideoTransferFunction,
+				forceVideoTransferMatrix,
+				forceVideoPrimaries);
+		}
+		else
+		{
+			m_renderer = new CVideoInfo1DirectShowRenderer(
+				*rendererClSID,
+				*this,
+				GetRenderWindow(),
+				this->GetSafeHwnd(),
+				WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
+				timingClock,
+				m_captureDeviceVideoState,
+				rendererTimestamp,
+				GetRendererVideoFrameUseQueue(),
+				GetRendererVideoFrameQueueSizeMax());
+		}
 
 		if (!m_renderer)
-			throw std::runtime_error("Failed to build DirectShowMadVRRenderer");
+			throw std::runtime_error("Failed to build renderer");
 
 		m_renderer->Build();
 		m_renderer->Start();
 
-		m_rendererStateText.SetWindowText(TEXT("Starting"));
+		m_rendererStateText.SetWindowText(TEXT("Started, waiting for image..."));
 	}
 	catch (std::runtime_error e)
 	{
@@ -1386,6 +1420,120 @@ int CVideoProcessorDlg::GetTimingClockFrameOffsetMs()
 }
 
 
+void CVideoProcessorDlg::RebuildRendererCombo()
+{
+	assert(m_rendererCombo.GetCount() == 0);  // Because we allocate and just cleaning out would lose the memory
+
+	struct RendererEntry
+	{
+		CString name;
+		GUID guid;
+
+		bool operator< (const RendererEntry& other) const {
+			return name < other.name;
+		}
+	};
+	std::vector<RendererEntry> rendererEntries;
+
+	//
+	// Iterate all renderers
+	// https://docs.microsoft.com/en-us/windows/win32/directshow/using-the-filter-mapper
+	//
+	{
+		IFilterMapper2* pMapper = NULL;
+		IEnumMoniker* pEnum = NULL;
+		HRESULT hr;
+
+		hr = CoCreateInstance(CLSID_FilterMapper2,
+			NULL, CLSCTX_INPROC, IID_IFilterMapper2,
+			(void**)&pMapper);
+
+		if (FAILED(hr))
+			throw std::runtime_error("Failed to instantiate the filter mapper");
+
+		GUID arrayInTypes[2];
+		arrayInTypes[0] = MEDIATYPE_Video;
+		arrayInTypes[1] = GUID_NULL;
+
+		hr = pMapper->EnumMatchingFilters(
+			&pEnum,
+			0,                  // Reserved.
+			TRUE,               // Use exact match?
+			MERIT_DO_NOT_USE,   // Minimum merit.
+			TRUE,               // At least one input pin?
+			1,                  // Number of major type/subtype pairs for input.
+			arrayInTypes,       // Array of major type/subtype pairs for input.
+			NULL,               // Input medium.
+			NULL,               // Input pin category.
+			FALSE,              // Must be a renderer?
+			FALSE,              // At least one output pin?
+			0,                  // Number of major type/subtype pairs for output.
+			NULL,               // Array of major type/subtype pairs for output.
+			NULL,               // Output medium.
+			NULL);              // Output pin category.
+
+		// Enumerate the monikers.
+		IMoniker* pMoniker;
+		ULONG cFetched;
+		while (pEnum->Next(1, &pMoniker, &cFetched) == S_OK)
+		{
+			IPropertyBag* pPropBag = NULL;
+			hr = pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)&pPropBag);
+
+			if (SUCCEEDED(hr))
+			{
+				VARIANT nameVariant;
+				VARIANT clsidVariant;
+				VariantInit(&nameVariant);
+				VariantInit(&clsidVariant);
+
+				HRESULT nameHr = pPropBag->Read(L"FriendlyName", &nameVariant, 0);
+				HRESULT clsidHr = pPropBag->Read(L"CLSID", &clsidVariant, 0);
+				if (SUCCEEDED(nameHr) && SUCCEEDED(clsidHr))
+				{
+					RendererEntry rendererEntry;
+					rendererEntry.name = nameVariant.bstrVal;
+
+					hr = VariantToGUID(clsidVariant, &(rendererEntry.guid));
+					if (FAILED(hr))
+						throw std::runtime_error("Failed to convert veriant to GUID");
+					rendererEntries.push_back(rendererEntry);
+				}
+
+				VariantClear(&nameVariant);
+				VariantClear(&clsidVariant);
+
+				pPropBag->Release();
+			}
+			pMoniker->Release();
+		}
+
+		pMapper->Release();
+		pEnum->Release();
+	}
+
+	//
+	// Populate selection box, sorted
+	//
+
+	std::sort(rendererEntries.begin(), rendererEntries.end());
+	for (const auto& rendererEntry : rendererEntries)
+	{
+		// Filter by name.
+		// Unforuntately renderes don't actually tell us if they can render
+		// so we need a hand-maintained list here.
+		if(rendererEntry.name.Find(TEXT("Render")) >= 0 ||
+		   rendererEntry.name.Find(TEXT("madVR")) >= 0)
+		{
+			GUID* clsid = new GUID(rendererEntry.guid);
+
+			int comboIndex = m_rendererCombo.AddString(rendererEntry.name);
+			m_rendererCombo.SetItemData(comboIndex, (DWORD_PTR)clsid);
+		}
+	}
+}
+
+
 //
 // CDialog
 //
@@ -1430,10 +1578,11 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 
 	// Latency group
 	DDX_Control(pDX, IDC_LATENCY_CAPTURE_STATIC, m_latencyCaptureText);
-	DDX_Control(pDX, IDC_LATENCY_TO_RENDERER_STATIC, m_latencyToRendererText);
-	DDX_Control(pDX, IDC_LATENCY_TO_MADVR_STATIC, m_latencyToMadVRText);
+	DDX_Control(pDX, IDC_LATENCY_TO_VP_RENDERER_STATIC, m_latencyToVPRendererText);
+	DDX_Control(pDX, IDC_LATENCY_TO_DS_RENDERER_STATIC, m_latencyToDSRendererText);
 
 	// Renderer group
+	DDX_Control(pDX, IDC_RENDERER_COMBO, m_rendererCombo);
 	DDX_Control(pDX, IDC_RENDERER_TIMESTAMP_COMBO, m_rendererTimestampCombo);
 	DDX_Control(pDX, IDC_RENDERER_NOMINAL_RANGE_COMBO, m_rendererNominalRangeCombo);
 	DDX_Control(pDX, IDC_RENDERER_TRANSFER_FUNCTION_COMBO, m_rendererTransferFunctionCombo);
@@ -1475,6 +1624,9 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	// Disable the interface
 	m_captureDeviceCombo.EnableWindow(FALSE);
 	m_captureInputCombo.EnableWindow(FALSE);
+
+	// Get all renderers
+	RebuildRendererCombo();
 
 	// Fill renderer selection boxes
 	for (const auto& p : RENDERER_TIMESTAMP_OPTIONS)
@@ -1602,11 +1754,6 @@ void CVideoProcessorDlg::OnPaint()
 	}
 	else
 	{
-		{
-			if (m_renderer)
-				m_renderer->OnPaint();
-		}
-
 		CDialog::OnPaint();
 	}
 }

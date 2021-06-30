@@ -10,6 +10,7 @@
 
 
 #include <dshow.h>
+#include <dxva.h>
 
 #include <IRenderer.h>
 #include <PixelValueRange.h>
@@ -21,16 +22,15 @@
 
 
 /**
- * This renderer renders using madVR.
- * For that to work it has to create a DirectShow graph.
+ * Abstract DirectShow renderer
  */
-class DirectShowMadVRRenderer:
+class ADirectShowRenderer:
 	public IRenderer
 {
 public:
 
-	// For the force_* params, the _unknown define means don't force but auto-select
-	DirectShowMadVRRenderer(
+	ADirectShowRenderer(
+		GUID rendererCLSID,
 		IRendererCallback& callback,
 		HWND videoHwnd,
 		HWND eventHwnd,
@@ -40,12 +40,9 @@ public:
 		RendererTimestamp timestamp,
 		bool useFrameQueue,
 		size_t frameQueueMaxSize,
-		DXVA_NominalRange forceNominalRange,
-		DXVA_VideoTransferFunction forceVideoTransferFunction,
-		DXVA_VideoTransferMatrix forceVideoTransferMatrix,
-		DXVA_VideoPrimaries forceVideoPrimaries);
+		bool useHDRDdata);
 
-	virtual ~DirectShowMadVRRenderer();
+	virtual ~ADirectShowRenderer();
 
 	// IRenderer
 	bool OnVideoState(VideoStateComPtr&) override;
@@ -55,7 +52,6 @@ public:
 	void Start() override;
 	void Stop() override;
 	void Reset() override;
-	void OnPaint() override;
 	void OnSize() override;
 	void SetFrameQueueMaxSize(size_t) override;
 	size_t GetFrameQueueSize() override;
@@ -64,7 +60,14 @@ public:
 	double GetFrameVideoLeadMs() const override;
 	uint64_t DroppedFrameCount() const override;
 
-private:
+
+protected:
+
+
+	virtual void MediaTypeGenerate(GUID mediaSubType, int bitCount) = 0;
+	virtual void Connect() = 0;
+
+	const GUID m_rendererCLSID;
 	IRendererCallback& m_callback;
 	HWND m_videoHwnd;
 	HWND m_eventHwnd;
@@ -74,6 +77,7 @@ private:
 	RendererTimestamp m_timestamp;
 	bool m_useFrameQueue;
 	size_t m_frameQueueMaxSize;
+	bool m_useHDRDdata;
 	DXVA_NominalRange m_forceNominalRange;
 	DXVA_VideoTransferFunction m_forceVideoTransferFunction;
 	DXVA_VideoTransferMatrix m_forceVideoTransferMatrix;
@@ -93,8 +97,10 @@ private:
 	IAMGraphStreams* m_amGraphStreams = NULL;
 	IReferenceClock* m_referenceClock = nullptr;
 	IVideoFrameFormatter* m_videoFramFormatter = nullptr;
+	AM_MEDIA_TYPE m_pmt;
 	CLiveSource* m_liveSource = nullptr;
-	IBaseFilter* m_pMVR = nullptr;
+	IBaseFilter* m_pLav = nullptr;
+	IBaseFilter* m_pRenderer = nullptr;
 
 #ifdef _DEBUG
 	timingclocktime_t m_previousFrameTime = 0;

@@ -8,13 +8,8 @@
 
 #include "stdafx.h"
 
-#include <d3d9helper.h> // madVR requirement
-#include <mvrInterfaces.h>
 #include <dvdmedia.h>
-#include <dxva.h>
-#include <gl/gl.h>
-#include <windef.h>
-#include <guiddef.h>
+
 
 #include <guid.h>
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>
@@ -22,10 +17,11 @@
 #include <CNoopVideoFrameFormatter.h>
 #include <ffmpeg/CFFMpegDecoderVideoFrameFormatter.h>
 
-#include "DirectShowMadVRRenderer.h"
+#include "ADirectShowRenderer.h"
 
 
-DirectShowMadVRRenderer::DirectShowMadVRRenderer(
+ADirectShowRenderer::ADirectShowRenderer(
+	GUID rendererCLSID,
 	IRendererCallback& callback,
 	HWND videoHwnd,
 	HWND eventHwnd,
@@ -35,10 +31,8 @@ DirectShowMadVRRenderer::DirectShowMadVRRenderer(
 	RendererTimestamp timestamp,
 	bool useFrameQueue,
 	size_t frameQueueMaxSize,
-	DXVA_NominalRange forceNominalRange,
-	DXVA_VideoTransferFunction forceVideoTransferFunction,
-	DXVA_VideoTransferMatrix forceVideoTransferMatrix,
-	DXVA_VideoPrimaries forceVideoPrimaries):
+	bool useHDRDdata):
+	m_rendererCLSID(rendererCLSID),
 	m_callback(callback),
 	m_videoHwnd(videoHwnd),
 	m_eventHwnd(eventHwnd),
@@ -48,10 +42,7 @@ DirectShowMadVRRenderer::DirectShowMadVRRenderer(
 	m_timestamp(timestamp),
 	m_useFrameQueue(useFrameQueue),
 	m_frameQueueMaxSize(frameQueueMaxSize),
-	m_forceNominalRange(forceNominalRange),
-	m_forceVideoTransferFunction(forceVideoTransferFunction),
-	m_forceVideoTransferMatrix(forceVideoTransferMatrix),
-	m_forceVideoPrimaries(forceVideoPrimaries)
+	m_useHDRDdata(useHDRDdata)
 {
 	if (!videoHwnd)
 		throw std::runtime_error("Invalid videoHwnd");
@@ -67,16 +58,18 @@ DirectShowMadVRRenderer::DirectShowMadVRRenderer(
 
 	if (!useFrameQueue && timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK)
 		throw std::runtime_error("No queue cannot be used with clock-clock, pick another mode and restart");
+
+	ZeroMemory(&m_pmt, sizeof(AM_MEDIA_TYPE));
 }
 
 
-DirectShowMadVRRenderer::~DirectShowMadVRRenderer()
+ADirectShowRenderer::~ADirectShowRenderer()
 {
 	GraphTeardown();
 }
 
 
-bool DirectShowMadVRRenderer::OnVideoState(VideoStateComPtr& videoState)
+bool ADirectShowRenderer::OnVideoState(VideoStateComPtr& videoState)
 {
 	if (!videoState)
 		throw std::runtime_error("null video state is invalid");
@@ -109,7 +102,7 @@ bool DirectShowMadVRRenderer::OnVideoState(VideoStateComPtr& videoState)
 }
 
 
-void DirectShowMadVRRenderer::OnVideoFrame(VideoFrame& videoFrame)
+void ADirectShowRenderer::OnVideoFrame(VideoFrame& videoFrame)
 {
 	// Called from some unknown thread, but with promise that Start() has completed
 
@@ -128,14 +121,14 @@ void DirectShowMadVRRenderer::OnVideoFrame(VideoFrame& videoFrame)
 
 	if (FAILED(m_liveSource->OnVideoFrame(videoFrame)))
 	{
-		DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::OnVideoFrame(): Failed to deliver frame #%I64u"), m_frameCounter));
+		DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::OnVideoFrame(): Failed to deliver frame #%I64u"), m_frameCounter));
 	}
 
 	++m_frameCounter;
 }
 
 
-HRESULT DirectShowMadVRRenderer::OnWindowsEvent(LONG_PTR, LONG_PTR)
+HRESULT ADirectShowRenderer::OnWindowsEvent(LONG_PTR, LONG_PTR)
 {
 	// ! Do not tear down graph here
 
@@ -165,25 +158,25 @@ HRESULT DirectShowMadVRRenderer::OnWindowsEvent(LONG_PTR, LONG_PTR)
 }
 
 
-void DirectShowMadVRRenderer::Build()
+void ADirectShowRenderer::Build()
 {
 	GraphBuild();
 }
 
 
-void DirectShowMadVRRenderer::Start()
+void ADirectShowRenderer::Start()
 {
 	GraphRun();
 }
 
 
-void DirectShowMadVRRenderer::Stop()
+void ADirectShowRenderer::Stop()
 {
 	GraphStop();
 }
 
 
-void DirectShowMadVRRenderer::Reset()
+void ADirectShowRenderer::Reset()
 {
 	// Stop directshow graph
 	if (FAILED(m_pControl->Stop()))
@@ -199,17 +192,7 @@ void DirectShowMadVRRenderer::Reset()
 }
 
 
-void DirectShowMadVRRenderer::OnPaint()
-{
-	if (m_pMVR)
-	{
-		CComQIPtr<IMadVRCommand> pMVRC = m_pMVR;
-		pMVRC->SendCommand("redraw");
-	}
-}
-
-
-void DirectShowMadVRRenderer::OnSize()
+void ADirectShowRenderer::OnSize()
 {
 	// Get window size
 	RECT rectWindow;
@@ -224,13 +207,13 @@ void DirectShowMadVRRenderer::OnSize()
 }
 
 
-void DirectShowMadVRRenderer::SetFrameQueueMaxSize(size_t frameMaxQueueSize)
+void ADirectShowRenderer::SetFrameQueueMaxSize(size_t frameMaxQueueSize)
 {
 	// TODO
 }
 
 
-size_t DirectShowMadVRRenderer::GetFrameQueueSize()
+size_t ADirectShowRenderer::GetFrameQueueSize()
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		throw std::runtime_error("Invalid state, can only be called while rendering");
@@ -239,7 +222,7 @@ size_t DirectShowMadVRRenderer::GetFrameQueueSize()
 }
 
 
-double DirectShowMadVRRenderer::EntryLatencyMs() const
+double ADirectShowRenderer::EntryLatencyMs() const
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		throw std::runtime_error("Invalid state, can only be called while rendering");
@@ -248,7 +231,7 @@ double DirectShowMadVRRenderer::EntryLatencyMs() const
 }
 
 
-double DirectShowMadVRRenderer::ExitLatencyMs() const
+double ADirectShowRenderer::ExitLatencyMs() const
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		throw std::runtime_error("Invalid state, can only be called while rendering");
@@ -257,7 +240,7 @@ double DirectShowMadVRRenderer::ExitLatencyMs() const
 }
 
 
-double DirectShowMadVRRenderer::GetFrameVideoLeadMs() const
+double ADirectShowRenderer::GetFrameVideoLeadMs() const
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		throw std::runtime_error("Invalid state, can only be called while rendering");
@@ -266,7 +249,7 @@ double DirectShowMadVRRenderer::GetFrameVideoLeadMs() const
 }
 
 
-uint64_t DirectShowMadVRRenderer::DroppedFrameCount() const
+uint64_t ADirectShowRenderer::DroppedFrameCount() const
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		throw std::runtime_error("Invalid state, can only be called while rendering");
@@ -275,20 +258,13 @@ uint64_t DirectShowMadVRRenderer::DroppedFrameCount() const
 }
 
 
-void DirectShowMadVRRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PTR param2)
+void ADirectShowRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PTR param2)
 {
 	// ! Do not tear down graph here
 	// https://docs.microsoft.com/en-us/windows/win32/directshow/responding-to-events
 
 	switch (evCode)
 	{
-	// Seen, unhandled
-	case EC_VIDEO_SIZE_CHANGED:
-	case EC_CLOCK_CHANGED:
-	case EC_PAUSED:
-	case 64023:  // TODO: What is this?
-		break;
-
 	case EC_USERABORT:
 	case EC_ERRORABORT:
 	case EC_COMPLETE:
@@ -297,17 +273,13 @@ void DirectShowMadVRRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PT
 			GraphStop();
 		}
 		break;
-
-	// Catch for unknowns in debug
-	default:
-		assert(false);
 	}
 }
 
 
-void DirectShowMadVRRenderer::SetState(RendererState state)
+void ADirectShowRenderer::SetState(RendererState state)
 {
-	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::SetState(): %s"), ToString(state)));
+	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::SetState(): %s"), ToString(state)));
 
 	assert(state != RendererState::RENDERSTATE_UNKNOWN);
 	assert(m_state != state);
@@ -317,9 +289,9 @@ void DirectShowMadVRRenderer::SetState(RendererState state)
 }
 
 
-void DirectShowMadVRRenderer::GraphBuild()
+void ADirectShowRenderer::GraphBuild()
 {
-	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::GraphBuild(): Begin")));
+	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphBuild(): Begin")));
 
 	assert(m_videoState);
 
@@ -385,6 +357,7 @@ void DirectShowMadVRRenderer::GraphBuild()
 
 	//
 	// Build conversion dependent stuff
+	// TODO: Limit to VideoInfo2 as 1 can use whatever filter is present
 	//
 
 	GUID mediaSubType;
@@ -430,22 +403,31 @@ void DirectShowMadVRRenderer::GraphBuild()
 	m_videoFramFormatter->OnVideoState(m_videoState);
 
 	//
+	// Build media type for connect
+	//
+
+	MediaTypeGenerate(mediaSubType, bitCount);
+
+
+	//
 	// Live source filter
 	//
+
 	m_liveSource = dynamic_cast<CLiveSource*>(CLiveSource::CreateInstance(nullptr, nullptr));
-	if (m_liveSource == nullptr)
+	if (!m_liveSource)
 		throw std::runtime_error("Failed to build a CLiveSource");
 
 	m_liveSource->AddRef();
 
 	m_liveSource->Initialize(
 		m_videoFramFormatter,
-		mediaSubType,
+		m_pmt,
 		m_videoState->displayMode->FrameDuration(),
 		m_timingClock,
 		m_timestamp,
 		m_useFrameQueue,
-		m_frameQueueMaxSize);
+		m_frameQueueMaxSize,
+		m_useHDRDdata);
 
 	if (m_videoState->hdrData)
 		m_liveSource->OnHDRData(m_videoState->hdrData);
@@ -457,145 +439,28 @@ void DirectShowMadVRRenderer::GraphBuild()
 	}
 
 	//
-	// madVR render filter
+	// Renderer
 	//
+
 	if (FAILED(CoCreateInstance(
-		CLSID_madVR,
+		m_rendererCLSID,
 		NULL,
 		CLSCTX_INPROC_SERVER,
 		IID_IBaseFilter,
-		(void**)&m_pMVR)))
-		throw std::runtime_error("Failed to create madVR instance");
+		(void**)&m_pRenderer)))
+		throw std::runtime_error("Failed to create renderer instance");
 
-	if (!m_pMVR)
-		throw std::runtime_error("Created madVR instance wes nullptr");
+	if (!m_pRenderer)
+		throw std::runtime_error("Created renderer instance wes nullptr");
 
-	if (FAILED(m_pGraph->AddFilter(m_pMVR, L"madVR")))
-		throw std::runtime_error("Failed to add madVR to the graph");
-
-	//
-	// Build media type for connect
-	//
-
-	AM_MEDIA_TYPE pmt;
-	ZeroMemory(&pmt, sizeof(AM_MEDIA_TYPE));
-
-	pmt.formattype = FORMAT_VIDEOINFO2;
-	pmt.cbFormat = sizeof(VIDEOINFOHEADER2);
-	pmt.majortype = MEDIATYPE_Video;
-	pmt.subtype = mediaSubType;
-	pmt.bFixedSizeSamples = TRUE;
-	pmt.bTemporalCompression = FALSE;
-
-	pmt.pbFormat = (BYTE*)CoTaskMemAlloc(sizeof(VIDEOINFOHEADER2));
-	if (!pmt.pbFormat)
-		throw std::runtime_error("Out of mem");
-
-	VIDEOINFOHEADER2* pvi2 = (VIDEOINFOHEADER2*)pmt.pbFormat;
-	ZeroMemory(pvi2, sizeof(VIDEOINFOHEADER2));
-
-	// Populate bitmap info header
-	// https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
-
-	pvi2->bmiHeader.biSizeImage = m_videoFramFormatter->GetOutFrameSize();
-	pvi2->bmiHeader.biBitCount = bitCount;
-	pvi2->bmiHeader.biCompression = pmt.subtype.Data1;
-	pvi2->bmiHeader.biWidth = m_videoState->displayMode->FrameWidth();
-	pvi2->bmiHeader.biHeight = ((long)m_videoState->displayMode->FrameHeight()) *
-		                       (m_videoState->invertedVertical ? -1 : 1);
-	pvi2->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	pvi2->bmiHeader.biPlanes = 1;
-	pvi2->bmiHeader.biClrImportant = 0;
-	pvi2->bmiHeader.biClrUsed = 0;
-
-	pvi2->AvgTimePerFrame = (REFERENCE_TIME)(UNITS / m_videoState->displayMode->RefreshRateHz());
-
-	//// dwControlFlags is a 32bit int. With AMCONTROL_COLORINFO_PRESENT the upper 24 bits are used by DXVA_ExtendedFormat.
-	//// That struct is 32 bits so it's lower member (SampleFormat) is actually overbooked with the value of dwConotrolFlags
-	//// so can't be used. LAV has defined some out-of-spec but compatile with madVR values for the more modern formats,
-	//// which we use as well see
-	//// https://github.com/Nevcairiel/LAVFilters/blob/ddef56ae155d436f4301346408f4fdba755197d6/decoder/LAVVideo/Media.cpp
-
-	DXVA_ExtendedFormat* colorimetry = (DXVA_ExtendedFormat*)&(pvi2->dwControlFlags);
-
-	colorimetry->VideoPrimaries =
-		(m_forceVideoPrimaries != DXVA_VideoPrimaries::DXVA_VideoPrimaries_Unknown) ?
-		m_forceVideoPrimaries :
-		TranslateVideoPrimaries(m_videoState->colorspace);
-
-	colorimetry->VideoTransferMatrix =
-		(m_forceVideoTransferMatrix != DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_Unknown) ?
-		m_forceVideoTransferMatrix :
-		TranslateVideoTransferMatrix(m_videoState->colorspace);
-
-	colorimetry->VideoTransferFunction =
-		(m_forceVideoTransferFunction != DXVA_VideoTransferFunction::DXVA_VideoTransFunc_Unknown) ?
-		m_forceVideoTransferFunction :
-		TranslateVideoTranferFunction(m_videoState->eotf, m_videoState->colorspace);
-
-	colorimetry->NominalRange =
-		(m_forceNominalRange != DXVA_NominalRange::DXVA_NominalRange_Unknown) ?
-		m_forceNominalRange :
-		DXVA_NominalRange::DXVA_NominalRange_Unknown;  // = Let madVR guess
-
-	pvi2->dwControlFlags += AMCONTROL_USED;
-	pvi2->dwControlFlags += AMCONTROL_COLORINFO_PRESENT;
-
-	pmt.lSampleSize = DIBSIZE(pvi2->bmiHeader);
-
-	CoTaskMemFree(pmt.pbFormat);
+	if (FAILED(m_pGraph->AddFilter(m_pRenderer, L"Renderer")))
+		throw std::runtime_error("Failed to add renderer to the graph");
 
 	//
-	// Connect pins (both only have 1)
+	// Connect pins
 	//
 
-	IEnumPins* pEnum = NULL;
-	IPin* pLiveSourceOutputPin = NULL;
-	IPin* pMadVRInputPin = NULL;
-
-	if (FAILED(m_liveSource->EnumPins(&pEnum)))
-		throw std::runtime_error("Failed to get livesource pin enumerator");
-
-	if (pEnum->Next(1, &pLiveSourceOutputPin, NULL) != S_OK)
-	{
-		pEnum->Release();
-
-		throw std::runtime_error("Failed to run next on livesource pin");
-	}
-
-	pEnum->Release();
-	pEnum = nullptr;
-
-	if (FAILED(m_pMVR->EnumPins(&pEnum)))
-	{
-		pLiveSourceOutputPin->Release();
-		pMadVRInputPin->Release();
-
-		throw std::runtime_error("Failed to get livesource pin enumerator");
-	}
-
-	if (pEnum->Next(1, &pMadVRInputPin, NULL) != S_OK)
-	{
-		pLiveSourceOutputPin->Release();
-		pMadVRInputPin->Release();
-		pEnum->Release();
-
-		throw std::runtime_error("Failed to get livesource pin enumerator");
-	}
-
-	pEnum->Release();
-	pEnum = nullptr;
-
-	if (FAILED(m_pGraph->ConnectDirect(pLiveSourceOutputPin, pMadVRInputPin, &pmt)))
-	{
-		pLiveSourceOutputPin->Release();
-		pMadVRInputPin->Release();
-
-		throw std::runtime_error("Failed to connect pins");
-	}
-
-	pLiveSourceOutputPin->Release();
-	pMadVRInputPin->Release();
+	Connect();
 
 	//
 	// Set up window
@@ -623,15 +488,15 @@ void DirectShowMadVRRenderer::GraphBuild()
 
 	SetState(RendererState::RENDERSTATE_READY);
 
-	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::GraphBuild(): End")));
+	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphBuild(): End")));
 }
 
 
-void DirectShowMadVRRenderer::GraphTeardown()
+void ADirectShowRenderer::GraphTeardown()
 {
 	// Details of how to clean up here https://docs.microsoft.com/en-us/windows/win32/directshow/using-windowed-mode
 
-	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::GraphTeardown(): Begin")));
+	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphTeardown(): Begin")));
 
 	//
 	// Stop sending event notifications
@@ -732,10 +597,10 @@ void DirectShowMadVRRenderer::GraphTeardown()
 		m_liveSource = nullptr;
 	}
 
-	if (m_pMVR)
+	if (m_pRenderer)
 	{
-		m_pMVR->Release();
-		m_pMVR = nullptr;
+		m_pRenderer->Release();
+		m_pRenderer = nullptr;
 	}
 
 	if (m_videoFramFormatter)
@@ -744,13 +609,19 @@ void DirectShowMadVRRenderer::GraphTeardown()
 		m_videoFramFormatter = nullptr;
 	}
 
-	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::GraphTeardown(): End")));
+	if (m_pmt.pbFormat)
+	{
+		CoTaskMemFree(m_pmt.pbFormat);
+		m_pmt.pbFormat = nullptr;
+	}
+
+	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphTeardown(): End")));
 }
 
 
-void DirectShowMadVRRenderer::GraphRun()
+void ADirectShowRenderer::GraphRun()
 {
-	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::GraphRun()")));
+	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphRun()")));
 
 	assert(m_pGraph);
 	assert(m_pControl);
@@ -762,9 +633,9 @@ void DirectShowMadVRRenderer::GraphRun()
 }
 
 
-void DirectShowMadVRRenderer::GraphStop()
+void ADirectShowRenderer::GraphStop()
 {
-	DbgLog((LOG_TRACE, 1, TEXT("DirectShowMadVRRenderer::GraphStop()")));
+	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphStop()")));
 
 	assert(m_pGraph);
 	assert(m_pControl);
@@ -779,17 +650,7 @@ void DirectShowMadVRRenderer::GraphStop()
 
 	m_liveSource->Reset();
 
-	// Check if madVR is stopped
-	CComQIPtr<IMadVRInfo> pMVRI = m_pMVR;
-	if (!pMVRI)
-		throw std::runtime_error("Failed to get IMadVRInfo");
-
-	int madVrPlaybastState = -1;  // Invalid state we hope
-	if (FAILED(pMVRI->GetInt("playbackState", &madVrPlaybastState)))
-		throw std::runtime_error("Failed to get filter state");
-
-	if ((FILTER_STATE)madVrPlaybastState != FILTER_STATE::State_Stopped)
-		throw std::runtime_error("Madvr was not stopped");
+	// TODO: Check if filter really stopped
 
 	// Check if filter really stoppedd
 	OAFilterState filterState = -1;  // Known invalid state

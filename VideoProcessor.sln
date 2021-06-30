@@ -7,8 +7,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlackMagic DeckLink SDK", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft Directshow Baseclasses", "3rdparty\microsoft_directshow_baseclasses\MicrosoftDirectshowBaseclasses.vcxproj", "{FBC2D6CB-389E-4316-A41F-38B098E27AE1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "madvr", "3rdparty\madvr\madvr.vcxproj", "{D57F2C11-44AF-4DBD-93ED-9C8705AF37BF}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoProcessor", "src\VideoProcessor.vcxproj", "{814B3284-68A2-43FE-8FB9-0CC91EBBDE87}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LAVFilters", "3rdparty\lavfilters\LAVFilters.vcxproj", "{2D4880B2-B4BE-4BB4-A03E-3F4ECBB8BBC8}"
@@ -39,14 +37,6 @@ Global
 		{FBC2D6CB-389E-4316-A41F-38B098E27AE1}.Release|x64.Build.0 = Release|x64
 		{FBC2D6CB-389E-4316-A41F-38B098E27AE1}.Release|x86.ActiveCfg = Release|Win32
 		{FBC2D6CB-389E-4316-A41F-38B098E27AE1}.Release|x86.Build.0 = Release|Win32
-		{D57F2C11-44AF-4DBD-93ED-9C8705AF37BF}.Debug|x64.ActiveCfg = Debug|x64
-		{D57F2C11-44AF-4DBD-93ED-9C8705AF37BF}.Debug|x64.Build.0 = Debug|x64
-		{D57F2C11-44AF-4DBD-93ED-9C8705AF37BF}.Debug|x86.ActiveCfg = Debug|Win32
-		{D57F2C11-44AF-4DBD-93ED-9C8705AF37BF}.Debug|x86.Build.0 = Debug|Win32
-		{D57F2C11-44AF-4DBD-93ED-9C8705AF37BF}.Release|x64.ActiveCfg = Release|x64
-		{D57F2C11-44AF-4DBD-93ED-9C8705AF37BF}.Release|x64.Build.0 = Release|x64
-		{D57F2C11-44AF-4DBD-93ED-9C8705AF37BF}.Release|x86.ActiveCfg = Release|Win32
-		{D57F2C11-44AF-4DBD-93ED-9C8705AF37BF}.Release|x86.Build.0 = Release|Win32
 		{814B3284-68A2-43FE-8FB9-0CC91EBBDE87}.Debug|x64.ActiveCfg = Debug|x64
 		{814B3284-68A2-43FE-8FB9-0CC91EBBDE87}.Debug|x64.Build.0 = Debug|x64
 		{814B3284-68A2-43FE-8FB9-0CC91EBBDE87}.Debug|x86.ActiveCfg = Debug|Win32

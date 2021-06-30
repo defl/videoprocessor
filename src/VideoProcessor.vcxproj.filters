@@ -40,12 +40,6 @@
     <Filter Include="Source Files\microsoft_directshow\live_source_filter">
       <UniqueIdentifier>{096b126d-0a30-4dbe-9c66-5c0d743bfb53}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\microsoft_directshow\madvr_renderer">
-      <UniqueIdentifier>{9a794276-59b3-4d08-89ec-8ffdf187fda9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\microsoft_directshow\madvr_renderer">
-      <UniqueIdentifier>{7c1c5756-853b-4b7d-8bf8-c26501e7df2f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Tools">
       <UniqueIdentifier>{fe9494c9-405a-408e-b9d8-c51b7b573c39}</UniqueIdentifier>
     </Filter>
@@ -147,9 +141,6 @@
     <ClInclude Include="microsoft_directshow\live_source_filter\ILiveSource.h">
       <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
     </ClInclude>
-    <ClInclude Include="microsoft_directshow\madvr_renderer\DirectShowMadVRRenderer.h">
-      <Filter>Header Files\microsoft_directshow\madvr_renderer</Filter>
-    </ClInclude>
     <ClInclude Include="CNoopVideoFrameFormatter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -176,6 +167,15 @@
     </ClInclude>
     <ClInclude Include="TimingClock.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\ADirectShowRenderer.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\CVideoInfo1DirectShowRenderer.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\CVideoInfo2DirectShowRenderer.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -260,9 +260,6 @@
     <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSource.cpp">
       <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
     </ClCompile>
-    <ClCompile Include="microsoft_directshow\madvr_renderer\DirectShowMadVRRenderer.cpp">
-      <Filter>Source Files\microsoft_directshow\madvr_renderer</Filter>
-    </ClCompile>
     <ClCompile Include="CNoopVideoFrameFormatter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -289,6 +286,15 @@
     </ClCompile>
     <ClCompile Include="TimingClock.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\ADirectShowRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\CVideoInfo1DirectShowRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\CVideoInfo2DirectShowRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

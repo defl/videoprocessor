@@ -105,9 +105,6 @@ public:
 	// GUI
 	//
 
-	// Handle onpaint event
-	virtual void OnPaint() = 0;
-
 	// Handle window resize event
 	virtual void OnSize() = 0;
 

@@ -51,6 +51,7 @@ public:
 	// UI-related handlers
 	afx_msg void OnCaptureDeviceSelected();
 	afx_msg void OnCaptureInputSelected();
+	afx_msg void OnRendererSelected();
 	afx_msg void OnRendererTimestampSelected();
 	afx_msg void OnRendererNominalRangeSelected();
 	afx_msg void OnRendererTransferFunctionSelected();
@@ -128,10 +129,11 @@ protected:
 
 	// Latency group
 	CStatic m_latencyCaptureText;
-	CStatic m_latencyToRendererText;
-	CStatic m_latencyToMadVRText;
+	CStatic m_latencyToVPRendererText;
+	CStatic m_latencyToDSRendererText;
 
 	// Renderer group
+	CComboBox m_rendererCombo;
 	CComboBox m_rendererTimestampCombo;
 	CComboBox m_rendererNominalRangeCombo;
 	CComboBox m_rendererTransferFunctionCombo;
@@ -202,6 +204,7 @@ protected:
 	size_t GetRendererVideoFrameQueueSizeMax();
 	bool GetRendererVideoFrameUseQueue();
 	int GetTimingClockFrameOffsetMs();
+	void RebuildRendererCombo();
 
 	// CDialog
 	void DoDataExchange(CDataExchange* pDX) override;

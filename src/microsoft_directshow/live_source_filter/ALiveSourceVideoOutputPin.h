@@ -40,7 +40,8 @@ public:
 		timestamp_t frameDuration,
 		ITimingClock* const timingClock,
 		RendererTimestamp timestamp,
-		GUID mediaSubType);
+		const AM_MEDIA_TYPE& mediaType,
+		bool useHDRData);
 
 	// CBaseOutputPin overrides
 	HRESULT GetMediaType(int iPosition, CMediaType* pmt);
@@ -118,7 +119,8 @@ protected:
 	timestamp_t m_frameDuration;
 	ITimingClock* m_timingClock;
 	RendererTimestamp m_timestamp;
-	GUID m_mediaSubType;
+	AM_MEDIA_TYPE m_mediaType;
+	bool m_useHDRData = false;
 
 	REFERENCE_TIME m_previousTimeStop = 0;
 	timestamp_t m_startTimeOffset = 0;

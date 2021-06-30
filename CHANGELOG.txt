@@ -7,24 +7,25 @@ NEXT (0.3.0)
 - Version number now in window title
 - Mouse not visible anymore in video render window, both windowed and full-screen
 - Pressing return closed the window, now takes context dependant action with a default of restarting the renderer
-- Our queue dropped frame counter (excluding madvr frames)
+- Our queue dropped frame counter (excluding renderer-dropped frames)
 - Missing frame counter (never delivered by capture but found by timesamp-gap analysis)
 - Process priority is now set to HIGH on start
 - There are new frame-interval determination modes, clock-clock, clock-theo, theo and none
 - Renderer reset button, which stops, clears the queue and start again
 - AVX required (requires < 10-year old CPU)
 - Disable screen saver/power save when running
+- VideoProcessor is now totally renderer independent, you can use any installed DirectShow renderer.
 - FIX: Deadlock situation with blackmagic callbacks
-- FIX: frame timestamps now correct, madVR queues fill up and that leads to smooth video output
+- FIX: frame timestamps now correct
 - FIX: Correct process name in task list
 
 0.2.0
 - SSE2 build config, not using AVX anymore until needed
 - Integrated ffmpeg
-- Losslessly convert RGB formats which madVR cannot handle natively, right now supports r210 and r12b; both are used by PS4Pro
+- Losslessly convert RGB formats which most renderers cannot handle natively, right now supports r210 and r12b; both are used by PS4Pro
 
 0.1.1
-- Figured out why my keyboard commands were not working, madVR has anti-debugging protection which triggers when running inside
+- Figured out why my keyboard commands were not working, some renderers have anti-debugging protection which triggers when running inside
   of MSVC debugger. That also disables the keyboard shortcuts. They just worked. Cleaned up the code to remove the needless paths.
 - Now has the /fullscreen command line option which can be given. As soon as the program detects a renderable input it'll change to
   fullscreen mode
@@ -37,10 +38,9 @@ NEXT (0.3.0)
 - Full screen now works and remains full even when modeswitching.
   Will full-screen to current monitor.
   Toggle with alt-enter, exit with escape.
-- Tested with madVR beta 132
 
 0.0.4
-- Overridable DirectShow inputs to madVR
+- Overridable DirectShow inputs to renderer
 
 0.0.3
 - If the renderer throws this is now shown in the GUI and properly handled.

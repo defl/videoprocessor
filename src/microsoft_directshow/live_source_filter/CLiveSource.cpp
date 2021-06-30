@@ -47,16 +47,17 @@ CUnknown* WINAPI CLiveSource::CreateInstance(LPUNKNOWN pUnk, HRESULT* phr)
 
 STDMETHODIMP CLiveSource::Initialize(
 	IVideoFrameFormatter* videoFrameFormatter,
-	GUID mediaSubType,
+	const AM_MEDIA_TYPE& mediaType,
 	timestamp_t frameDuration,
 	ITimingClock* timingClock,
 	RendererTimestamp timestamp,
 	bool useFrameQueue,
-	size_t frameQueueMaxSize)
+	size_t frameQueueMaxSize,
+	bool useHDRData)
 {
 	assert(!m_videoOutputPin);
 	assert(videoFrameFormatter);
-	assert(mediaSubType.Data1 > 0);
+	assert(mediaType.majortype.Data1 > 0);
 	assert(frameDuration > 0);
 
 	HRESULT hr = S_OK;
@@ -87,14 +88,12 @@ STDMETHODIMP CLiveSource::Initialize(
 		frameDuration,
 		timingClock,
 		timestamp,
-		m_mediaSubType);
+		mediaType,
+		useHDRData);
 
 	if (useFrameQueue)
-	{
 		m_videoOutputPin->SetFrameQueueMaxSize(frameQueueMaxSize);
-	}
 
-	m_mediaSubType = mediaSubType;
 	return S_OK;
 }
 
@@ -175,12 +174,6 @@ CBasePin* CLiveSource::GetPin(int n)
 ULONG CLiveSource::GetMiscFlags()
 {
 	return AM_FILTER_MISC_FLAGS_IS_SOURCE;
-}
-
-
-GUID CLiveSource::GetMediaSubType()
-{
-	return m_mediaSubType;
 }
 
 

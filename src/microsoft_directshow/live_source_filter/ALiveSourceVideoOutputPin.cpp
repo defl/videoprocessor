@@ -30,7 +30,8 @@ void ALiveSourceVideoOutputPin::Initialize(
 	timestamp_t frameDuration,
 	ITimingClock* const timingClock,
 	RendererTimestamp timestamp,
-	GUID mediaSubType)
+	const AM_MEDIA_TYPE& mediaType,
+	bool useHDRData)
 {
 	if (!videoFrameFormatter)
 		throw std::runtime_error("Cannot set null IVideoFrameFormatter");
@@ -44,13 +45,21 @@ void ALiveSourceVideoOutputPin::Initialize(
 	m_frameDuration = frameDuration;
 	m_timingClock = timingClock;
 	m_timestamp = timestamp;
-	m_mediaSubType = mediaSubType;
+	m_mediaType = mediaType;
+	m_useHDRData = useHDRData;
 }
 
 
 HRESULT ALiveSourceVideoOutputPin::GetMediaType(int iPosition, CMediaType* pmt)
 {
-	throw std::runtime_error("GetMediaType() is not supported");
+	if (iPosition < 0)
+		return E_INVALIDARG;
+	if (iPosition > 0)
+		return VFW_S_NO_MORE_ITEMS;
+
+	pmt->Set(m_mediaType);
+
+	return S_OK;
 }
 
 
@@ -58,17 +67,17 @@ HRESULT ALiveSourceVideoOutputPin::CheckMediaType(const CMediaType* pmt)
 {
 	CheckPointer(pmt, E_POINTER);
 
-	if(pmt->majortype != MEDIATYPE_Video)
+	if(pmt->majortype != m_mediaType.majortype)
 	{
 		return E_INVALIDARG;
 	}
 
-	if (!IsEqualGUID(pmt->subtype, static_cast<CLiveSource*>(m_pFilter)->GetMediaSubType()))
+	if (!IsEqualGUID(pmt->subtype, m_mediaType.subtype))
 	{
 		return E_INVALIDARG;
 	}
 
-	if (pmt->formattype != FORMAT_VideoInfo2)
+	if (pmt->formattype != m_mediaType.formattype)
 	{
 		return E_INVALIDARG;
 	}
@@ -79,6 +88,8 @@ HRESULT ALiveSourceVideoOutputPin::CheckMediaType(const CMediaType* pmt)
 
 HRESULT ALiveSourceVideoOutputPin::DecideAllocator(IMemInputPin* pPin, IMemAllocator** ppAlloc)
 {
+	// TODO: We can be more lenient here if this comes from a VideoInfo1 renderer as we're not using the HDR data extensions
+
 	HRESULT hr = NOERROR;
 	*ppAlloc = nullptr;
 
@@ -397,7 +408,7 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 
 		// Guarantee first frame to start counting at time zero
 		// Note that this is against the recommendations of microsoft for directshow but otherwise
-		// madVR doesn't start rendering as it's designed for file based video which starts at 0
+		// renderers don't start as they're often designed for file based video which starts at 0
 		if (m_startTimeOffset == 0)
 			m_startTimeOffset = timeStart;
 		timeStart -= m_startTimeOffset;
@@ -441,7 +452,8 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 
 		// Guarantee first frame to start counting at time zero
 		// Note that this is against the recommendations of microsoft for directshow but otherwise
-		// madVR doesn't start rendering as it's designed for file based video which starts at 0
+		// renderers don't start as they're often designed for file based video which starts at 0
+
 		if (m_startTimeOffset == 0)
 			m_startTimeOffset = timeStart;
 
@@ -535,7 +547,7 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 	//
 
 	// TODO: This is now called from a different thread, warning!
-	if (m_hdrData)
+	if (m_useHDRData && m_hdrData)
 	{
 		if ((streamFrameCounter % 100) == 1 || m_hdrChanged)
 		{
