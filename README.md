@@ -1,9 +1,9 @@
 Video Processor
 ===============
 
-***Video Processor: High-end video processing on live data for the rest of us***
+***Video Processor: High-end video processing on live data for the rest of us.***
 
-Video Processor is a Windows application which couples a capture card to a high quality video renderer ([madVR](http://madvr.com/)) and takes care of all the plumbing in such a way the metadata stays intact. This allows the renderer to do things like 3d LUT, HDR tone mapping, scaling, deinterlacing and much more which can significantly improve image quality on the majority of displays. It is especially useful for accurate color-correction and HDR-like display on low lumen devices like projectors.
+Video Processor is a Windows application which couples a capture card to to a DirectShow renderer and takes care of all the plumbing in such a way the metadata stays intact. This allows advanced renderers to do things like 3d LUT, HDR tone mapping, scaling, deinterlacing and much more which can significantly improve image quality on the majority of displays. It is especially useful for accurate color-correction and HDR-like display on low lumen devices like projectors.
 
 **Background**
 
@@ -21,7 +21,7 @@ Devices which can remove this protection are available, allowing for HDCP protec
 
 **madVR**
 
-madVR has two paths, a limited-free-to-use DirectShow library which MadShi releases on his [website](http://madvr.com/) and a commercial appliance called [Envy](https://madvrenvy.com/) which is a video processor. Because of the conflict of interest this causes, madVR has adjusted the license terms of the limited-free-to-use to be illegal for use in video capture applications such as VideoProcessor. madVR has updated all downloadable releases with the new license that prohibits its use in VideoProcessor. 
+The most well known, and in my opinion best, renderer is madVR. Though before using it you must understand the legal situation. madVR has two paths, a limited-free-to-use DirectShow library which MadShi releases on his [website](http://madvr.com/) and a commercial appliance called [Envy](https://madvrenvy.com/) which is a video processor software hardware combination. Because of the conflict of interest this causes, madVR has adjusted the license terms of the limited-free-to-use to be illegal for use in video capture applications such as VideoProcessor. madVR has updated all downloadable releases with the new license that prohibits its use in VideoProcessor. 
 You can find an original old release (09217), which has the previous license, mirrored [here](http://www.dennisfleurbaaij.com/temp/madVR%2009217%20-%20old%20license.zip). madVR is not included in the VideoProcessor download, you are responsible for downloading and installing an appropriate version.
 
 **Showtime!**
