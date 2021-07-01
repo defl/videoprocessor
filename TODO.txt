@@ -7,7 +7,6 @@ Roadmap
 - Code style NULL to nullptr
 - Read through all headers/comments and prune/fix
 - https://docs.microsoft.com/en-us/windows/win32/directshow/supporting-seeking-in-a-source-filter
-- Leaks memory on exit from CRendererCombo
 
 0.3.1: GUI
 - Add context information to all throws

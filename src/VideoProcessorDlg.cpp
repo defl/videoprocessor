@@ -259,6 +259,9 @@ void CVideoProcessorDlg::OnClose()
 	}
 
 	UpdateState();
+
+	// Remove all renderers
+	ClearRendererCombo();
 }
 
 
@@ -1504,7 +1507,7 @@ void CVideoProcessorDlg::UpdateTimingClockFrameOffset()
 
 void CVideoProcessorDlg::RebuildRendererCombo()
 {
-	assert(m_rendererCombo.GetCount() == 0);  // Because we allocate and just cleaning out would lose the memory
+	ClearRendererCombo();
 
 	struct RendererEntry
 	{
@@ -1593,6 +1596,7 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 						hr = VariantToGUID(clsidVariant, &(rendererEntry.guid));
 						if (FAILED(hr))
 							throw std::runtime_error("Failed to convert veriant to GUID");
+
 						rendererEntries.push_back(rendererEntry);
 					}
 				}
@@ -1621,6 +1625,17 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 		int comboIndex = m_rendererCombo.AddString(rendererEntry.name);
 		m_rendererCombo.SetItemData(comboIndex, (DWORD_PTR)clsid);
 	}
+}
+
+
+void CVideoProcessorDlg::ClearRendererCombo()
+{
+	for (int i = 0; i < m_rendererCombo.GetCount(); i++)
+	{
+		delete (void *)m_rendererCombo.GetItemData(i);
+	}
+
+	m_rendererCombo.ResetContent();
 }
 
 

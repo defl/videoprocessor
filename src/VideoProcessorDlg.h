@@ -210,6 +210,7 @@ protected:
 	void SetTimingClockFrameOffsetMs(int timingClockFrameOffsetMs);
 	void UpdateTimingClockFrameOffset();
 	void RebuildRendererCombo();
+	void ClearRendererCombo();
 
 	// CDialog
 	void DoDataExchange(CDataExchange* pDX) override;
@@ -223,7 +224,6 @@ protected:
 	void OnTimer(UINT_PTR nIDEvent);
 	HCURSOR	OnQueryDragIcon();
 	void OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
-
 
 	DECLARE_MESSAGE_MAP()
 };
