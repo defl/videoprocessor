@@ -2,11 +2,11 @@ Roadmap
 =======
 
 0.3.0: Clocks & all DirectShow renderers
-- Cleanup TODOs
 - Check PS4 image (invertedVertical in video state should automatically do the right thing now)
 - Read through all headers/comments and prune/fix
 
 0.3.1: GUI
+- Cleanup TODOs
 - Add context information to all throws
 - No pop-up for some exceptions (start 2 in release mode shows nothing for example)
 - Rendering screen black background with white text centered (both normal and full-screen)
