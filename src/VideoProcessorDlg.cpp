@@ -1199,51 +1199,57 @@ void CVideoProcessorDlg::RenderStart()
 	m_rendererBox.SetWindowTextW(TEXT("Starting..."));
 	m_rendererState = RendererState::RENDERSTATE_STARTING;
 
-	// Try to construct and start the renderer
+	// Try to construct and start a VideoInfo2 renderer
 	try
 	{
-		assert(!m_renderer);
-		assert(m_captureDevice);
+		i = m_rendererNominalRangeCombo.GetCurSel();
+		assert(i >= 0);
+		DXVA_NominalRange forceNominalRange = (DXVA_NominalRange)m_rendererNominalRangeCombo.GetItemData(i);
 
-		// Determine which renderer (that is, ours, not the DirectShow one) to use, more
-		// advanced DirectShow renderers can handle VideoInfo2, all others by default
-		// get the older VideoInfo metadata. There is no way DirectShow renders can
-		// tell us this upfront, so unfortunately we need hand-maintained list here.
-		if (IsEqualGUID(*rendererClSID, CLSID_madVR))
+		i = m_rendererTransferFunctionCombo.GetCurSel();
+		assert(i >= 0);
+		DXVA_VideoTransferFunction forceVideoTransferFunction = (DXVA_VideoTransferFunction)m_rendererTransferFunctionCombo.GetItemData(i);
+
+		i = m_rendererTransferMatrixCombo.GetCurSel();
+		assert(i >= 0);
+		DXVA_VideoTransferMatrix forceVideoTransferMatrix = (DXVA_VideoTransferMatrix)m_rendererTransferMatrixCombo.GetItemData(i);
+
+		i = m_rendererPrimariesCombo.GetCurSel();
+		assert(i >= 0);
+		DXVA_VideoPrimaries forceVideoPrimaries = (DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
+
+		m_renderer = new CVideoInfo2DirectShowRenderer(
+			*rendererClSID,
+			*this,
+			GetRenderWindow(),
+			this->GetSafeHwnd(),
+			WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
+			timingClock,
+			m_captureDeviceVideoState,
+			rendererTimestamp,
+			GetRendererVideoFrameUseQueue(),
+			GetRendererVideoFrameQueueSizeMax(),
+			forceNominalRange,
+			forceVideoTransferFunction,
+			forceVideoTransferMatrix,
+			forceVideoPrimaries);
+
+		if (!m_renderer)
+			throw std::runtime_error("Failed to build CVideoInfo2DirectShowRenderer");
+
+		m_renderer->Build();
+		m_renderer->Start();
+	}
+	catch (std::runtime_error e)
+	{
+		if (m_renderer)
 		{
-			i = m_rendererNominalRangeCombo.GetCurSel();
-			assert(i >= 0);
-			DXVA_NominalRange forceNominalRange = (DXVA_NominalRange)m_rendererNominalRangeCombo.GetItemData(i);
-
-			i = m_rendererTransferFunctionCombo.GetCurSel();
-			assert(i >= 0);
-			DXVA_VideoTransferFunction forceVideoTransferFunction = (DXVA_VideoTransferFunction)m_rendererTransferFunctionCombo.GetItemData(i);
-
-			i = m_rendererTransferMatrixCombo.GetCurSel();
-			assert(i >= 0);
-			DXVA_VideoTransferMatrix forceVideoTransferMatrix = (DXVA_VideoTransferMatrix)m_rendererTransferMatrixCombo.GetItemData(i);
-
-			i = m_rendererPrimariesCombo.GetCurSel();
-			assert(i >= 0);
-			DXVA_VideoPrimaries forceVideoPrimaries = (DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
-
-			m_renderer = new CVideoInfo2DirectShowRenderer(
-				*rendererClSID,
-				*this,
-				GetRenderWindow(),
-				this->GetSafeHwnd(),
-				WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
-				timingClock,
-				m_captureDeviceVideoState,
-				rendererTimestamp,
-				GetRendererVideoFrameUseQueue(),
-				GetRendererVideoFrameQueueSizeMax(),
-				forceNominalRange,
-				forceVideoTransferFunction,
-				forceVideoTransferMatrix,
-				forceVideoPrimaries);
+			delete m_renderer;
+			m_renderer = nullptr;
 		}
-		else
+
+		// That didn't work, try the fallback to VideoInfo1 renderer
+		try
 		{
 			m_renderer = new CVideoInfo1DirectShowRenderer(
 				*rendererClSID,
@@ -1256,42 +1262,43 @@ void CVideoProcessorDlg::RenderStart()
 				rendererTimestamp,
 				GetRendererVideoFrameUseQueue(),
 				GetRendererVideoFrameQueueSizeMax());
+
+			if (!m_renderer)
+				throw std::runtime_error("Failed to build CVideoInfo1DirectShowRenderer");
+
+			m_renderer->Build();
+			m_renderer->Start();
 		}
-
-		if (!m_renderer)
-			throw std::runtime_error("Failed to build renderer");
-
-		m_renderer->Build();
-		m_renderer->Start();
-
-		m_rendererStateText.SetWindowText(TEXT("Started, waiting for image..."));
-	}
-	catch (std::runtime_error e)
-	{
-		if (m_renderer)
+		catch (std::runtime_error e)
 		{
-			delete m_renderer;
-			m_renderer = nullptr;
+			if (m_renderer)
+			{
+				delete m_renderer;
+				m_renderer = nullptr;
+			}
+
+			m_rendererState = RendererState::RENDERSTATE_FAILED;
+			m_rendererStateText.SetWindowText(TEXT("Failed"));
+
+			// Show error in renderer box
+			// TODO: Move this code to some sort of reusable function
+			size_t size = strlen(e.what()) + 1;
+			wchar_t* wtext = new wchar_t[size];
+			size_t outSize;
+			mbstowcs_s(&outSize, wtext, size, e.what(), size - 1);
+			m_rendererBox.SetWindowText(wtext);
+			delete[] wtext;
+
+			// Ensure we're not full screen anymore and update state
+			m_rendererfullScreen = false;
+			UpdateState();
+
+			// Give the user a chance to try again
+			m_rendererRestartButton.EnableWindow(true);
 		}
-
-		m_rendererState = RendererState::RENDERSTATE_FAILED;
-		m_rendererStateText.SetWindowText(TEXT("Failed"));
-
-		// Show error in renderer box
-		size_t size = strlen(e.what()) + 1;
-		wchar_t* wtext = new wchar_t[size];
-		size_t outSize;
-		mbstowcs_s(&outSize, wtext, size, e.what(), size-1);
-		m_rendererBox.SetWindowText(wtext);
-		delete[] wtext;
-
-		// Ensure we're not full screen anymore and update state
-		m_rendererfullScreen = false;
-		UpdateState();
-
-		// Give the user a chance to try again
-		m_rendererRestartButton.EnableWindow(true);
 	}
+
+	m_rendererStateText.SetWindowText(TEXT("Started, waiting for image..."));
 
 	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::RenderStart(): End")));
 }
@@ -1438,6 +1445,7 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 	//
 	// Iterate all renderers
 	// https://docs.microsoft.com/en-us/windows/win32/directshow/using-the-filter-mapper
+	// TODO: Move this to the directshow dir and make a nice clean abstraction to use here
 	//
 	{
 		IFilterMapper2* pMapper = NULL;
@@ -1491,13 +1499,24 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 				HRESULT clsidHr = pPropBag->Read(L"CLSID", &clsidVariant, 0);
 				if (SUCCEEDED(nameHr) && SUCCEEDED(clsidHr))
 				{
-					RendererEntry rendererEntry;
-					rendererEntry.name = nameVariant.bstrVal;
+					CString name = nameVariant.bstrVal;
 
-					hr = VariantToGUID(clsidVariant, &(rendererEntry.guid));
-					if (FAILED(hr))
-						throw std::runtime_error("Failed to convert veriant to GUID");
-					rendererEntries.push_back(rendererEntry);
+					// Filter by name.
+					// Unforuntately renderes don't actually tell us if they can render
+					// so we need a hand-maintained list here.
+					// VR = Abbreviation of Video Renderer
+					if (((name.Find(TEXT("Video")) >= 0) && (name.Find(TEXT("Render")) >= 0)) ||
+						(name.Find(TEXT("VR")) >= 0)
+						)
+					{
+						RendererEntry rendererEntry;
+						rendererEntry.name = nameVariant.bstrVal;
+
+						hr = VariantToGUID(clsidVariant, &(rendererEntry.guid));
+						if (FAILED(hr))
+							throw std::runtime_error("Failed to convert veriant to GUID");
+						rendererEntries.push_back(rendererEntry);
+					}
 				}
 
 				VariantClear(&nameVariant);
@@ -1519,17 +1538,10 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 	std::sort(rendererEntries.begin(), rendererEntries.end());
 	for (const auto& rendererEntry : rendererEntries)
 	{
-		// Filter by name.
-		// Unforuntately renderes don't actually tell us if they can render
-		// so we need a hand-maintained list here.
-		if(rendererEntry.name.Find(TEXT("Render")) >= 0 ||
-		   rendererEntry.name.Find(TEXT("madVR")) >= 0)
-		{
-			GUID* clsid = new GUID(rendererEntry.guid);
+		GUID* clsid = new GUID(rendererEntry.guid);
 
-			int comboIndex = m_rendererCombo.AddString(rendererEntry.name);
-			m_rendererCombo.SetItemData(comboIndex, (DWORD_PTR)clsid);
-		}
+		int comboIndex = m_rendererCombo.AddString(rendererEntry.name);
+		m_rendererCombo.SetItemData(comboIndex, (DWORD_PTR)clsid);
 	}
 }
 
