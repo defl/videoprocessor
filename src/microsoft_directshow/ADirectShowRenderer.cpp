@@ -240,15 +240,6 @@ double ADirectShowRenderer::ExitLatencyMs() const
 }
 
 
-double ADirectShowRenderer::GetFrameVideoLeadMs() const
-{
-	if (m_state != RendererState::RENDERSTATE_RENDERING)
-		throw std::runtime_error("Invalid state, can only be called while rendering");
-
-	return m_liveSource->GetFrameVideoLeadMs();
-}
-
-
 uint64_t ADirectShowRenderer::DroppedFrameCount() const
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
@@ -422,7 +413,7 @@ void ADirectShowRenderer::GraphBuild()
 	m_liveSource->Initialize(
 		m_videoFramFormatter,
 		m_pmt,
-		m_videoState->displayMode->FrameDuration(),
+		m_videoState->displayMode->FrameDuration100ns(),
 		m_timingClock,
 		m_timestamp,
 		m_useFrameQueue,

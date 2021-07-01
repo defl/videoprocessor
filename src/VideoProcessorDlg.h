@@ -58,8 +58,10 @@ public:
 	afx_msg void OnRendererTransferMatrixSelected();
 	afx_msg void OnRendererPrimariesSelected();
 	afx_msg void OnBnClickedFullScreenButton();
+	afx_msg void OnBnClickedTimingClockFrameOffsetAutoCheck();
 	afx_msg void OnBnClickedRendererRestart();
 	afx_msg void OnBnClickedRendererReset();
+	afx_msg void OnBnClickedRendererResetAutoCheck();
 	afx_msg void OnBnClickedRendererVideoFrameUseQueueCheck();
 
 	// Custom message handlers
@@ -118,6 +120,7 @@ protected:
 	// Timing clock group
 	CStatic m_timingClockDescriptionText;
 	CEdit m_timingClockFrameOffsetEdit;
+	CButton m_timingClockFrameOffsetAutoCheck;
 
 	// ColorSpace group
 	CCie1931Control m_colorspaceCie1931xy;
@@ -142,11 +145,11 @@ protected:
 	CButton m_rendererFullscreenButton;
 	CButton m_rendererRestartButton;
 	CButton m_rendererResetButton;
+	CButton m_rendererResetAutoCheck;
 	CStatic m_rendererStateText;
-	CButton m_rendererVideoFrameUseQeueue;  // This is a checkbox
-	CStatic m_rendererVideoFrameQueueSize;
+	CButton m_rendererVideoFrameUseQeueueCheck;
+	CStatic m_rendererVideoFrameQueueSizeText;
 	CEdit m_rendererVideoFrameQueueSizeMaxEdit;
-	CStatic m_rendererVideoLeadMs;
 	CStatic m_rendererDroppedFrameCountText;
 	CStatic	m_rendererBox;  // This is the small renderer window
 
@@ -204,6 +207,8 @@ protected:
 	size_t GetRendererVideoFrameQueueSizeMax();
 	bool GetRendererVideoFrameUseQueue();
 	int GetTimingClockFrameOffsetMs();
+	void SetTimingClockFrameOffsetMs(int timingClockFrameOffsetMs);
+	void UpdateTimingClockFrameOffset();
 	void RebuildRendererCombo();
 
 	// CDialog

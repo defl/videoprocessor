@@ -189,12 +189,6 @@ double CLiveSource::ExitLatencyMs() const
 }
 
 
-double CLiveSource::GetFrameVideoLeadMs() const
-{
-	return m_videoOutputPin->GetFrameVideoLeadMs();
-}
-
-
 uint64_t CLiveSource::DroppedFrameCount() const
 {
 	return m_videoOutputPin->DroppedFrameCount();

@@ -15,6 +15,7 @@ NEXT (0.3.0)
 - AVX required (requires < 10-year old CPU)
 - Disable screen saver/power save when running
 - VideoProcessor is now DirectShow renderer independent, you can use any installed DirectShow renderer.
+- Optional auto-tune params based on renderer queue and exit latency.
 - FIX: Deadlock situation with blackmagic callbacks
 - FIX: frame timestamps now correct
 - FIX: Correct process name in task list

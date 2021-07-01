@@ -104,10 +104,6 @@ public:
 	// This is sampled.
 	double ExitLatencyMs() const;
 
-	// Get the current "video lead" in milliseconds
-	// Video lead is how many ms the last frame start is ahead of the clock.
-	// Can only be called after Initialize()
-	double GetFrameVideoLeadMs() const;
 
 	// Get the amount of dropped frames due to queue actions
 	uint64_t DroppedFrameCount() const;

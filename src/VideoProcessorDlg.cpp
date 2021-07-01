@@ -59,8 +59,10 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_RENDERER_TRANSFER_MATRIX_COMBO, &CVideoProcessorDlg::OnRendererTransferMatrixSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_PRIMARIES_COMBO, &CVideoProcessorDlg::OnRendererPrimariesSelected)
 	ON_BN_CLICKED(IDC_FULL_SCREEN_BUTTON, &CVideoProcessorDlg::OnBnClickedFullScreenButton)
+	ON_BN_CLICKED(IDC_TIMING_CLOCK_FRAME_OFFSET_AUTO_CHECK, &CVideoProcessorDlg::OnBnClickedTimingClockFrameOffsetAutoCheck)
 	ON_BN_CLICKED(IDC_RENDERER_RESTART_BUTTON, &CVideoProcessorDlg::OnBnClickedRendererRestart)
 	ON_BN_CLICKED(IDC_RENDERER_RESET_BUTTON, &CVideoProcessorDlg::OnBnClickedRendererReset)
+	ON_BN_CLICKED(IDC_RENDERER_RESET_AUTO_CHECK, &CVideoProcessorDlg::OnBnClickedRendererResetAutoCheck)
 	ON_BN_CLICKED(IDC_RENDERER_VIDEO_FRAME_USE_QUEUE_CHECK, &CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck)
 
 	// Command handlers
@@ -267,10 +269,7 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 	if (m_rendererState == RendererState::RENDERSTATE_RENDERING)
 	{
 		cstring.Format(_T("%lu"), m_renderer->GetFrameQueueSize());
-		m_rendererVideoFrameQueueSize.SetWindowText(cstring);
-
-		cstring.Format(_T("%.01f"), m_renderer->GetFrameVideoLeadMs());
-		m_rendererVideoLeadMs.SetWindowText(cstring);
+		m_rendererVideoFrameQueueSizeText.SetWindowText(cstring);
 
 		cstring.Format(_T("%.01f"), m_renderer->EntryLatencyMs());
 		m_latencyToVPRendererText.SetWindowText(cstring);
@@ -283,8 +282,7 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 	}
 	else
 	{
-		m_rendererVideoFrameQueueSize.SetWindowText(_T(""));
-		m_rendererVideoLeadMs.SetWindowText(_T(""));
+		m_rendererVideoFrameQueueSizeText.SetWindowText(_T(""));
 		m_latencyToVPRendererText.SetWindowText(_T(""));
 		m_latencyToDSRendererText.SetWindowText(_T(""));
 		m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
@@ -315,6 +313,54 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 		SetThreadExecutionState(ES_DISPLAY_REQUIRED);
 	}
 
+
+	// Auto adjust
+	if (m_timerSeconds % 5 == 0 &&
+		m_rendererState == RendererState::RENDERSTATE_RENDERING)
+	{
+		assert(m_renderer);
+		assert(m_captureDevice);
+
+		bool queueOk = true;
+
+		// Auto-click reset on renderer if requested
+		const bool rendererResetAuto = m_rendererResetAutoCheck.GetCheck();
+		if(rendererResetAuto)
+		{
+			const bool needsReset = m_renderer->GetFrameQueueSize() >= 3;
+			queueOk = !needsReset;
+
+			if (needsReset)
+			{
+				DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnTimer(): Resetting renderer")));
+				m_renderer->Reset();
+			}
+		}
+
+		// Auto update the clock frame offset to get just over zero
+		// only do this if the queue is ok as it will have a major impact on the offset(or unmanaged)
+		const bool timingClockFrameOffsetAuto = m_timingClockFrameOffsetAutoCheck.GetCheck();
+		if (queueOk && timingClockFrameOffsetAuto)
+		{
+			const double videoFrameLead = -(m_renderer->ExitLatencyMs());
+
+			const bool needsAdjusting =
+				videoFrameLead < 0 ||
+				videoFrameLead > (m_captureDeviceVideoState->displayMode->FrameDurationMs() * 2);
+
+			if (needsAdjusting)
+			{
+				DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnTimer(): Adjusting clock frame offset + reset")));
+
+				const int delta = -videoFrameLead;
+				const int newOffset = GetTimingClockFrameOffsetMs() + delta;
+
+				SetTimingClockFrameOffsetMs(newOffset);
+				UpdateTimingClockFrameOffset();
+			}
+		}
+	}
+
 	++m_timerSeconds;
 }
 
@@ -328,6 +374,14 @@ void CVideoProcessorDlg::OnBnClickedFullScreenButton()
 
 	m_wantToRestartRenderer = true;
 	UpdateState();
+}
+
+
+void CVideoProcessorDlg::OnBnClickedTimingClockFrameOffsetAutoCheck()
+{
+	const bool checked = m_timingClockFrameOffsetAutoCheck.GetCheck();
+
+	m_timingClockFrameOffsetEdit.EnableWindow(!checked);
 }
 
 
@@ -354,11 +408,17 @@ void CVideoProcessorDlg::OnBnClickedRendererReset()
 }
 
 
+void CVideoProcessorDlg::OnBnClickedRendererResetAutoCheck()
+{
+	const bool checked = m_rendererResetAutoCheck.GetCheck();
+}
+
+
 void CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck()
 {
 	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck()")));
 
-	const bool useQueue = m_rendererVideoFrameUseQeueue.GetCheck();
+	const bool useQueue = m_rendererVideoFrameUseQeueueCheck.GetCheck();
 
 	m_wantToRestartRenderer = true;
 	UpdateState();
@@ -815,6 +875,7 @@ void CVideoProcessorDlg::UpdateState()
 		{
 			m_captureDevice = m_desiredCaptureDevice;
 			m_captureDevice->SetCallbackHandler(this);
+			m_captureDevice->SetFrameOffsetMs(GetTimingClockFrameOffsetMs());
 
 			RefreshInputConnectionCombo();
 
@@ -1348,8 +1409,7 @@ void CVideoProcessorDlg::RenderRemove()
 
 void CVideoProcessorDlg::RenderGUIClear()
 {
-	m_rendererVideoFrameQueueSize.SetWindowText(TEXT(""));
-	m_rendererVideoLeadMs.SetWindowText(TEXT(""));
+	m_rendererVideoFrameQueueSizeText.SetWindowText(TEXT(""));
 	m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
 }
 
@@ -1406,7 +1466,7 @@ size_t CVideoProcessorDlg::GetRendererVideoFrameQueueSizeMax()
 
 bool CVideoProcessorDlg::GetRendererVideoFrameUseQueue()
 {
-	return m_rendererVideoFrameUseQeueue.GetCheck();
+	return m_rendererVideoFrameUseQeueueCheck.GetCheck();
 }
 
 
@@ -1415,15 +1475,30 @@ int CVideoProcessorDlg::GetTimingClockFrameOffsetMs()
 	CString text;
 	m_timingClockFrameOffsetEdit.GetWindowText(text);
 
-	const int frameOffsetMs = _ttoi(text);
-
 	// ttoi throws non-parsed stuff away so in case there is crap set the output to the
 	// used value, this way the user always knows what's going on.
-	CString cstring;
-	cstring.Format(_T("%i"), frameOffsetMs);
-	m_timingClockFrameOffsetEdit.SetWindowText(cstring);
+	const int frameOffsetMs = _ttoi(text);
+	SetTimingClockFrameOffsetMs(frameOffsetMs);
 
 	return frameOffsetMs;
+}
+
+
+void CVideoProcessorDlg::SetTimingClockFrameOffsetMs(int timingClockFrameOffsetMs)
+{
+	CString cstring;
+	cstring.Format(_T("%i"), timingClockFrameOffsetMs);
+	m_timingClockFrameOffsetEdit.SetWindowText(cstring);
+}
+
+
+void CVideoProcessorDlg::UpdateTimingClockFrameOffset()
+{
+	if (m_captureDevice)
+		m_captureDevice->SetFrameOffsetMs(GetTimingClockFrameOffsetMs());
+
+	if (m_renderer)
+		m_renderer->Reset();
 }
 
 
@@ -1582,6 +1657,7 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	// Timing clock group
 	DDX_Control(pDX, IDC_TIMING_CLOCK_DESCRIPTION_STATIC, m_timingClockDescriptionText);
 	DDX_Control(pDX, IDC_TIMING_CLOCK_FRAME_OFFSET_EDIT, m_timingClockFrameOffsetEdit);
+	DDX_Control(pDX, IDC_TIMING_CLOCK_FRAME_OFFSET_AUTO_CHECK, m_timingClockFrameOffsetAutoCheck);
 
 	// ColorSpace group
 	DDX_Control(pDX, IDC_CIE1931XY_GRAPH, m_colorspaceCie1931xy);
@@ -1606,11 +1682,11 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FULL_SCREEN_BUTTON, m_rendererFullscreenButton);
 	DDX_Control(pDX, IDC_RENDERER_RESTART_BUTTON, m_rendererRestartButton);
 	DDX_Control(pDX, IDC_RENDERER_RESET_BUTTON, m_rendererResetButton);
+	DDX_Control(pDX, IDC_RENDERER_RESET_AUTO_CHECK, m_rendererResetAutoCheck);
 	DDX_Control(pDX, IDC_RENDERER_STATE_STATIC, m_rendererStateText);
-	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_USE_QUEUE_CHECK, m_rendererVideoFrameUseQeueue);
-	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_STATIC, m_rendererVideoFrameQueueSize);
+	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_USE_QUEUE_CHECK, m_rendererVideoFrameUseQeueueCheck);
+	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_STATIC, m_rendererVideoFrameQueueSizeText);
 	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_MAX_EDIT, m_rendererVideoFrameQueueSizeMaxEdit);
-	DDX_Control(pDX, IDC_RENDERER_VIDEO_LEAD_STATIC, m_rendererVideoLeadMs);
 	DDX_Control(pDX, IDC_RENDERER_DROPPED_FRAME_COUNT_STATIC, m_rendererDroppedFrameCountText);
 	DDX_Control(pDX, IDC_RENDERER_BOX, m_rendererBox);
 }
@@ -1686,15 +1762,16 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	if (!m_accelerator)
 		throw std::runtime_error("Failed to load accelerator");
 
-	// Start timers
-	SetTimer(TIMER_ID_1SECOND, 1000, nullptr);
-
 	CaptureGUIClear();
 	RenderGUIClear();
 
 	m_rendererVideoFrameQueueSizeMaxEdit.SetWindowText(TEXT("32"));
-	m_timingClockFrameOffsetEdit.SetWindowText(TEXT("9"));
-	m_rendererVideoFrameUseQeueue.SetCheck(true);
+	m_timingClockFrameOffsetEdit.SetWindowText(TEXT("90"));
+	m_rendererVideoFrameUseQeueueCheck.SetCheck(true);
+	m_rendererResetAutoCheck.SetCheck(true);
+
+	// Start timers
+	SetTimer(TIMER_ID_1SECOND, 1000, nullptr);
 
 	return TRUE;
 }
@@ -1722,14 +1799,7 @@ void CVideoProcessorDlg::OnOK()
 	switch (ctrl_ID)
 	{
 		case IDC_TIMING_CLOCK_FRAME_OFFSET_EDIT:
-			if (m_captureDevice)
-			{
-				m_captureDevice->SetFrameOffsetMs(GetTimingClockFrameOffsetMs());
-			}
-			if (m_renderer)
-			{
-				m_renderer->Reset();
-			}
+			UpdateTimingClockFrameOffset();
 			break;
 
 		case IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_MAX_EDIT:
@@ -1803,4 +1873,3 @@ void CVideoProcessorDlg::OnGetMinMaxInfo(MINMAXINFO* minMaxInfo)
 	minMaxInfo->ptMinTrackSize.x = std::max(minMaxInfo->ptMinTrackSize.x, m_minDialogSize.cx);
 	minMaxInfo->ptMinTrackSize.y = std::max(minMaxInfo->ptMinTrackSize.y, m_minDialogSize.cy);
 }
-

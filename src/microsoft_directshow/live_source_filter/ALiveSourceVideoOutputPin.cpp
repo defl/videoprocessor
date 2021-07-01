@@ -584,31 +584,11 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 	if (m_frameCounter % 20 == 0)
 	{
 		//
-		// Calculate how many ms the last frame start is ahead of the clock. This is called
-		// Video lead time.
-		// - postive means frame to be rendered in the future, which is what we need
-		// - negative means the frame is late, will be rendered immediately
-		//
-		const timingclocktime_t now = m_timingClock->TimingClockNow();
-
-		if (m_timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_THEO ||
-			m_timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK)
-		{
-			const double nowMs = now / (double)m_timingClock->TimingClockTicksPerSecond() * 1000.0;
-
-			REFERENCE_TIME timeStart, timeStop;
-			hr = pSample->GetTime(&timeStart, &timeStop);
-			if (FAILED(hr))
-				throw std::runtime_error("Failed to get start time");
-
-			double timeStartMs = (timeStart + m_startTimeOffset) / 10000.0;
-			m_lastFrameVideoLeadMs = timeStartMs - nowMs;
-		}
-
-		//
 		// Calculate the exit latency, which is right before we hand-off to the DirectShow
 		// renderer.
 		//
+
+		const timingclocktime_t now = m_timingClock->TimingClockNow();
 
 		m_exitLatencyMs = TimingClockDiffMs(
 			videoFrame.GetTimingTimestamp(), now, m_timingClock->TimingClockTicksPerSecond());

@@ -97,10 +97,6 @@ public:
 	// This is sampled.
 	double ExitLatencyMs() const { return m_exitLatencyMs;  }
 
-	// Get the current "video lead" in milliseconds
-	// Video lead is how many ms the last frame start is ahead of the clock.
-	double GetFrameVideoLeadMs() const { return m_lastFrameVideoLeadMs; }
-
 	// Get the amount of dropped frames due to queue actions
 	uint64_t DroppedFrameCount() const { return m_droppedFrameCount; }
 
@@ -133,5 +129,4 @@ protected:
 	bool m_hdrChanged = false;
 
 	double m_exitLatencyMs = 0.0;
-	double m_lastFrameVideoLeadMs = 0.0;  // how many ms the last frame start is ahead of the clock.
 };

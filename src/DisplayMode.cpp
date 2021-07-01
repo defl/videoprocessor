@@ -30,9 +30,15 @@ DisplayMode::DisplayMode(
 }
 
 
-timestamp_t DisplayMode::FrameDuration() const
+timestamp_t DisplayMode::FrameDurationMs() const
 {
-	// Convert mhz to 100ns intervals
+	double interval = 1000000.0 / m_refreshRateMilliHz;
+	return round(interval);
+}
+
+
+timestamp_t DisplayMode::FrameDuration100ns() const
+{
 	double interval = 10000000000.0 / m_refreshRateMilliHz;
 	return round(interval);
 }

@@ -45,9 +45,11 @@ public:
 	// Refresh rate in Milli Hz
 	int RefreshRateMilliHz() const { return m_refreshRateMilliHz; }
 
+	// timestamp ticks ms per frame
+	timestamp_t FrameDurationMs() const;
+
 	// timestamp ticks (100ns units) per frame
-	// TODO: Not very happy with the naming, nor the implicit 100ns. Replace me with something much better.
-	timestamp_t FrameDuration() const;
+	timestamp_t FrameDuration100ns() const;
 
 	// Return the mode as a human-understandable string
 	CString ToString() const;

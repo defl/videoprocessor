@@ -138,14 +138,6 @@ public:
 	// Only valid te be called if the RendererState called back RENDERSTATE_RENDERING
 	virtual double ExitLatencyMs() const = 0;
 
-	// Get the current "video lead" in milliseconds
-	// Video lead is how many ms the last frame start is ahead of the clock.
-	// - postive means frame to be rendered in the future
-	// - negative by more than a frame means the frame is late, will be rendered immediately
-	// This value does not need to be per frame, sampling is fine
-	// Only valid te be called if the RendererState called back RENDERSTATE_RENDERING
-	virtual double GetFrameVideoLeadMs() const = 0;
-
 	// Get the amount of dropped frames due to queue actions
 	virtual uint64_t DroppedFrameCount() const = 0;
 };

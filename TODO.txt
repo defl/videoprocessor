@@ -6,7 +6,6 @@ Roadmap
 - Check PS4 image (invertedVertical in video state should automatically do the right thing now)
 - Code style NULL to nullptr
 - Read through all headers/comments and prune/fix
-- Auto-reset button based on queue size? (Bit hacky put probably decent enough)
 - https://docs.microsoft.com/en-us/windows/win32/directshow/supporting-seeking-in-a-source-filter
 - Leaks memory on exit from CRendererCombo
 
