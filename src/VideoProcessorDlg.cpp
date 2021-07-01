@@ -1509,8 +1509,11 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 						(name.Find(TEXT("VR")) >= 0)
 						)
 					{
+						CString rendererEntityName;
+						rendererEntityName.Format(_T("DirectShow - %s"), name);
+
 						RendererEntry rendererEntry;
-						rendererEntry.name = nameVariant.bstrVal;
+						rendererEntry.name = rendererEntityName;
 
 						hr = VariantToGUID(clsidVariant, &(rendererEntry.guid));
 						if (FAILED(hr))
