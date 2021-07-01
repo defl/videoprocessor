@@ -14,8 +14,6 @@
 #include <guid.h>
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>
 #include <microsoft_directshow/DIrectShowTranslations.h>
-#include <CNoopVideoFrameFormatter.h>
-#include <ffmpeg/CFFMpegDecoderVideoFrameFormatter.h>
 
 #include "ADirectShowRenderer.h"
 
@@ -347,58 +345,10 @@ void ADirectShowRenderer::GraphBuild()
 	}
 
 	//
-	// Build conversion dependent stuff
-	// TODO: Limit to VideoInfo2 as 1 can use whatever filter is present
+	// Build conversion dependent stuff and media type
 	//
 
-	GUID mediaSubType;
-	int bitCount;
-
-	switch (m_videoState->pixelFormat)
-	{
-
-	// r210 to RGB48
-	case PixelFormat::R210:
-
-		assert(m_videoState->invertedVertical);
-
-		mediaSubType = MEDIASUBTYPE_RGB48LE;
-		bitCount = 48;
-
-		m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
-			AV_CODEC_ID_R210,
-			AV_PIX_FMT_RGB48LE);
-		break;
-
-	// RGB 12-bit to RGB48
-	case PixelFormat::R12B:
-
-		assert(m_videoState->invertedVertical);
-
-		mediaSubType = MEDIASUBTYPE_RGB48LE;
-		bitCount = 48;
-
-		m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
-			AV_CODEC_ID_R12B,
-			AV_PIX_FMT_RGB48LE);
-		break;
-
-	// No conversion needed
-	default:
-		mediaSubType = TranslateToMediaSubType(m_videoState->pixelFormat);
-		bitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);;
-
-		m_videoFramFormatter = new CNoopVideoFrameFormatter();
-	}
-
-	m_videoFramFormatter->OnVideoState(m_videoState);
-
-	//
-	// Build media type for connect
-	//
-
-	MediaTypeGenerate(mediaSubType, bitCount);
-
+	MediaTypeGenerate();
 
 	//
 	// Live source filter
@@ -640,8 +590,6 @@ void ADirectShowRenderer::GraphStop()
 		throw std::runtime_error("Failed to Stop() graph");
 
 	m_liveSource->Reset();
-
-	// TODO: Check if filter really stopped
 
 	// Check if filter really stoppedd
 	OAFilterState filterState = -1;  // Known invalid state

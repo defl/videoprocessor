@@ -235,6 +235,7 @@
     <ClInclude Include="CaptureInput.h" />
     <ClInclude Include="CCie1931Control.h" />
     <ClInclude Include="cie.h" />
+    <ClInclude Include="RendererTimestamp.h" />
     <ClInclude Include="TimingClock.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="WallClock.h" />
@@ -292,6 +293,7 @@
     <ClCompile Include="CaptureInput.cpp" />
     <ClCompile Include="CCie1931Control.cpp" />
     <ClCompile Include="cie.cpp" />
+    <ClCompile Include="RendererTimestamp.cpp" />
     <ClCompile Include="TimingClock.cpp" />
     <ClCompile Include="version.cpp" />
     <ClCompile Include="WallClock.cpp" />

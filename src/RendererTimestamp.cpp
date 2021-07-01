@@ -6,36 +6,27 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see < https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include <stdafx.h>
+
+#include "RendererTimestamp.h"
 
 
-#include "ADirectShowRenderer.h"
-
-
-/**
- * DirectShow renderer which supports FORMAT_VideoInfo connections
- */
-class CVideoInfo1DirectShowRenderer :
-	public ADirectShowRenderer
+const TCHAR* ToString(const RendererTimestamp rendererTimestamp)
 {
-public:
+	switch (rendererTimestamp)
+	{
+	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_THEO:
+		return TEXT("Clock+Theo");
 
-	CVideoInfo1DirectShowRenderer(
-		GUID rendererCLSID,
-		IRendererCallback& callback,
-		HWND videoHwnd,
-		HWND eventHwnd,
-		UINT eventMsg,
-		ITimingClock* timingClock,
-		VideoStateComPtr& videoState,
-		RendererTimestamp timestamp,
-		bool useFrameQueue,
-		size_t frameQueueMaxSize);
+	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK:
+		return TEXT("Clock+Clock");
 
-	virtual ~CVideoInfo1DirectShowRenderer() {}
+	case RendererTimestamp::RENDERER_TIMESTAMP_THEORETICAL:
+		return TEXT("Theo");
 
-private:
+	case RendererTimestamp::RENDERER_TIMESTAMP_NONE:
+		return TEXT("None");
+	}
 
-	void MediaTypeGenerate() override;
-	void Connect() override;
-};
+	throw std::runtime_error("UNSPECIFIED RendererTimestamp");
+}

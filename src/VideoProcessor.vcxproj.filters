@@ -177,6 +177,9 @@
     <ClInclude Include="microsoft_directshow\CVideoInfo2DirectShowRenderer.h">
       <Filter>Header Files\microsoft_directshow</Filter>
     </ClInclude>
+    <ClInclude Include="RendererTimestamp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -295,6 +298,9 @@
     </ClCompile>
     <ClCompile Include="microsoft_directshow\CVideoInfo2DirectShowRenderer.cpp">
       <Filter>Source Files\microsoft_directshow</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererTimestamp.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -5,7 +5,6 @@ Roadmap
 - Cleanup TODOs
 - Check PS4 image (invertedVertical in video state should automatically do the right thing now)
 - Read through all headers/comments and prune/fix
-- https://docs.microsoft.com/en-us/windows/win32/directshow/supporting-seeking-in-a-source-filter
 
 0.3.1: GUI
 - Add context information to all throws

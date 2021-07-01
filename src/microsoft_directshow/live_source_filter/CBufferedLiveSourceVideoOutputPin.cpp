@@ -28,7 +28,6 @@ CBufferedLiveSourceVideoOutputPin::~CBufferedLiveSourceVideoOutputPin()
 
 HRESULT CBufferedLiveSourceVideoOutputPin::Active()
 {
-	// TODO: Allow
 	if (m_frameQueueMaxSize == 0)
 		throw std::runtime_error("Call SetFrameQueueMaxSize() before activating the graph");
 
@@ -175,7 +174,7 @@ DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 
 	while (true)
 	{
-		// TODO: Sleep thread on empty queue and wake if frames arrive
+		// Sleep thread on empty queue and wake if frames arrive
 		Sleep(1);
 
 		VideoFrame videoFrame;

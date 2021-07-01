@@ -10,7 +10,6 @@
 
 #include <dvdmedia.h>
 
-
 #include <guid.h>
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>
 #include <microsoft_directshow/DIrectShowTranslations.h>
@@ -55,8 +54,51 @@ CVideoInfo2DirectShowRenderer::CVideoInfo2DirectShowRenderer(
 }
 
 
-void CVideoInfo2DirectShowRenderer::MediaTypeGenerate(GUID mediaSubType, int bitCount)
+void CVideoInfo2DirectShowRenderer::MediaTypeGenerate()
 {
+	GUID mediaSubType;
+	int bitCount;
+
+	switch (m_videoState->pixelFormat)
+	{
+
+	// r210 to RGB48
+	case PixelFormat::R210:
+
+		assert(m_videoState->invertedVertical);
+
+		mediaSubType = MEDIASUBTYPE_RGB48LE;
+		bitCount = 48;
+
+		m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
+			AV_CODEC_ID_R210,
+			AV_PIX_FMT_RGB48LE);
+		break;
+
+	// RGB 12-bit to RGB48
+	case PixelFormat::R12B:
+
+		assert(m_videoState->invertedVertical);
+
+		mediaSubType = MEDIASUBTYPE_RGB48LE;
+		bitCount = 48;
+
+		m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
+			AV_CODEC_ID_R12B,
+			AV_PIX_FMT_RGB48LE);
+		break;
+
+	// No conversion needed
+	default:
+		mediaSubType = TranslateToMediaSubType(m_videoState->pixelFormat);
+		bitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);;
+
+		m_videoFramFormatter = new CNoopVideoFrameFormatter();
+	}
+
+	m_videoFramFormatter->OnVideoState(m_videoState);
+
+	// Build pmt
 	assert(!m_pmt.pbFormat);
 	ZeroMemory(&m_pmt, sizeof(AM_MEDIA_TYPE));
 

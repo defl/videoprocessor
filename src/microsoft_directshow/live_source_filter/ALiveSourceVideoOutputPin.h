@@ -10,7 +10,7 @@
 
 
 #include <IVideoFrameFormatter.h>
-#include <IRenderer.h>    // TODO: Pull out timestamp?
+#include <RendererTimestamp.h>
 #include <microsoft_directshow/DirectShowDefines.h>
 
 #include "CLiveSource.h"

@@ -44,6 +44,6 @@ private:
 	DXVA_VideoTransferMatrix m_forceVideoTransferMatrix;
 	DXVA_VideoPrimaries m_forceVideoPrimaries;
 
-	void MediaTypeGenerate(GUID mediaSubType, int bitCount) override;
+	void MediaTypeGenerate() override;
 	void Connect() override;
 };

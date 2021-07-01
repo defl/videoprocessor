@@ -13,7 +13,7 @@
 
 #include <VideoState.h>
 #include <IVideoFrameFormatter.h>
-#include <IRenderer.h>  // TODO: Timestamp will move to different file
+#include <RendererTimestamp.h>
 
 #include "ILiveSource.h"
 

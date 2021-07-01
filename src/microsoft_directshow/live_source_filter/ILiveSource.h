@@ -13,6 +13,7 @@
 #include <VideoState.h>
 #include <IVideoFrameFormatter.h>
 #include <guiddef.h>
+#include <RendererTimestamp.h>
 
 
 static const GUID IID_ILiveSource =

@@ -31,29 +31,6 @@ enum RendererState
 const TCHAR* ToString(const RendererState rendererState);
 
 
-// TODO: Rename because it's not really the timestamp but more time range of the frame
-// TODO: Put in own file
-enum RendererTimestamp
-{
-	// Use the given clock for start plus the theorized frame length for stop,
-	// this has the advantage that you don't need a queued frame
-	RENDERER_TIMESTAMP_CLOCK_THEO,
-
-	// Use the given clock for start plus the start of the next frame for the stop
-	// time.
-	RENDERER_TIMESTAMP_CLOCK_CLOCK,
-
-	// Theoretical timestamp based on frame duration
-	RENDERER_TIMESTAMP_THEORETICAL,
-
-	// Don't set timestamps (and use clock)
-	RENDERER_TIMESTAMP_NONE
-};
-
-
-const TCHAR* ToString(const RendererTimestamp rendererTimestamp);
-
-
 /**
  * Renderer callback
  */

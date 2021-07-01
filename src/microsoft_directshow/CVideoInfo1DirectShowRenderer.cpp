@@ -8,6 +8,8 @@
 
 #include "stdafx.h"
 
+#include <CNoopVideoFrameFormatter.h>
+#include <microsoft_directshow/DirectShowTranslations.h>
 
 #include "CVideoInfo1DirectShowRenderer.h"
 
@@ -38,8 +40,17 @@ CVideoInfo1DirectShowRenderer::CVideoInfo1DirectShowRenderer(
 {
 }
 
-void CVideoInfo1DirectShowRenderer::MediaTypeGenerate(GUID mediaSubType, int bitCount)
+void CVideoInfo1DirectShowRenderer::MediaTypeGenerate()
 {
+
+	GUID mediaSubType = TranslateToMediaSubType(m_videoState->pixelFormat);
+	int bitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);
+
+	m_videoFramFormatter = new CNoopVideoFrameFormatter();
+	m_videoFramFormatter->OnVideoState(m_videoState);
+
+
+	// Build PMT
 	assert(!m_pmt.pbFormat);
 	ZeroMemory(&m_pmt, sizeof(AM_MEDIA_TYPE));
 

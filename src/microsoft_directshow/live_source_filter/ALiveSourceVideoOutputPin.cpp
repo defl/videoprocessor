@@ -136,8 +136,6 @@ HRESULT ALiveSourceVideoOutputPin::DecideBufferSize(IMemAllocator *pAlloc, ALLOC
 	CheckPointer(pAlloc,E_POINTER);
 	CheckPointer(ppropInputRequest,E_POINTER);
 
-	// TODO: Lock this? In the exmaples there things were locked
-	//CAutoLock cAutoLock(m_pLock);
 	HRESULT hr = NOERROR;
 
 	ppropInputRequest->cBuffers = 1;
@@ -309,7 +307,6 @@ void ALiveSourceVideoOutputPin::OnHDRData(HDRDataSharedPtr& hdrData)
 
 void ALiveSourceVideoOutputPin::Reset()
 {
-	// TODO: Not sure if these are needed
 	if (FAILED(DeliverBeginFlush()))
 		throw std::runtime_error("Failed to deliver beginflush");
 
@@ -430,8 +427,6 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 				videoFrame.GetCounter(), timeStart, timeStop, durationMs, diffStopMs));
 		}
 #endif // _DEBUG
-
-		// TODO: Some sort of metric that says something about the clock stability?
 
 		m_previousTimeStop = timeStop;
 		break;

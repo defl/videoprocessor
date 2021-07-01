@@ -63,7 +63,7 @@ public:
 protected:
 
 
-	virtual void MediaTypeGenerate(GUID mediaSubType, int bitCount) = 0;
+	virtual void MediaTypeGenerate() = 0;
 	virtual void Connect() = 0;
 
 	const GUID m_rendererCLSID;
