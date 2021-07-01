@@ -1,7 +1,7 @@
 Roadmap
 =======
 
-0.3.0: Clocks
+0.3.0: Clocks & all DirectShow renderers
 - Cleanup TODOs
 - Check PS4 image (invertedVertical in video state should automatically do the right thing now)
 - Code style NULL to nullptr
@@ -40,6 +40,7 @@ Roadmap
 - Cropping-zoom in y and x dimensions
 
 Ideas for later:
+- Integrate MPV renderer (that would be a non-DirectShow renderer, so quite some plumbing required)
 - CaptureInput as a first-class citizen rather than a POD (rename to capture device input?)
 - Tutorial on how to do a 3d LUT
 - Toggelable HDCP on video output through the win32 Output Protection Manager

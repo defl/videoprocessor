@@ -14,7 +14,7 @@ NEXT (0.3.0)
 - Renderer reset button, which stops, clears the queue and start again
 - AVX required (requires < 10-year old CPU)
 - Disable screen saver/power save when running
-- VideoProcessor is now totally renderer independent, you can use any installed DirectShow renderer.
+- VideoProcessor is now DirectShow renderer independent, you can use any installed DirectShow renderer.
 - FIX: Deadlock situation with blackmagic callbacks
 - FIX: frame timestamps now correct
 - FIX: Correct process name in task list
