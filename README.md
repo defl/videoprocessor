@@ -14,7 +14,7 @@ Devices which can remove this protection are available, allowing for HDCP protec
 
 **Showtime!**
 
-With all that out of the way, get grab the latest release from https://github.com/defl/videoprocessor and enjoy :)
+With all that out of the way, grab the latest release from https://github.com/defl/videoprocessor and enjoy :)
 
 
 # Community and bleeding edge
