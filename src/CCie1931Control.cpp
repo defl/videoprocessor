@@ -32,7 +32,7 @@ void CCie1931Control::OnPaint(void)
     if (!m_cie1931xyBmp)
     {
         m_cie1931xyBmp = (HBITMAP)LoadImage(
-            GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CIE1931XY),
+            GetModuleHandle(nullptr), MAKEINTRESOURCE(IDB_CIE1931XY),
             IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
 
         if (!m_cie1931xyBmp)

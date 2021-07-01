@@ -28,13 +28,13 @@ CUnbufferedLiveSourceVideoOutputPin::~CUnbufferedLiveSourceVideoOutputPin()
 
 HRESULT CUnbufferedLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 {
-	BYTE* pData = NULL;
+	BYTE* pData = nullptr;
 	HRESULT hr;
 
 	// Get buffer for sample
 	// Note you can fill in start and stop time, but following the code shows that they are unused.
-	IMediaSample* pSample = NULL;
-	hr = this->GetDeliveryBuffer(&pSample, NULL, NULL, 0);
+	IMediaSample* pSample = nullptr;
+	hr = this->GetDeliveryBuffer(&pSample, nullptr, nullptr, 0);
 	if (FAILED(hr))
 	{
 		return hr;

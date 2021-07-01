@@ -820,11 +820,11 @@ HRESULT BlackMagicDeckLinkCaptureDevice::Notify(BMDNotifications topic, uint64_t
 
 HRESULT	BlackMagicDeckLinkCaptureDevice::QueryInterface(REFIID iid, LPVOID* ppv)
 {
-	if (ppv == NULL)
+	if (!ppv)
 		return E_INVALIDARG;
 
 	// Initialise the return result
-	*ppv = NULL;
+	*ppv = nullptr;
 
 	// Obtain the IUnknown interface and compare it the provided REFIID
 	if (iid == IID_IUnknown)

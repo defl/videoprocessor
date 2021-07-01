@@ -306,7 +306,7 @@ void ADirectShowRenderer::GraphBuild()
 
 	if (FAILED(CoCreateInstance(
 		CLSID_FilterGraph,
-		NULL,
+		nullptr,
 		CLSCTX_INPROC_SERVER,
 		IID_IGraphBuilder,
 		(void**)&m_pGraph)))
@@ -435,7 +435,7 @@ void ADirectShowRenderer::GraphBuild()
 
 	if (FAILED(CoCreateInstance(
 		m_rendererCLSID,
-		NULL,
+		nullptr,
 		CLSCTX_INPROC_SERVER,
 		IID_IBaseFilter,
 		(void**)&m_pRenderer)))
@@ -495,7 +495,7 @@ void ADirectShowRenderer::GraphTeardown()
 	// https://docs.microsoft.com/en-us/windows/win32/directshow/responding-to-events for notes on cleanup
 	if (m_pEvent)
 	{
-		m_pEvent->SetNotifyWindow((OAHWND)NULL, NULL, NULL);
+		m_pEvent->SetNotifyWindow((OAHWND)nullptr, NULL, NULL);
 		m_pEvent->Release();
 		m_pEvent = nullptr;
 	}
@@ -523,7 +523,7 @@ void ADirectShowRenderer::GraphTeardown()
 		if (FAILED(m_liveSource->EnumPins(&pEnum)))
 			throw std::runtime_error("Failed to get livesource pin enumerator");
 
-		if (pEnum->Next(1, &pLiveSourceOutputPin, NULL) != S_OK)
+		if (pEnum->Next(1, &pLiveSourceOutputPin, nullptr) != S_OK)
 			throw std::runtime_error("Failed to run next on livesource pin");
 
 		pEnum->Release();

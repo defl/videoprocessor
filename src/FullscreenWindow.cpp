@@ -21,14 +21,14 @@ FullscreenWindow::~FullscreenWindow()
     if (m_hwnd)
     {
         ::DestroyWindow(m_hwnd);
-        ::UnregisterClassW(FULLSCREEN_WINDOW_CLASS_NAME, GetModuleHandle(NULL));
+        ::UnregisterClassW(FULLSCREEN_WINDOW_CLASS_NAME, GetModuleHandle(nullptr));
     }
 }
 
 
 LRESULT CALLBACK FullscreenWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    FullscreenWindow* pThis = NULL;
+    FullscreenWindow* pThis = nullptr;
 
     if (uMsg == WM_NCCREATE)
     {
@@ -60,7 +60,7 @@ void FullscreenWindow::Create(HMONITOR hmon, HWND parentWindow)
     WNDCLASS wc = { 0 };
 
     wc.lpfnWndProc = FullscreenWindow::WindowProc;
-    wc.hInstance = GetModuleHandle(NULL);
+    wc.hInstance = GetModuleHandle(nullptr);
     wc.lpszClassName = FULLSCREEN_WINDOW_CLASS_NAME;
 
     RegisterClass(&wc);
@@ -89,8 +89,8 @@ void FullscreenWindow::Create(HMONITOR hmon, HWND parentWindow)
         width,
         mi.rcMonitor.bottom - mi.rcMonitor.top,
         parentWindow,
-        NULL,  // hMenu
-        GetModuleHandle(NULL),  // Parent process
+        nullptr,  // hMenu
+        GetModuleHandle(nullptr),  // Parent process
         this);
 
     if(!m_hwnd)

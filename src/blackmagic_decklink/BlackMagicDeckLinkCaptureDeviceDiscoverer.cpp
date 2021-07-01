@@ -34,7 +34,7 @@ void BlackMagicDeckLinkCaptureDeviceDiscoverer::Start()
 
 	assert(m_captureDeviceMap.empty());
 
-	if (CoCreateInstance(CLSID_CDeckLinkDiscovery, NULL, CLSCTX_ALL, IID_IDeckLinkDiscovery, (void**)&m_deckLinkDiscovery) != S_OK)
+	if (CoCreateInstance(CLSID_CDeckLinkDiscovery, nullptr, CLSCTX_ALL, IID_IDeckLinkDiscovery, (void**)&m_deckLinkDiscovery) != S_OK)
 		throw std::runtime_error("Unable to create IDeckLinkDiscovery interface object");
 
 	if (!m_deckLinkDiscovery)
@@ -98,11 +98,11 @@ HRESULT	STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDeviceDiscoverer::DeckLinkDev
 
 HRESULT	BlackMagicDeckLinkCaptureDeviceDiscoverer::QueryInterface(REFIID iid, LPVOID* ppv)
 {
-	if (ppv == NULL)
+	if (!ppv)
 		return E_INVALIDARG;
 
 	// Initialise the return result
-	*ppv = NULL;
+	*ppv = nullptr;
 
 	if (iid == IID_IUnknown || iid == IID_IDeckLinkInputCallback)
 	{

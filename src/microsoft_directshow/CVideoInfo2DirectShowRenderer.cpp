@@ -121,14 +121,14 @@ void CVideoInfo2DirectShowRenderer::MediaTypeGenerate(GUID mediaSubType, int bit
 
 void CVideoInfo2DirectShowRenderer::Connect()
 {
-	IEnumPins* pEnum = NULL;
-	IPin* pLiveSourceOutputPin = NULL;
-	IPin* pRendererInputPin = NULL;
+	IEnumPins* pEnum = nullptr;
+	IPin* pLiveSourceOutputPin = nullptr;
+	IPin* pRendererInputPin = nullptr;
 
 	if (FAILED(m_liveSource->EnumPins(&pEnum)))
 		throw std::runtime_error("Failed to get livesource pin enumerator");
 
-	if (pEnum->Next(1, &pLiveSourceOutputPin, NULL) != S_OK)
+	if (pEnum->Next(1, &pLiveSourceOutputPin, nullptr) != S_OK)
 	{
 		pEnum->Release();
 
@@ -146,7 +146,7 @@ void CVideoInfo2DirectShowRenderer::Connect()
 		throw std::runtime_error("Failed to get livesource pin enumerator");
 	}
 
-	if (pEnum->Next(1, &pRendererInputPin, NULL) != S_OK)
+	if (pEnum->Next(1, &pRendererInputPin, nullptr) != S_OK)
 	{
 		pLiveSourceOutputPin->Release();
 		pRendererInputPin->Release();

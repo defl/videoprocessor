@@ -87,13 +87,13 @@ protected:
 
 	RendererState m_state = RendererState::RENDERSTATE_UNKNOWN;
 
-	IGraphBuilder* m_pGraph = NULL;
-	IMediaControl* m_pControl = NULL;
-	IMediaEventEx* m_pEvent = NULL;
-	IVideoWindow* m_videoWindow = NULL;
-	IFilterGraph2* m_pGraph2 = NULL;
-	IMediaFilter* m_mediaFilter = NULL;
-	IAMGraphStreams* m_amGraphStreams = NULL;
+	IGraphBuilder* m_pGraph = nullptr;
+	IMediaControl* m_pControl = nullptr;
+	IMediaEventEx* m_pEvent = nullptr;
+	IVideoWindow* m_videoWindow = nullptr;
+	IFilterGraph2* m_pGraph2 = nullptr;
+	IMediaFilter* m_mediaFilter = nullptr;
+	IAMGraphStreams* m_amGraphStreams = nullptr;
 	IReferenceClock* m_referenceClock = nullptr;
 	IVideoFrameFormatter* m_videoFramFormatter = nullptr;
 	AM_MEDIA_TYPE m_pmt;

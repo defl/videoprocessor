@@ -146,7 +146,7 @@ static const std::vector<std::pair<LPCTSTR, DXVA_VideoPrimaries>> DIRECTSHOW_PRI
 
 
 CVideoProcessorDlg::CVideoProcessorDlg(bool startstartFullscreen):
-	CDialog(CVideoProcessorDlg::IDD, NULL),
+	CDialog(CVideoProcessorDlg::IDD, nullptr),
 	m_rendererfullScreen(startstartFullscreen)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -981,7 +981,7 @@ void CVideoProcessorDlg::UpdateState()
 		{
 			FullScreenWindowDestroy();
 
-			m_fullScreenRenderWindow = NULL;
+			m_fullScreenRenderWindow = nullptr;
 		}
 
 		// If the renderer failed we don't auto-start it again but wait for something to happen
@@ -1526,12 +1526,12 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 	// TODO: Move this to the directshow dir and make a nice clean abstraction to use here
 	//
 	{
-		IFilterMapper2* pMapper = NULL;
-		IEnumMoniker* pEnum = NULL;
+		IFilterMapper2* pMapper = nullptr;
+		IEnumMoniker* pEnum = nullptr;
 		HRESULT hr;
 
 		hr = CoCreateInstance(CLSID_FilterMapper2,
-			NULL, CLSCTX_INPROC, IID_IFilterMapper2,
+			nullptr, CLSCTX_INPROC, IID_IFilterMapper2,
 			(void**)&pMapper);
 
 		if (FAILED(hr))
@@ -1549,21 +1549,21 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 			TRUE,               // At least one input pin?
 			1,                  // Number of major type/subtype pairs for input.
 			arrayInTypes,       // Array of major type/subtype pairs for input.
-			NULL,               // Input medium.
-			NULL,               // Input pin category.
+			nullptr,               // Input medium.
+			nullptr,               // Input pin category.
 			FALSE,              // Must be a renderer?
 			FALSE,              // At least one output pin?
 			0,                  // Number of major type/subtype pairs for output.
-			NULL,               // Array of major type/subtype pairs for output.
-			NULL,               // Output medium.
-			NULL);              // Output pin category.
+			nullptr,               // Array of major type/subtype pairs for output.
+			nullptr,               // Output medium.
+			nullptr);              // Output pin category.
 
 		// Enumerate the monikers.
 		IMoniker* pMoniker;
 		ULONG cFetched;
 		while (pEnum->Next(1, &pMoniker, &cFetched) == S_OK)
 		{
-			IPropertyBag* pPropBag = NULL;
+			IPropertyBag* pPropBag = nullptr;
 			hr = pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)&pPropBag);
 
 			if (SUCCEEDED(hr))

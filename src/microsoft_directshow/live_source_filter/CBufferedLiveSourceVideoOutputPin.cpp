@@ -219,8 +219,8 @@ DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 
 		// Get buffer for sample
 		// Note you can fill in start and stop time, but following the code shows that they are unused.
-		IMediaSample* pSample = NULL;
-		HRESULT hr = this->GetDeliveryBuffer(&pSample, NULL, NULL, 0);
+		IMediaSample* pSample = nullptr;
+		HRESULT hr = this->GetDeliveryBuffer(&pSample, nullptr, nullptr, 0);
 		if (FAILED(hr))
 		{
 			videoFrame.SourceBufferRelease();

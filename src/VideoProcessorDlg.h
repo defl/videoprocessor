@@ -158,7 +158,7 @@ protected:
 	HACCEL m_accelerator;
 
 	bool m_rendererfullScreen = false;
-	FullscreenWindow* m_fullScreenRenderWindow = NULL;
+	FullscreenWindow* m_fullScreenRenderWindow = nullptr;
 
 	//
 	// Program data

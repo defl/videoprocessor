@@ -261,13 +261,13 @@ HRESULT STDMETHODCALLTYPE ALiveSourceVideoOutputPin::Get(
 	if (dwPropID != AMPROPERTY_PIN_CATEGORY)
 		return E_PROP_ID_UNSUPPORTED;
 
-	if (pPropData == NULL && pcbReturned == NULL)
+	if (!pPropData && !pcbReturned)
 		return E_POINTER;
 
 	if (pcbReturned)
 		*pcbReturned = sizeof(GUID);
 
-	if (pPropData == NULL)  // Caller just wants to know the size.
+	if (!pPropData)  // Caller just wants to know the size.
 		return S_OK;
 
 	if (cbPropData < sizeof(GUID))  // The buffer is too small.
@@ -503,7 +503,7 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 	//
 
 	// Get target data buffer
-	BYTE* pData = NULL;
+	BYTE* pData = nullptr;
 	hr = pSample->GetPointer(&pData);
 	if (FAILED(hr))
 		return hr;

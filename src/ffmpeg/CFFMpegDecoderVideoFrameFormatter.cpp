@@ -40,7 +40,7 @@ CFFMpegDecoderVideoFrameFormatter::CFFMpegDecoderVideoFrameFormatter(
 	if (!m_avCodecContext)
 		throw std::runtime_error("Could not allocate video codec context");
 
-	if (avcodec_open2(m_avCodecContext, avCodecDecoder, NULL) < 0)
+	if (avcodec_open2(m_avCodecContext, avCodecDecoder, nullptr) < 0)
 		throw std::runtime_error("Could not open codec");
 
 	//if(!sws_isSupportedInput(m_avCodecContext->pix_fmt))
@@ -107,9 +107,9 @@ void CFFMpegDecoderVideoFrameFormatter::OnVideoState(VideoStateComPtr& videoStat
 		m_width, m_height,
 		m_targetPixelFormat,
 		SWS_FAST_BILINEAR,
-		NULL,
-		NULL,
-		NULL);
+		nullptr,
+		nullptr,
+		nullptr);
 
 	if (!m_sws)
 		throw std::runtime_error("Failed to get context");

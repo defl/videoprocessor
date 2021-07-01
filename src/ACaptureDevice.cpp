@@ -20,7 +20,7 @@ CaptureDeviceCardState::~CaptureDeviceCardState()
 
 HRESULT	CaptureDeviceCardState::QueryInterface(REFIID iid, LPVOID* ppv)
 {
-	if (ppv == nullptr)
+	if (!ppv)
 		return E_INVALIDARG;
 
 	// Initialise the return result

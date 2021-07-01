@@ -30,7 +30,7 @@ BOOL CVideoProcessorApp::InitInstance()
 
 	// COINIT_MULTITHREADED was used in the Blackmagic SDK examples,
 	// using that without further investigation
-	if(FAILED(CoInitializeEx(NULL, COINIT_MULTITHREADED)))
+	if(FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
 		throw std::runtime_error("Failed to initialize com objects");
 
 	// If the first command line arg is "/fullsreen" then we notify the app of this
@@ -62,7 +62,7 @@ BOOL CVideoProcessorApp::InitInstance()
 		size_t outSize;
 		mbstowcs_s(&outSize, wtext, size, e.what(), size - 1);
 
-		MessageBox(NULL, wtext, TEXT("Fatal error"), MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+		MessageBox(nullptr, wtext, TEXT("Fatal error"), MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
 
 		delete[] wtext;
 	}

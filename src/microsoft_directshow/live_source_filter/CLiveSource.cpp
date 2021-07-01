@@ -35,7 +35,7 @@ CUnknown* WINAPI CLiveSource::CreateInstance(LPUNKNOWN pUnk, HRESULT* phr)
 
 	if (phr)
 	{
-		if (liveSource == NULL)
+		if (!liveSource)
 			*phr = E_OUTOFMEMORY;
 		else
 			*phr = S_OK;
