@@ -26,11 +26,8 @@ class ALiveSourceVideoOutputPin;
 
 
 /**
- * This is a source filter with a single output pin which you can use to push
+ * This is a source filter with a single video output pin which you can use to push
  * frames yourself through the ILiveSource interface.
- *
- * It's based on "DirectShow Filters Development Part2: Live Source filter" by Roman Ginzburg
- * https://www.codeproject.com/Articles/158053/DirectShow-Filters-Development-Part-2-Live-Source
  */
 class CLiveSource:
 	public CBaseFilter,
@@ -46,18 +43,6 @@ public:
 
 	// IUnknown
 	DECLARE_IUNKNOWN;
-
-#ifdef _DEBUG
-	STDMETHODIMP_(ULONG) NonDelegatingAddRef()
-	{
-		return CBaseFilter::NonDelegatingAddRef();
-	}
-
-	STDMETHODIMP_(ULONG) NonDelegatingRelease()
-	{
-		return CBaseFilter::NonDelegatingRelease();
-	}
-#endif // _DEBUG
 
 	// ILiveSource
 	STDMETHODIMP Initialize(

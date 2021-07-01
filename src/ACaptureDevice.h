@@ -58,6 +58,7 @@ public:
 	// Random other things represented as strings.
 	//  Not important for rendering but might help the user.
 	//
+
 	std::vector<CString> other;
 
 	// IUnknown

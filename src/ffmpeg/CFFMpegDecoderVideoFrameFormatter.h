@@ -22,7 +22,7 @@ extern "C"
 
 
  /**
-  * This formatter can conver using an ffmpeg decoder and scaler for a target pixel format
+  * This formatter can convert using an ffmpeg decoder and scaler for a target pixel format
   */
 class CFFMpegDecoderVideoFrameFormatter:
 	public IVideoFrameFormatter

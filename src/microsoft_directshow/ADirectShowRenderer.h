@@ -59,9 +59,7 @@ public:
 	double ExitLatencyMs() const override;
 	uint64_t DroppedFrameCount() const override;
 
-
 protected:
-
 
 	virtual void MediaTypeGenerate() = 0;
 	virtual void Connect() = 0;
@@ -100,10 +98,6 @@ protected:
 	CLiveSource* m_liveSource = nullptr;
 	IBaseFilter* m_pLav = nullptr;
 	IBaseFilter* m_pRenderer = nullptr;
-
-#ifdef _DEBUG
-	timingclocktime_t m_previousFrameTime = 0;
-#endif
 
 	uint64_t m_frameCounter = 0;
 	uint64_t m_missingFrameCounter = 0;

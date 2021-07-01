@@ -18,7 +18,7 @@
 
 
 /**
- * This class provides an abstract interface for discovering devices.
+ * BlackMagic DeckLink disoverer
  */
 class BlackMagicDeckLinkCaptureDeviceDiscoverer:
 		public ACaptureDeviceDiscoverer,

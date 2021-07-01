@@ -21,6 +21,7 @@
 
 typedef CComPtr<IDeckLink> IDeckLinkComPtr;
 
+
 // Known invalid values
 #define BMD_PIXEL_FORMAT_INVALID (BMDPixelFormat)0
 #define BMD_DISPLAY_MODE_INVALID (BMDDisplayMode)0

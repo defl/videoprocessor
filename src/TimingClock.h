@@ -15,6 +15,7 @@
 
 typedef int64_t timingclocktime_t;
 
+
 const static timingclocktime_t TIMING_CLOCK_TIME_INVALID = std::numeric_limits<timingclocktime_t>::min();
 
 

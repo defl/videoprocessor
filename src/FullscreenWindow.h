@@ -11,6 +11,7 @@
 
 const wchar_t FULLSCREEN_WINDOW_CLASS_NAME[] = L"Fullscreen Window";
 
+
 /**
  * Window class which can be used for drawing on full screen
  *

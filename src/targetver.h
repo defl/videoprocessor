@@ -11,6 +11,7 @@
 
 #include <WinSDKVer.h>
 
+
 // Windows 7 is the minimal version needed
 // https://docs.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers?redirectedfrom=MSDN
 #define NTDDI_VERSION NTDDI_WIN7

@@ -17,7 +17,7 @@
 
 
 /**
- * Abstract implementation of the video pin
+ * Abstract implementation of the video output pin
  */
 class ALiveSourceVideoOutputPin:
 	public CBaseOutputPin,

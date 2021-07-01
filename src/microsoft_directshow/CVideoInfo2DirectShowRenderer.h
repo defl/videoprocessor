@@ -39,6 +39,7 @@ public:
 	virtual ~CVideoInfo2DirectShowRenderer() {}
 
 private:
+
 	DXVA_NominalRange m_forceNominalRange;
 	DXVA_VideoTransferFunction m_forceVideoTransferFunction;
 	DXVA_VideoTransferMatrix m_forceVideoTransferMatrix;

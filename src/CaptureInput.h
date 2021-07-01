@@ -9,7 +9,6 @@
 #pragma once
 
 
-// Id capable of storing a pointer, -1 is a reserved value
 typedef long long CaptureInputId;
 
 

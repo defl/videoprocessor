@@ -15,7 +15,7 @@
 
 
 /**
- * This is an unbuffered output pin, any presented frame will go directly to the
+ * This is an unbuffered video output pin, any presented frame will go directly to the
  * renderer. Problems guaranteed if you use timestamps as that will block the
  * renderer for the given duration
  */
