@@ -1,5 +1,5 @@
 0.3.0: Clocks and any DirectShow renderer
-- Always uses the best (=card hardware clock)
+- Always uses the best clock available (=card hardware clock)
 - HDR info is now in CIE image
 - Added final handler for throws which pops up a messagebox upon thrown exceptions, this allows the user to understand what's going on in many situations
 - Removed all mutexes (outside of directshow), it now runs lock-free with a few atomics to ensure correctness
@@ -7,7 +7,7 @@
 - Mouse not visible anymore in video render window, both windowed and full-screen
 - Pressing return closed the window, now takes context dependant action with a default of restarting the renderer
 - Our queue dropped frame counter (excluding renderer-dropped frames)
-- Missing frame counter (never delivered by capture but found by timesamp-gap analysis)
+- Missing frame counter (never delivered by capture but found by timestamp-gap analysis)
 - Process priority is now set to high on start
 - User selectable frame-interval determination modes, clock-clock, clock-theo, theo and none
 - Renderer reset button, which stops, clears the queue and start again
