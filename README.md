@@ -21,7 +21,7 @@ Note that VideoProcessor is under very heavy development and that there will be 
 - Install VS2019 x64 runtime
 - Install capture card (see below) and drivers, verify the card and capture works by running the vendor's capture application.
 - Download VideoProcessor.exe 
-- Enjoy
+- Enjoy :popcorn:
 
 # Capture cards
 
