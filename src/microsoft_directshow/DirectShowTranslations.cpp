@@ -28,6 +28,12 @@ const GUID TranslateToMediaSubType(PixelFormat pixelFormat)
 
 	case PixelFormat::R210:
 		return MEDIASUBTYPE_r210;
+
+	case PixelFormat::R10b:
+		return MEDIASUBTYPE_R10b;
+
+	case PixelFormat::R12B:
+		return MEDIASUBTYPE_R12B;
 	}
 
 	throw std::runtime_error("TranslateToMediaSubType cannot translate");

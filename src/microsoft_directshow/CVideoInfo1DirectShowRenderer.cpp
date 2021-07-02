@@ -42,7 +42,6 @@ CVideoInfo1DirectShowRenderer::CVideoInfo1DirectShowRenderer(
 
 void CVideoInfo1DirectShowRenderer::MediaTypeGenerate()
 {
-
 	GUID mediaSubType = TranslateToMediaSubType(m_videoState->pixelFormat);
 	int bitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);
 
@@ -75,7 +74,7 @@ void CVideoInfo1DirectShowRenderer::MediaTypeGenerate()
 	pvi->bmiHeader.biBitCount = bitCount;
 	pvi->bmiHeader.biCompression = m_pmt.subtype.Data1;
 	pvi->bmiHeader.biWidth = m_videoState->displayMode->FrameWidth();
-	pvi->bmiHeader.biHeight = ((long)m_videoState->displayMode->FrameHeight()) * (m_videoState->invertedVertical ? -1 : 1);
+	pvi->bmiHeader.biHeight = ((long)m_videoState->displayMode->FrameHeight());  // TODO: We're not handling inverse here
 	pvi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	pvi->bmiHeader.biPlanes = 1;
 	pvi->bmiHeader.biClrImportant = 0;

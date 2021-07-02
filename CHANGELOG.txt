@@ -1,16 +1,15 @@
-NEXT (0.3.0)
-- User-selectable (frame) interval method
+0.3.0: Clocks and any DirectShow renderer
 - Always uses the best (=card hardware clock)
 - HDR info is now in CIE image
-- Added final handler for throws which pops up a messagebox upon thrown exceptions, this allows the user to understand what's going on
+- Added final handler for throws which pops up a messagebox upon thrown exceptions, this allows the user to understand what's going on in many situations
 - Removed all mutexes (outside of directshow), it now runs lock-free with a few atomics to ensure correctness
-- Version number now in window title
+- Version number visible in window title
 - Mouse not visible anymore in video render window, both windowed and full-screen
 - Pressing return closed the window, now takes context dependant action with a default of restarting the renderer
 - Our queue dropped frame counter (excluding renderer-dropped frames)
 - Missing frame counter (never delivered by capture but found by timesamp-gap analysis)
-- Process priority is now set to HIGH on start
-- There are new frame-interval determination modes, clock-clock, clock-theo, theo and none
+- Process priority is now set to high on start
+- User selectable frame-interval determination modes, clock-clock, clock-theo, theo and none
 - Renderer reset button, which stops, clears the queue and start again
 - AVX required (requires < 10-year old CPU)
 - Disable screen saver/power save when running

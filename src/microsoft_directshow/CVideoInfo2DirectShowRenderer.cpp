@@ -58,6 +58,7 @@ void CVideoInfo2DirectShowRenderer::MediaTypeGenerate()
 {
 	GUID mediaSubType;
 	int bitCount;
+	LONG heightMultiplier = 1;
 
 	switch (m_videoState->pixelFormat)
 	{
@@ -65,10 +66,9 @@ void CVideoInfo2DirectShowRenderer::MediaTypeGenerate()
 	// r210 to RGB48
 	case PixelFormat::R210:
 
-		assert(m_videoState->invertedVertical);
-
 		mediaSubType = MEDIASUBTYPE_RGB48LE;
 		bitCount = 48;
+		heightMultiplier = -1;
 
 		m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
 			AV_CODEC_ID_R210,
@@ -78,10 +78,9 @@ void CVideoInfo2DirectShowRenderer::MediaTypeGenerate()
 	// RGB 12-bit to RGB48
 	case PixelFormat::R12B:
 
-		assert(m_videoState->invertedVertical);
-
 		mediaSubType = MEDIASUBTYPE_RGB48LE;
 		bitCount = 48;
+		heightMultiplier = -1;
 
 		m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
 			AV_CODEC_ID_R12B,
@@ -124,7 +123,7 @@ void CVideoInfo2DirectShowRenderer::MediaTypeGenerate()
 	pvi2->bmiHeader.biBitCount = bitCount;
 	pvi2->bmiHeader.biCompression = m_pmt.subtype.Data1;
 	pvi2->bmiHeader.biWidth = m_videoState->displayMode->FrameWidth();
-	pvi2->bmiHeader.biHeight = ((long)m_videoState->displayMode->FrameHeight()) * (m_videoState->invertedVertical ? -1 : 1);
+	pvi2->bmiHeader.biHeight = ((long)m_videoState->displayMode->FrameHeight()) * heightMultiplier;
 	pvi2->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	pvi2->bmiHeader.biPlanes = 1;
 	pvi2->bmiHeader.biClrImportant = 0;

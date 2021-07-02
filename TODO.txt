@@ -1,15 +1,15 @@
 Roadmap
 =======
 
-0.3.0: Clocks & all DirectShow renderers
-- Check PS4 image (invertedVertical in video state should automatically do the right thing now)
-
 0.3.1: GUI
 - Cleanup TODOs
 - Add context information to all throws
 - No pop-up for some exceptions (start 2 in release mode shows nothing for example)
 - Rendering screen black background with white text centered (both normal and full-screen)
 - Show our logo when no video is playing
+- If the blackmagic capture thread throws that's never shown a new one is spun up silently
+- invertedVertical from the blackmagic not used because it's inverted?!?
+- Let the chosen renderer id itself in the GUI
 
 0.4.0: DVD & upscaling
 - Change display modes to be real frame interval and display interval
@@ -34,6 +34,7 @@ Roadmap
 
 1.2.0: Zoom
 - Cropping-zoom in y and x dimensions
+- Auto shifting (hwf)
 
 Ideas for later:
 - Integrate MPV renderer (that would be a non-DirectShow renderer, so quite some plumbing required)
