@@ -2,8 +2,6 @@
 
 ***:film_projector: High-end video processing on live data for the rest of us.***
 
-
-
 VideoProcessor is a live-video player for Windows; it couples a capture card to to a DirectShow renderer and takes care of all the plumbing in such a way the metadata stays intact. This allows advanced renderers to do things like 3d LUT, HDR tone mapping, scaling, deinterlacing and much more which can significantly improve image quality on the majority of displays. It is especially useful for accurate color-correction and HDR-like display on low lumen devices like projectors.
 
 **HDCP**
@@ -11,11 +9,6 @@ VideoProcessor is a live-video player for Windows; it couples a capture card to 
 There is one snag through, all high quality copyright protected video is protected with High-bandwidth Digital Content Protection (HDCP). No retail capture card is allowed to forward unprotected video data to it's clients. Therefore, if you connect a HDCP source to a capture card the video output will be disabled or blank. VideoProcessor is just a client of your capture card and hence if your capture card does not output video because of HDCP, there is no video to process. VideoProcessor cannot strip, circumvent or work around HDCP in any way, shape or form, it can only process what it is given.
 
 Devices which can remove this protection are available, allowing for HDCP protected sources being captured by your capture card, but their legality depends on your jurisdiction and use. Ensuring compliance with your local laws, and feeding your capture card data it can forward to VideoProcessor, is your responsibility.
-
-# Screenshot
-
-![VideoProcessor banner](https://github.com/defl/videoprocessor/blob/main/images/screenshot.png)
-
 
 # Community and bleeding edge
 
@@ -30,12 +23,9 @@ Note that VideoProcessor is under very heavy development and that there will be 
 - Download VideoProcessor.exe 
 - Enjoy
 
-
 # Capture cards
 
 VideoProcessor has a wide range of applications. You can do as little as just some color correction on low end inputs like NTSC all the way up to HDR tone mapping a 4k HDR source. As such there is a very wide variety of cards it can potentially work with. The following list provides cards which provide HDMI 2.0 or up, 4K or up, HDR or better and >=10bits - which covers the most common use case of processing a HDR stream and polishing + tone mapping it to your display.
-
-
 
 **Tested and confirmed working**
 
@@ -44,13 +34,9 @@ If you can spare it, the BlackMagic DeckLink Quad HDMI can do 4k60, which makes 
  * [BlackMagic DeckLink Mini Recorder 4k](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-33) (4k30) (€~200) <-- best (value) choice
  * [BlackMagic DeckLink Quad HDMI Recorder](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-36) (4k60) (€~500) <-- high-end choice
 
-
-
 **Might work, but untested**
 
 - [DeckLink 4K Extreme 12G](https://www.blackmagicdesign.com/nl/products/decklink/techspecs/W-DLK-25) (4k60) (€~750)
-
-
 
 **Won't work** **(*yet*)**
 
@@ -61,8 +47,6 @@ The following cards have capable hardware but are not supported; getting them wo
 - [Magewell Pro Capture HDMI 4K Plus LT](https://www.magewell.com/products/pro-capture-hdmi-4k-plus-lt) (4k60, pass-through) (€~1100) - There is an SDK available
 - [AVerMedia Live Gamer 4K (GC573)](https://www.avermedia.com/us/product-detail/GC573) (4k60, pass-through) (€~200) - No publicly available API/SDK
 - [Elgato 4K60 pro](https://www.elgato.com/en/game-capture-4k60-pro) (4k60, pass-through) (€~250) - No publicly available API/SDK
-
-
 
 # System requirements
 
@@ -96,6 +80,9 @@ For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX
 
 - Yes.
 
+# Screenshot
+
+![VideoProcessor banner](https://github.com/defl/videoprocessor/blob/main/images/screenshot.png)
 
 # For developers
 
