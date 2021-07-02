@@ -9,6 +9,7 @@ VideoProcessor is a live-video player for Windows; it couples a capture card to 
 
 There is one snag through, all high quality copyright protected video is protected with High-bandwidth Digital Content Protection (HDCP). No retail capture card is allowed to forward unprotected video data to it's clients. Therefore, if you connect a HDCP source to a capture card the video output will be disabled or blank. VideoProcessor is just a client of your capture card and hence if your capture card does not output video because of HDCP, there is no video to process. VideoProcessor cannot strip, circumvent or work around HDCP in any way, shape or form, it can only process what it is given.
 
+Devices which can remove this protection are available, allowing for HDCP protected sources being captured by your capture card, but their legality depends on your jurisdiction and use. Ensuring compliance with your local laws, and feeding your capture card data it can forward to VideoProcessor, is your responsibility.
 
 # Community and bleeding edge
 
