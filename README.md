@@ -1,7 +1,8 @@
-VideoProcessor
-===============
+![VideoProcessor banner](https://github.com/defl/videoprocessor/blob/main/images/vp%20banner.png)
 
 ***High-end video processing on live data for the rest of us.***
+
+
 
 VideoProcessor is a live-video player for Windows; it couples a capture card to to a DirectShow renderer and takes care of all the plumbing in such a way the metadata stays intact. This allows advanced renderers to do things like 3d LUT, HDR tone mapping, scaling, deinterlacing and much more which can significantly improve image quality on the majority of displays. It is especially useful for accurate color-correction and HDR-like display on low lumen devices like projectors.
 
