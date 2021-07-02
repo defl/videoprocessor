@@ -12,6 +12,11 @@ There is one snag through, all high quality copyright protected video is protect
 
 Devices which can remove this protection are available, allowing for HDCP protected sources being captured by your capture card, but their legality depends on your jurisdiction and use. Ensuring compliance with your local laws, and feeding your capture card data it can forward to VideoProcessor, is your responsibility.
 
+# Screenshot
+
+![VideoProcessor banner](https://github.com/defl/videoprocessor/blob/main/images/screenshot.png)
+
+
 # Community and bleeding edge
 
 Note that VideoProcessor is under very heavy development and that there will be many unpublished experimental releases. You can check out the [AVSForum VideoProcessor thread](https://www.avsforum.com/threads/videoprocessor.3206050/) for the state of the art and for support.
