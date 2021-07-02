@@ -1,6 +1,6 @@
 ![VideoProcessor banner](https://github.com/defl/videoprocessor/blob/main/images/vp%20banner.png)
 
-***High-end video processing on live data for the rest of us.***
+***:film_projector: High-end video processing on live data for the rest of us.***
 
 
 
@@ -129,7 +129,7 @@ Get the source from https://github.com/defl/videoprocessor
 
 # License & legal
 
-This application is released under the GNU GPL 3.0, see LICENSE.txt. 
+This application is released under the GNU GPL 3.0 for non-commercial usage, commercial usage to build and sell video processor systems is not allowed, see LICENSE.txt. 
 
 Parts of this code are made and owned by others, for example SDKs; in all such cases there are LICENSE.txt and README.txt files present to point to sources, attributions and licenses.
 
