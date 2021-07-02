@@ -108,6 +108,8 @@ Get the source from https://github.com/defl/videoprocessor
 
 # Commercial alternatives
 
+VideoProcessor is a DIY project to cheaply get something basic going. And while that's fun, it is very far from a well supported professional application which has non-breaking updates, proper support and rock solid performance. It-just-works is highly underrated in home cinemas and scores major points on the WAF scale in my experience. So in case you're looking for something more pro:
+
 - madVR labs makes a device called the [Envy](https://madvrenvy.com/) which can do both HDR tonemapping and 3d luts
 - Lumagen makes a device called the [Radiance Pro](http://www.lumagen.com/testindex.php?module=radiancepro_details) which can also do HDR tonemapping.
 - Higher end JVC projectors can do HDR tonemapping internally.
@@ -118,7 +120,7 @@ Get the source from https://github.com/defl/videoprocessor
 
 This application is released under the GNU GPL 3.0 for non-commercial usage, commercial usage to build and sell video processor systems is not allowed, see LICENSE.txt. 
 
-Parts of this code is made and owned by others, for example SDKs; in all such cases there are LICENSE.txt and README.txt files present to point to sources, attributions and licenses.
+Parts of this code are made and owned by others, for example SDKs; in all such cases there are LICENSE.txt and README.txt files present to point to sources, attributions and licenses.
 
 I'm not affiliated or connected with any of the firms mentioned above.
 
