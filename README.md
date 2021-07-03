@@ -59,7 +59,7 @@ For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX
 
 # FAQ
 
-**Renderer shows black screen - with valid input**
+**Renderer shows black screen
 
 - Are you capturing something which is outside of what the card can pass along? For example 4k>30 with Blackmagic Recorder 4K mini will lead to this.
 - Did you set the correct output display modes in your renderer? Some renderers do refresh rate switching only correctly if you configure it.
