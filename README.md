@@ -52,7 +52,7 @@ The following cards have capable hardware but are not supported; getting them wo
 
 VideoProcessor itself takes very little CPU. The capture card drivers often only take a decent amount of memory (gigs) but little CPU, the rest is the renderer. Some renderers  can be a massive resource drain; at maximum settings when working on a 4K high frame rate feed there simply is no available hardware which can sustain them (RTX3090 included). You'll need an AVX capable CPU (which is anything younger than a decade).
 
-Luckily if you tone it down a bit it works well with quite modest hardware. There are quite a few guides on tuning your system and renderer of choice, so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements. Generally Nvidia is strongly preferred.
+Luckily if you tone it down a bit, it works well with quite modest hardware. There are quite a few guides on tuning your system and renderer of choice, so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements. Generally Nvidia is strongly preferred.
 
 For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX 1660 + BlackMagic DeckLink Mini Recorder 4k which is enough for my purposes which is 4K HDR input, 1080p output, 3D LUT for color correction and some minor enhancements.
 
@@ -61,7 +61,7 @@ For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX
 
 **Renderer shows black screen - with valid input**
 
-- Are you sure you're capturing something which is outside of what the card can pass along? For example 4k>30 with Blackmagic Recorder 4K mini will lead to this.
+- Are you capturing something which is outside of what the card can pass along? For example 4k>30 with Blackmagic Recorder 4K mini will lead to this.
 - Did you set the correct output display modes in your renderer? Some renderers do refresh rate switching only correctly if you configure it.
 - HDCP protected stream will also have no output
 
