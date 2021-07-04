@@ -10,7 +10,7 @@
 - Missing frame counter (never delivered by capture but found by timestamp-gap analysis)
 - Process priority is now set to high on start
 - User selectable frame-interval determination modes, clock-clock, clock-theo, theo and none
-- Renderer reset button, which stops, clears the queue and start again
+- Renderer reset button, which stops, clears the queue and starts playback again
 - AVX required (requires < 10-year old CPU)
 - Disable screen saver/power save when running
 - VideoProcessor is now DirectShow renderer independent, you can use any installed DirectShow renderer.

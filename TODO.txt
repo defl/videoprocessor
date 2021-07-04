@@ -7,30 +7,29 @@ Roadmap
 - No pop-up for some exceptions (start 2 in release mode shows nothing for example)
 - Rendering screen black background with white text centered (both normal and full-screen)
 - Show our logo when no video is playing
-- If the blackmagic capture thread throws that's never shown a new one is spun up silently
+- If the blackmagic capture thread throws that's never shown a new one is spun up silently, try-catch external calls, make errors visible
+- If the CAM thread throws that's never shown, make errors visible
 - invertedVertical from the blackmagic not used because it's inverted?!?
 - Let the chosen renderer id itself in the GUI
+- Pick renderer with command line option
+- Add clock+nothing option as frame-time
+- adjust clock+theo stop timestamp for clock resolution (should not matter practically)
+- set clock+theo as default (check video result first)
+- Help page linked to help-buttons in GUI
+- Update readme to reflect info on website
 
 0.4.0: DVD & upscaling
 - Change display modes to be real frame interval and display interval
-- Support for interlaced formats (aim to support DVD, will only test with PS4Pro as player)
+- Support for interlaced formats
 - Optionally force YCbCr422 to YCbCr420 so that the renderer can do the upscaling
 
-0.5.0: Website
-- Help page linked to help-buttons in GUI
-- Website: Go live with a page
-- Website: Tutorial on how to install VideoProcessor and renderers
-- Update readme to reflect info on website
-
 1.0.0: Out of beta
-- No changes expected, re-release of 0.5.0 code
+- No changes expected, re-release of 0.4.0 code
 
 1.1.0: Audio and delay
 - Audio
 - Determine baseline latency with external meter
 - Investigate configurable aimed-for delay to ensure external lip-sync is spot on
-- Website: Tutorial on how to measure frame-delay with a meter, set correct delay in VideoProcessor, setup delay in external AV unit
-- Configurable delay to guarantee buffering for renderer
 
 1.2.0: Zoom
 - Cropping-zoom in y and x dimensions
@@ -39,7 +38,6 @@ Roadmap
 Ideas for later:
 - Integrate MPV renderer (that would be a non-DirectShow renderer, so quite some plumbing required)
 - CaptureInput as a first-class citizen rather than a POD (rename to capture device input?)
-- Tutorial on how to do a 3d LUT
 - Toggelable HDCP on video output through the win32 Output Protection Manager
   (This will lead to problems with NVIDIA GRID as it's not allowed to capture)
 - Only force settings if none are present (LLDV case mcpherv). Looked at this and it seems little useful without further scripting
