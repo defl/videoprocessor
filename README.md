@@ -52,33 +52,33 @@ The following cards have capable hardware but are not supported; getting them wo
 
 VideoProcessor itself takes very little CPU. The capture card drivers often only take a decent amount of memory (gigs) but little CPU, the rest is the renderer. Some renderers  can be a massive resource drain; at maximum settings when working on a 4K high frame rate feed there simply is no available hardware which can sustain them (RTX3090 included). You'll need an AVX capable CPU (which is anything younger than a decade).
 
-Luckily if you tone it down a bit it works well with quite modest hardware. There are quite a few guides on tuning your system and renderer of choice, so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements. Generally Nvidia is strongly preferred.
+Luckily if you tone it down a bit, it works well with quite modest hardware. There are quite a few guides on tuning your system and renderer of choice, so a bit of research will get you a long way. Do note that you will need a proper GPU if you want to do anything with 4k input, output or image enhancement. There have been reports of significant frame drops handling 4K on recent Intel GPUs, while 1080p was ok without image enhancements. Generally Nvidia is strongly preferred.
 
-For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX 1660 + BlackMagic DeckLink Mini Recorder 4k which is enough for my purposes which is 4K HDR input, 1080p SDR output, 3d LUT plus some minor enhancements.
+For reference, I'm developing/using it on an Intel 11400 + 16GB ram + Nvidia GTX 1660 + BlackMagic DeckLink Mini Recorder 4k which is enough for my purposes which is 4K HDR input, 1080p output, 3D LUT for color correction and some minor enhancements.
 
 
 # FAQ
 
-**Renderer shows black screen - with valid input**
+**Renderer shows black screen
 
-- Are you sure you're capturing something which is outside of what the card can pass along? For example 4k>30 with Blackmagic Recorder 4K mini will lead to this.
+- Are you capturing something which is outside of what the card can pass along? For example 4k>30 with Blackmagic Recorder 4K mini will lead to this.
 - Did you set the correct output display modes in your renderer? Some renderers do refresh rate switching only correctly if you configure it.
+- HDCP protected stream will also have no output
 
 **I have frame drops, jitter, choppy image or similar performance problems**
 
-- You are using an Nvidia card right? Intel GPUs will not cut it and lead to all sorts of drops.
 - Ensure your capture card is not sharing it's PCIe bandwidth with something else. Specifically your graphics card.
 - Ensure that your card is getting it's full PCIe bandwidth. The BlackMagic cards will show their bandwidth in the Capture Device -> Other properties which has to be link >=2 and width >=4.
-- Ensure you didn't set your renderer to be too resource intensive.
-- Do not run other high (memory) bandwidth applications at the same time. 4k30 12 bit is pushing over 13gbps and that data needs to be in RAM and processed by your CPU several times, which can load up your memory bus quite a bit
-- Full screen is generally smooter than windowed
-- Use the queue.
-- Press the reset button after starting the video.
-- If your capture latency (in the gui) is high (anything over 20ms) then issues will appear. Ensure you have no drops/misses. Ideally your clock lead is very slightly positive, set it by changing the frame offset.
+- Ensure you didn't set your renderer to be too resource intensive. Anything close-to the 1/framerate render time is probably a bad idea. At 24fps you should stay in the low 30ms.
+- Do not run other high (memory) bandwidth applications at the same time. 4k30 12 bit is pushing over 13gbps and that data needs to be in RAM and processed by your CPU several times, which can load up your memory bus quite a bit.
+- Full screen is generally smooter than windowed.
+- Use the queue. Don't let it fill up. You can press the reset button to clear it or leave it in auto.
+- If your capture latency (in the gui) is high (anything over 20ms) then issues will appear. Ensure you have no drops/misses. Ideally your DS renderer latency is very slightly negative (= the frame you just gave your renderer needs to be rendered in the very near future, rather than it being late if this number is positive), set it by changing the timing clock frame offset or just using the auto mode there.
+- For advanced renderers: You are using an Nvidia card right? Intel GPUs will not cut it and lead to all sorts of drops.
 
 **Can this capture, process and display >=10bit?**
 
-- Yes.
+- Yes. NVidia 12bit output, D3D11 10bit rendering window and 12bit input have been observed working.
 
 # Screenshot
 
@@ -108,6 +108,8 @@ Get the source from https://github.com/defl/videoprocessor
 
 # Commercial alternatives
 
+VideoProcessor is a DIY project to cheaply get something basic going. And while that's fun, it is very far from a well supported professional application which has non-breaking updates, proper support and rock solid performance. It-just-works is highly underrated in home cinemas and scores major points on the WAF scale in my experience. So in case you're looking for something more pro:
+
 - madVR labs makes a device called the [Envy](https://madvrenvy.com/) which can do both HDR tonemapping and 3d luts
 - Lumagen makes a device called the [Radiance Pro](http://www.lumagen.com/testindex.php?module=radiancepro_details) which can also do HDR tonemapping.
 - Higher end JVC projectors can do HDR tonemapping internally.
@@ -118,7 +120,7 @@ Get the source from https://github.com/defl/videoprocessor
 
 This application is released under the GNU GPL 3.0 for non-commercial usage, commercial usage to build and sell video processor systems is not allowed, see LICENSE.txt. 
 
-Parts of this code is made and owned by others, for example SDKs; in all such cases there are LICENSE.txt and README.txt files present to point to sources, attributions and licenses.
+Parts of this code are made and owned by others, for example SDKs; in all such cases there are LICENSE.txt and README.txt files present to point to sources, attributions and licenses.
 
 I'm not affiliated or connected with any of the firms mentioned above.
 
