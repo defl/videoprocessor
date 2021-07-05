@@ -73,8 +73,8 @@ END_MESSAGE_MAP()
 
 static const std::vector<std::pair<LPCTSTR, RendererTimestamp>> RENDERER_TIMESTAMP_OPTIONS =
 {
-	std::make_pair(TEXT("Clock-clock"), RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK),
 	std::make_pair(TEXT("Clock+Theo"),  RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_THEO),
+	std::make_pair(TEXT("Clock-Clock"), RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK),
 	std::make_pair(TEXT("Theoretical"), RendererTimestamp::RENDERER_TIMESTAMP_THEORETICAL),
 	std::make_pair(TEXT("None"),        RendererTimestamp::RENDERER_TIMESTAMP_NONE),
 };

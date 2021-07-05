@@ -1,7 +1,7 @@
 Roadmap
 =======
 
-0.3.1: GUI
+0.3.2: GUI
 - Cleanup TODOs
 - Add context information to all throws
 - No pop-up for some exceptions (start 2 in release mode shows nothing for example)

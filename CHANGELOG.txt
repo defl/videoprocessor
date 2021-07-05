@@ -1,3 +1,6 @@
+0.3.1
+- Default frame timing changed to clock+theo as multiple users reported blips in clock-clock
+
 0.3.0: Clocks and any DirectShow renderer
 - Always uses the best clock available (=card hardware clock)
 - HDR info is now in CIE image
