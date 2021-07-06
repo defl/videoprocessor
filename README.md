@@ -23,8 +23,6 @@ This application is released under the GNU GPL 3.0 for non-commercial usage, com
 
 Parts of this code are made and owned by others, for example SDKs; in all such cases there are LICENSE.txt and README.txt files present to point to sources, attributions and licenses.
 
-I'm not affiliated or connected with any of the firms mentioned above.
-
 ------
 
  Copyright 2021 [Dennis Fleurbaaij](mailto:mail@dennisfleurbaaij.com)
