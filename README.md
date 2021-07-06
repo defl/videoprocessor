@@ -15,7 +15,7 @@ There is a [VideoProcessor thread](https://www.avsforum.com/threads/videoprocess
 
 # Screenshot
 
-![Screenshot](https://github.com/defl/videoprocessor/blob/main/images/screenshot.png)
+![Screenshot](https://github.com/defl/videoprocessor_website/blob/main/site/static/images/screenshot.png)
 
 # License & legal
 
