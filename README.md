@@ -4,7 +4,7 @@
 
 This allows advanced renderers to do things like 3D LUT, HDR tone mapping, scaling, deinterlacing and much more which can significantly improve image quality on most displays and beamers. 
 
-It can only process what your capture card allows to be captured, hence it cannot be used to view HDCP protected content.
+_It can only process what your capture card allows to be captured, hence it cannot be used to view HDCP protected content._
 
 # Website
 
