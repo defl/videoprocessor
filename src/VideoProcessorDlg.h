@@ -42,11 +42,15 @@ class CVideoProcessorDlg:
 	public IRendererCallback
 {
 public:
-	CVideoProcessorDlg(bool startFullscreen);
+	CVideoProcessorDlg();
 	virtual ~CVideoProcessorDlg();
 
 	// Dialog Data
 	enum { IDD = IDD_VIDEOPROCESSOR_DIALOG };
+
+	// Option handlers
+	void StartFullScreen();
+	void DefaultRendererName(const CString& rendererName);
 
 	// UI-related handlers
 	afx_msg void OnCaptureDeviceSelected();
@@ -76,6 +80,7 @@ public:
 	// Command handlers
 	void OnCommandFullScreenToggle();
 	void OnCommandFullScreenExit();
+	void OnCommandRendererReset();
 
 	// ICaptureDeviceDiscovererCallback
 	void OnCaptureDeviceFound(ACaptureDeviceComPtr& captureDevice) override;
@@ -172,6 +177,7 @@ protected:
 	CaptureDeviceState m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN;
 	VideoStateComPtr m_captureDeviceVideoState = nullptr;
 
+	CString m_defaultRendererName;
 	IRenderer* m_renderer = nullptr;
 	RendererState m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
 
@@ -211,6 +217,10 @@ protected:
 	void UpdateTimingClockFrameOffset();
 	void RebuildRendererCombo();
 	void ClearRendererCombo();
+
+	// Call and die. There is a define to help with getting more info
+#define FatalError(error) (_FatalError(__LINE__, __FUNCTION__, error))
+	void _FatalError(int line, const std::string& functionName, const CString& error);
 
 	// CDialog
 	void DoDataExchange(CDataExchange* pDX) override;

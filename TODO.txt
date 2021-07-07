@@ -3,20 +3,15 @@ Roadmap
 
 0.3.2: GUI
 - Cleanup TODOs
-- Add context information to all throws
-- No pop-up for some exceptions (start 2 in release mode shows nothing for example)
 - Rendering screen black background with white text centered (both normal and full-screen)
 - Show our logo when no video is playing
 - If the blackmagic capture thread throws that's never shown a new one is spun up silently, try-catch external calls, make errors visible
 - If the CAM thread throws that's never shown, make errors visible
 - invertedVertical from the blackmagic not used because it's inverted?!?
 - Let the chosen renderer id itself in the GUI
-- Pick renderer with command line option
 - Add clock+nothing option as frame-time
 - adjust clock+theo stop timestamp for clock resolution (should not matter practically)
-- set clock+theo as default (check video result first)
-- Help page linked to help-buttons in GUI
-- Update readme to reflect info on website
+
 
 0.4.0: DVD & upscaling
 - Change display modes to be real frame interval and display interval
@@ -46,3 +41,5 @@ Ideas for later:
   This actually seems possible to get us timestamps of point of frame-render. If the egress delay from there is reasonably
   constant we can probably get a near constant-time renderer going.
 - Build a git version to version.rc generator and use that to set VS_VERSION_INFO version etc
+- Make group names clickable and open help page
+- Add menu bar with help link

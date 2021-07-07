@@ -25,32 +25,38 @@ CVideoProcessorApp videoProcessorApp;
 
 BOOL CVideoProcessorApp::InitInstance()
 {
-	if (!CWinAppEx::InitInstance())
-		throw std::runtime_error("Failed to initialize VideoProcessorApp");
-
-	// COINIT_MULTITHREADED was used in the Blackmagic SDK examples,
-	// using that without further investigation
-	if(FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
-		throw std::runtime_error("Failed to initialize com objects");
-
-	// If the first command line arg is "/fullsreen" then we notify the app of this
-	// https://docs.microsoft.com/en-us/cpp/c-runtime-library/argc-argv-wargv
-	bool startFullScreen = false;
-	int iNumOfArgs;
-	LPWSTR* pArgs = CommandLineToArgvW(GetCommandLine(), &iNumOfArgs);
-	if (iNumOfArgs >= 2 && wcscmp(pArgs[1], L"/fullscreen") == 0)
-		startFullScreen = true;
-
-	// Set set ourselves to high prio.
-	// move over everybody, epic video coming through!
-	if (!SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS))
-		throw std::runtime_error("Failed to set process priority");
-
-	CVideoProcessorDlg dlg(startFullScreen);
+	CVideoProcessorDlg dlg;
 	m_pMainWnd = &dlg;
 
 	try
 	{
+		if (!CWinAppEx::InitInstance())
+			throw std::runtime_error("Failed to initialize VideoProcessorApp");
+
+		// COINIT_MULTITHREADED was used in the Blackmagic SDK examples,
+		// using that without further investigation
+		if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
+			throw std::runtime_error("Failed to initialize com objects");
+
+		// Parse command line
+		// https://docs.microsoft.com/en-us/cpp/c-runtime-library/argc-argv-wargv
+		int iNumOfArgs;
+		LPWSTR* pArgs = CommandLineToArgvW(GetCommandLine(), &iNumOfArgs);
+		for (int i = 1; i < iNumOfArgs; i++)
+		{
+			// /fullscreen
+			if (wcscmp(pArgs[i], L"/fullscreen") == 0)
+				dlg.StartFullScreen();
+
+			// /renderer "name"
+			if (wcscmp(pArgs[i], L"/renderer") == 0 && (i + 1) < iNumOfArgs)
+				dlg.DefaultRendererName(pArgs[i + 1]);
+		}
+
+		// Set set ourselves to high prio.
+		if (!SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS))
+			throw std::runtime_error("Failed to set process priority");
+
 		dlg.DoModal();
 	}
 	catch (std::runtime_error& e)

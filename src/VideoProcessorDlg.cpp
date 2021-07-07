@@ -65,9 +65,11 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	ON_BN_CLICKED(IDC_RENDERER_RESET_AUTO_CHECK, &CVideoProcessorDlg::OnBnClickedRendererResetAutoCheck)
 	ON_BN_CLICKED(IDC_RENDERER_VIDEO_FRAME_USE_QUEUE_CHECK, &CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck)
 
-	// Command handlers
+	// Command handlers (from accelerator)
 	ON_COMMAND(ID_COMMAND_FULLSCREEN_TOGGLE, &CVideoProcessorDlg::OnCommandFullScreenToggle)
 	ON_COMMAND(ID_COMMAND_FULLSCREEN_EXIT, &CVideoProcessorDlg::OnCommandFullScreenExit)
+	ON_COMMAND(ID_COMMAND_RENDERER_RESET, &CVideoProcessorDlg::OnCommandRendererReset)
+
 END_MESSAGE_MAP()
 
 
@@ -145,9 +147,8 @@ static const std::vector<std::pair<LPCTSTR, DXVA_VideoPrimaries>> DIRECTSHOW_PRI
 //
 
 
-CVideoProcessorDlg::CVideoProcessorDlg(bool startstartFullscreen):
-	CDialog(CVideoProcessorDlg::IDD, nullptr),
-	m_rendererfullScreen(startstartFullscreen)
+CVideoProcessorDlg::CVideoProcessorDlg():
+	CDialog(CVideoProcessorDlg::IDD, nullptr)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -159,6 +160,23 @@ CVideoProcessorDlg::~CVideoProcessorDlg()
 {
 	for (auto& captureDevice : m_captureDevices)
 		(*captureDevice).Release();
+}
+
+
+//
+// Option handlers
+//
+
+
+void CVideoProcessorDlg::StartFullScreen()
+{
+	m_rendererfullScreen = true;
+}
+
+
+void CVideoProcessorDlg::DefaultRendererName(const CString& rendererName)
+{
+	m_defaultRendererName = rendererName;
 }
 
 
@@ -457,7 +475,7 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceLost(WPARAM wParam, LPARAM lPa
 
 	auto it = m_captureDevices.find(captureDevice);
 	if (it == m_captureDevices.end())
-		throw std::runtime_error("Removing unknown capture device?");
+		FatalError(TEXT("Cannot find capture device to remove"));
 
 	// Device being removed is the one we're using, let's stop using it
 	if (m_captureDevice == captureDevice)
@@ -499,7 +517,7 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(WPARAM wParam, LPA
 		break;
 
 	default:
-		throw std::runtime_error("Unexpected state received from capture device");
+		assert(false);
 	}
 
 	UpdateState();
@@ -641,7 +659,7 @@ LRESULT CVideoProcessorDlg::OnMessageDirectShowNotification(WPARAM wParam, LPARA
 {
 	if (m_renderer)
 		if (FAILED(m_renderer->OnWindowsEvent(wParam, lParam)))
-			throw std::runtime_error("Failed to handle windows event in renderer");
+			FatalError(TEXT("Failed to handle windows event in renderer"));
 
 	return 0;
 }
@@ -663,19 +681,19 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 
 	switch (m_rendererState)
 	{
-		// Renderer ready, can be started if wanted
+	// Renderer ready, can be started if wanted
 	case RendererState::RENDERSTATE_READY:
 		m_rendererStateText.SetWindowText(TEXT("Ready"));
 		break;
 
-		// Renderer running, ready for frames
+	// Renderer running, ready for frames
 	case RendererState::RENDERSTATE_RENDERING:
 		m_deliverCaptureDataToRenderer.store(true, std::memory_order_release);
 		enableButtons = true;
 		m_rendererStateText.SetWindowText(TEXT("Rendering"));
 		break;
 
-		// Stopped rendering, can be cleaned up
+	// Stopped rendering, can be cleaned up
 	case RendererState::RENDERSTATE_STOPPED:
 		RenderRemove();
 		RenderGUIClear();
@@ -683,7 +701,7 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 		break;
 
 	default:
-		throw std::runtime_error("Unknown renderer state");
+		assert(false);
 	}
 
 	m_rendererFullscreenButton.EnableWindow(enableButtons);
@@ -715,6 +733,15 @@ void CVideoProcessorDlg::OnCommandFullScreenExit()
 	// If fullscreen toggle off, else do nothing
 	if (m_rendererfullScreen)
 		OnCommandFullScreenToggle();
+}
+
+
+void CVideoProcessorDlg::OnCommandRendererReset()
+{
+	if (m_renderer)
+	{
+		m_renderer->Reset();
+	}
 }
 
 
@@ -1258,7 +1285,7 @@ void CVideoProcessorDlg::RenderStart()
 	// Capture card always provides the clock
 	ITimingClock* timingClock = m_captureDevice->GetTimingClock();
 	if (!timingClock)
-		throw std::runtime_error("Failed to get timing clock from capture card");
+		FatalError(TEXT("Failed to get timing clock from capture card"));
 
 	m_rendererBox.SetWindowTextW(TEXT("Starting..."));
 	m_rendererState = RendererState::RENDERSTATE_STARTING;
@@ -1299,7 +1326,7 @@ void CVideoProcessorDlg::RenderStart()
 			forceVideoPrimaries);
 
 		if (!m_renderer)
-			throw std::runtime_error("Failed to build CVideoInfo2DirectShowRenderer");
+			FatalError(TEXT("Failed to build CVideoInfo2DirectShowRenderer"));
 
 		m_renderer->Build();
 		m_renderer->Start();
@@ -1328,7 +1355,7 @@ void CVideoProcessorDlg::RenderStart()
 				GetRendererVideoFrameQueueSizeMax());
 
 			if (!m_renderer)
-				throw std::runtime_error("Failed to build CVideoInfo1DirectShowRenderer");
+				FatalError(TEXT("Failed to build CVideoInfo1DirectShowRenderer"));
 
 			m_renderer->Build();
 			m_renderer->Start();
@@ -1425,7 +1452,7 @@ void CVideoProcessorDlg::FullScreenWindowConstruct()
 
 	m_fullScreenRenderWindow = new FullscreenWindow();
 	if (!m_fullScreenRenderWindow)
-		throw std::runtime_error("Failed to create full screen renderer window");
+		FatalError(TEXT("Failed to create full screen renderer window"));
 
 	m_fullScreenRenderWindow->Create(hmon, this->GetSafeHwnd());
 }
@@ -1535,7 +1562,7 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 			(void**)&pMapper);
 
 		if (FAILED(hr))
-			throw std::runtime_error("Failed to instantiate the filter mapper");
+			FatalError(TEXT("Failed to instantiate the filter mapper"));
 
 		GUID arrayInTypes[2];
 		arrayInTypes[0] = MEDIATYPE_Video;
@@ -1595,7 +1622,7 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 
 						hr = VariantToGUID(clsidVariant, &(rendererEntry.guid));
 						if (FAILED(hr))
-							throw std::runtime_error("Failed to convert veriant to GUID");
+							FatalError(TEXT("Failed to convert veriant to GUID"));
 
 						rendererEntries.push_back(rendererEntry);
 					}
@@ -1624,6 +1651,11 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 
 		int comboIndex = m_rendererCombo.AddString(rendererEntry.name);
 		m_rendererCombo.SetItemData(comboIndex, (DWORD_PTR)clsid);
+
+		if (rendererEntry.name.CompareNoCase(m_defaultRendererName) == 0)
+		{
+			m_rendererCombo.SetCurSel(comboIndex);
+		}
 	}
 }
 
@@ -1636,6 +1668,19 @@ void CVideoProcessorDlg::ClearRendererCombo()
 	}
 
 	m_rendererCombo.ResetContent();
+}
+
+
+void CVideoProcessorDlg::_FatalError(int line, const std::string& functionName, const CString& error)
+{
+	CString s;
+	s.Format(
+		_T("%s\r\n\r\File: VideoProcessorDlg.cpp:%i\r\nFunction: %s"),
+		error, line, CString(functionName.c_str()));
+
+	::MessageBox(nullptr, s, TEXT("Fatal error"), MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+
+	CDialog::EndDialog(S_FALSE);
 }
 
 
@@ -1775,7 +1820,7 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 
 	m_accelerator = LoadAccelerators(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_ACCELERATOR1));
 	if (!m_accelerator)
-		throw std::runtime_error("Failed to load accelerator");
+		FatalError(TEXT("Failed to load accelerator"));
 
 	CaptureGUIClear();
 	RenderGUIClear();
