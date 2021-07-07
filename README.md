@@ -1,6 +1,6 @@
 ![VideoProcessor banner](https://github.com/defl/videoprocessor/blob/main/images/vp%20banner.png)
 
-:film_projector: VideoProcessor turns a computer into a 4k HDR capable live video processor by connecting a video capture card to a renderer and taking care of details such conversion, timing and HDR metadata.
+:film_projector: VideoProcessor turns a computer into a 4k HDR capable live video processor by connecting a video capture card to a renderer and taking care of details such as conversion, timing and HDR metadata.
 
 This allows advanced renderers to do things like 3D LUT, HDR tone mapping, scaling, deinterlacing and much more which can significantly improve image quality on most displays and beamers. 
 
