@@ -14,15 +14,13 @@ const wchar_t FULLSCREEN_WINDOW_CLASS_NAME[] = L"Fullscreen Window";
 
 /**
  * Window class which can be used for drawing on full screen
- *
- * See https://docs.microsoft.com/en-us/windows/win32/learnwin32/managing-application-state-
  */
-class FullscreenWindow
+class FullscreenVideoWindow
 {
 public:
 
-    FullscreenWindow();
-    ~FullscreenWindow();
+    FullscreenVideoWindow();
+    ~FullscreenVideoWindow();
 
     // Static window procedure
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

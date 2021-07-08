@@ -108,7 +108,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FullscreenWindow.h">
+    <ClInclude Include="FullscreenVideoWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DisplayMode.h">
@@ -180,6 +180,9 @@
     <ClInclude Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.h">
       <Filter>Header Files\microsoft_directshow</Filter>
     </ClInclude>
+    <ClInclude Include="WindowedVideoWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -242,7 +245,7 @@
     <ClCompile Include="HDRData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FullscreenWindow.cpp">
+    <ClCompile Include="FullscreenVideoWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ffmpeg\CFFMpegDecoderVideoFrameFormatter.cpp">
@@ -302,12 +305,18 @@
     <ClCompile Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.cpp">
       <Filter>Source Files\microsoft_directshow</Filter>
     </ClCompile>
+    <ClCompile Include="WindowedVideoWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\images\cie1932xy.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\images\VideoProcessor.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\images\logo.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

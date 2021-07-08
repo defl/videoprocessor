@@ -245,7 +245,7 @@
     <ClInclude Include="Encoding.h" />
     <ClInclude Include="EOTF.h" />
     <ClInclude Include="ffmpeg\CFFMpegDecoderVideoFrameFormatter.h" />
-    <ClInclude Include="FullscreenWindow.h" />
+    <ClInclude Include="FullscreenVideoWindow.h" />
     <ClInclude Include="guid.h" />
     <ClInclude Include="InputLocked.h" />
     <ClInclude Include="IRenderer.h" />
@@ -264,6 +264,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="VideoState.h" />
+    <ClInclude Include="WindowedVideoWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\3rdparty\blackmagic_decklink\BlackMagicDeckLink.vcxproj">
@@ -303,7 +304,7 @@
     <ClCompile Include="Encoding.cpp" />
     <ClCompile Include="EOTF.cpp" />
     <ClCompile Include="ffmpeg\CFFMpegDecoderVideoFrameFormatter.cpp" />
-    <ClCompile Include="FullscreenWindow.cpp" />
+    <ClCompile Include="FullscreenVideoWindow.cpp" />
     <ClCompile Include="guid.cpp" />
     <ClCompile Include="HDRData.cpp" />
     <ClCompile Include="InputLocked.cpp" />
@@ -320,9 +321,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="VideoState.cpp" />
+    <ClCompile Include="WindowedVideoWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\images\cie1932xy.bmp" />
+    <Image Include="..\images\logo.bmp" />
     <Image Include="..\images\VideoProcessor.ico" />
   </ItemGroup>
   <ItemGroup>

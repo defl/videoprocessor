@@ -17,7 +17,8 @@
 #include <CCie1931Control.h>
 #include <IRenderer.h>
 #include <VideoFrame.h>
-#include <FullscreenWindow.h>
+#include <FullscreenVideoWindow.h>
+#include <WindowedVideoWindow.h>
 
 #include "resource.h"
 
@@ -156,14 +157,14 @@ protected:
 	CStatic m_rendererVideoFrameQueueSizeText;
 	CEdit m_rendererVideoFrameQueueSizeMaxEdit;
 	CStatic m_rendererDroppedFrameCountText;
-	CStatic	m_rendererBox;  // This is the small renderer window
+	WindowedVideoWindow	m_windowedVideoWindow;
 
 	CSize m_minDialogSize;
 	HICON m_hIcon;
 	HACCEL m_accelerator;
 
 	bool m_rendererfullScreen = false;
-	FullscreenWindow* m_fullScreenRenderWindow = nullptr;
+	FullscreenVideoWindow* m_fullScreenVideoWindow = nullptr;
 
 	//
 	// Program data
@@ -207,8 +208,8 @@ protected:
 	void RenderStop();
 	void RenderRemove();
 	void RenderGUIClear();
-	void FullScreenWindowConstruct();
-	void FullScreenWindowDestroy();
+	void FullScreenVideoWindowConstruct();
+	void FullScreenVideoWindowDestroy();
 	HWND GetRenderWindow();
 	size_t GetRendererVideoFrameQueueSizeMax();
 	bool GetRendererVideoFrameUseQueue();

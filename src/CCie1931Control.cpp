@@ -20,6 +20,20 @@ BEGIN_MESSAGE_MAP(CCie1931Control, CStatic)
 END_MESSAGE_MAP()
 
 
+void CCie1931Control::SetColorSpace(ColorSpace colorSpace)
+{
+    m_colorSpace = colorSpace;
+    InvalidateRect(nullptr);
+}
+
+
+void CCie1931Control::SetHDRData(std::shared_ptr<HDRData> hdrData)
+{
+    m_hdrData = hdrData;
+    InvalidateRect(nullptr);
+}
+
+
 void CCie1931Control::OnPaint(void)
 {
     // TODO: This is using the GDI, probably also possible though MFC
@@ -85,12 +99,12 @@ void CCie1931Control::OnPaint(void)
     int oneY = (int)std::round(scaledBitmapWidth - ((y90PctEndsAtFractionOfImage / 90.0 * 100.0) * (double)scaledBitmapHeight));  // Can be negative
 
     // Coordinate helpers
-    #define X_cie_to_pixel(cie_x) (int)std::round((zeroX + (oneX - zeroX) * (double)cie_x))
-    #define Y_cie_to_pixel(cie_y) (int)std::round((zeroY - (zeroY - oneY) * (double)cie_y))
+#define X_cie_to_pixel(cie_x) (int)std::round((zeroX + (oneX - zeroX) * (double)cie_x))
+#define Y_cie_to_pixel(cie_y) (int)std::round((zeroY - (zeroY - oneY) * (double)cie_y))
 
-    //
-    // Draw
-    //
+//
+// Draw
+//
 
     PAINTSTRUCT ps;
     HDC hdc = ::BeginPaint(GetSafeHwnd(), &ps);
@@ -147,7 +161,7 @@ void CCie1931Control::OnPaint(void)
 
         switch (m_colorSpace)
         {
-        // Coordinates from https://en.wikipedia.org/wiki/Rec._2020
+            // Coordinates from https://en.wikipedia.org/wiki/Rec._2020
         case ColorSpace::BT_2020:
             redX = 0.708;
             redY = 0.292;
@@ -157,7 +171,7 @@ void CCie1931Control::OnPaint(void)
             blueY = 0.046;
             break;
 
-         // Coordinates from https://en.wikipedia.org/wiki/Rec._709
+            // Coordinates from https://en.wikipedia.org/wiki/Rec._709
         case ColorSpace::REC_709:
             redX = 0.64;
             redY = 0.33;
@@ -167,7 +181,7 @@ void CCie1931Control::OnPaint(void)
             blueY = 0.06;
             break;
 
-        // Coordinates from https://en.wikipedia.org/wiki/Rec._601
+            // Coordinates from https://en.wikipedia.org/wiki/Rec._601
         case ColorSpace::REC_601_525:
             redX = 0.630;
             redY = 0.340;
@@ -260,18 +274,4 @@ void CCie1931Control::OnPaint(void)
     ::EndPaint(GetSafeHwnd(), &ps);
 
     CStatic::OnPaint();
-}
-
-
-void CCie1931Control::SetColorSpace(ColorSpace colorSpace)
-{
-    m_colorSpace = colorSpace;
-    InvalidateRect(nullptr);
-}
-
-
-void CCie1931Control::SetHDRData(std::shared_ptr<HDRData> hdrData)
-{
-    m_hdrData = hdrData;
-    InvalidateRect(nullptr);
 }

@@ -156,6 +156,7 @@ BEGIN
     CONTROL         "Auto",IDC_TIMING_CLOCK_FRAME_OFFSET_AUTO_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,72,291,31,10
     CONTROL         "Auto",IDC_RENDERER_RESET_AUTO_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,618,26,31,10
     RTEXT           "(should be < 0)",IDC_STATIC,294,306,50,8
+    LTEXT           "<renderer name>",IDC_RENDERER_NAME_STATIC,366,28,198,8
 END
 
 
@@ -295,7 +296,8 @@ BEGIN
     0, 0, 100, 0,
     0, 100, 0, 0,
     100, 0, 0, 0,
-    0, 100, 0, 0
+    0, 100, 0, 0,
+    0, 0, 0, 0
 END
 
 
@@ -305,6 +307,8 @@ END
 //
 
 IDB_CIE1931XY           BITMAP                  "..\\images\\cie1932xy.bmp"
+
+IDB_LOGO                BITMAP                  "..\\images\\logo.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////

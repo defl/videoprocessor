@@ -1008,11 +1008,11 @@ void CVideoProcessorDlg::UpdateState()
 	if (!m_renderer)
 	{
 		// If we still have a full screen window and don't want to be full screen anymore clean it up
-		if (!m_rendererfullScreen && m_fullScreenRenderWindow)
+		if (!m_rendererfullScreen && m_fullScreenVideoWindow)
 		{
-			FullScreenWindowDestroy();
+			FullScreenVideoWindowDestroy();
 
-			m_fullScreenRenderWindow = nullptr;
+			m_fullScreenVideoWindow = nullptr;
 		}
 
 		// If the renderer failed we don't auto-start it again but wait for something to happen
@@ -1187,7 +1187,8 @@ void CVideoProcessorDlg::CaptureStop()
 	assert(m_captureDevice);
 	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
 	assert(!m_renderer);
-	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
+	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
+		   m_rendererState == RendererState::RENDERSTATE_FAILED);
 
 	// Update internal state before call to StartCapture as that might be synchronous
 	m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_STOPPING;
@@ -1291,7 +1292,7 @@ void CVideoProcessorDlg::RenderStart()
 	if (!timingClock)
 		FatalError(TEXT("Failed to get timing clock from capture card"));
 
-	m_rendererBox.SetWindowTextW(TEXT("Starting..."));
+	m_windowedVideoWindow.SetWindowTextW(TEXT("Starting..."));
 	m_rendererState = RendererState::RENDERSTATE_STARTING;
 
 	// Try to construct and start a VideoInfo2 renderer
@@ -1381,7 +1382,7 @@ void CVideoProcessorDlg::RenderStart()
 			wchar_t* wtext = new wchar_t[size];
 			size_t outSize;
 			mbstowcs_s(&outSize, wtext, size, e.what(), size - 1);
-			m_rendererBox.SetWindowText(wtext);
+			m_windowedVideoWindow.SetWindowText(wtext);
 			delete[] wtext;
 
 			// Ensure we're not full screen anymore and update state
@@ -1448,25 +1449,25 @@ void CVideoProcessorDlg::RenderGUIClear()
 }
 
 
-void CVideoProcessorDlg::FullScreenWindowConstruct()
+void CVideoProcessorDlg::FullScreenVideoWindowConstruct()
 {
-	assert(!m_fullScreenRenderWindow);
+	assert(!m_fullScreenVideoWindow);
 
 	HMONITOR hmon = MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
 
-	m_fullScreenRenderWindow = new FullscreenWindow();
-	if (!m_fullScreenRenderWindow)
+	m_fullScreenVideoWindow = new FullscreenVideoWindow();
+	if (!m_fullScreenVideoWindow)
 		FatalError(TEXT("Failed to create full screen renderer window"));
 
-	m_fullScreenRenderWindow->Create(hmon, this->GetSafeHwnd());
+	m_fullScreenVideoWindow->Create(hmon, this->GetSafeHwnd());
 }
 
 
-void CVideoProcessorDlg::FullScreenWindowDestroy()
+void CVideoProcessorDlg::FullScreenVideoWindowDestroy()
 {
-	assert(m_fullScreenRenderWindow);
-	delete m_fullScreenRenderWindow;
-	m_fullScreenRenderWindow = nullptr;
+	assert(m_fullScreenVideoWindow);
+	delete m_fullScreenVideoWindow;
+	m_fullScreenVideoWindow = nullptr;
 }
 
 
@@ -1475,16 +1476,16 @@ HWND CVideoProcessorDlg::GetRenderWindow()
 	if (m_rendererfullScreen)
 	{
 		// If we don't have a full screen window yet make one
-		if (!m_fullScreenRenderWindow)
-			FullScreenWindowConstruct();
+		if (!m_fullScreenVideoWindow)
+			FullScreenVideoWindowConstruct();
 
-		assert(IsWindow(m_fullScreenRenderWindow->GetHWND()));
-		return m_fullScreenRenderWindow->GetHWND();
+		assert(IsWindow(m_fullScreenVideoWindow->GetHWND()));
+		return m_fullScreenVideoWindow->GetHWND();
 	}
 
-	assert(!m_fullScreenRenderWindow);
-	assert(IsWindow(m_rendererBox));
-	return m_rendererBox;
+	assert(!m_fullScreenVideoWindow);
+	assert(IsWindow(m_windowedVideoWindow));
+	return m_windowedVideoWindow;
 }
 
 
@@ -1752,7 +1753,7 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_STATIC, m_rendererVideoFrameQueueSizeText);
 	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_MAX_EDIT, m_rendererVideoFrameQueueSizeMaxEdit);
 	DDX_Control(pDX, IDC_RENDERER_DROPPED_FRAME_COUNT_STATIC, m_rendererDroppedFrameCountText);
-	DDX_Control(pDX, IDC_RENDERER_BOX, m_rendererBox);
+	DDX_Control(pDX, IDC_RENDERER_BOX, m_windowedVideoWindow);
 }
 
 

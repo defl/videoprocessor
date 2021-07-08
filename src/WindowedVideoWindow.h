@@ -8,37 +8,30 @@
 
 #pragma once
 
-
-#include <afxwin.h>
-
-#include <ColorSpace.h>
-#include <HDRData.h>
+#define BLACK RGB(0, 0, 0)
+#define WHITE RGB(255, 255, 255)
 
 
 /**
- * Win32 gui control which draws the CIE1931 XY chart and can plot HDR and colorspace on it
+ * This is where in windowed mode the renderer will draw to
  */
-class CCie1931Control:
+class WindowedVideoWindow:
 	public CStatic
 {
 public:
 
-	// Set colorspace
-	void SetColorSpace(ColorSpace);
+	WindowedVideoWindow();
+	virtual ~WindowedVideoWindow();
 
-	// Set HDR data
-	void SetHDRData(std::shared_ptr<HDRData>);
 
 protected:
 
+	HBITMAP m_logoBmp = nullptr;
+	CBrush m_brush;
+
 	// Handlers for ON_WM_* messages
-	void OnPaint();
-
-private:
-
-	HBITMAP m_cie1931xyBmp = nullptr;
-	ColorSpace m_colorSpace = ColorSpace::UNKNOWN;
-	std::shared_ptr<HDRData> m_hdrData = nullptr;
+	afx_msg void OnPaint();
+	afx_msg HBRUSH CtlColor(CDC* pDC, UINT nCtlColor);
 
 	DECLARE_MESSAGE_MAP()
 };

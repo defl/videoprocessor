@@ -3,8 +3,6 @@ Roadmap
 
 0.3.2: GUI
 - Cleanup TODOs
-- Rendering screen black background with white text centered (both normal and full-screen)
-- Show our logo when no video is playing
 - If the blackmagic capture thread throws that's never shown a new one is spun up silently, try-catch external calls, make errors visible
 - If the CAM thread throws that's never shown, make errors visible
 - invertedVertical from the blackmagic not used because it's inverted?!?
