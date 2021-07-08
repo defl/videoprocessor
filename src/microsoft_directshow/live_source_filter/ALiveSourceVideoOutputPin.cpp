@@ -29,7 +29,7 @@ void ALiveSourceVideoOutputPin::Initialize(
 	IVideoFrameFormatter* const videoFrameFormatter,
 	timestamp_t frameDuration,
 	ITimingClock* const timingClock,
-	RendererTimestamp timestamp,
+	DirectShowStartStopTimeMethod timestamp,
 	const AM_MEDIA_TYPE& mediaType,
 	bool useHDRData)
 {
@@ -377,26 +377,14 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 	REFERENCE_TIME timeStart = REFERENCE_TIME_INVALID;
 	REFERENCE_TIME timeStop = REFERENCE_TIME_INVALID;
 
+	// Determine start time
 	switch (m_timestamp)
 	{
-	case RendererTimestamp::RENDERER_TIMESTAMP_NONE:
-		break;
+	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_SMART:
+	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_THEO:
+	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_CLOCK:
+	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_NONE:
 
-	case RendererTimestamp::RENDERER_TIMESTAMP_THEORETICAL:
-	{
-		assert(m_startTimeOffset == 0);
-		timeStart = (streamFrameCounter * m_frameDuration);
-		timeStop = timeStart + m_frameDuration;
-
-		hr = pSample->SetTime(&timeStart, &timeStop);
-		if (FAILED(hr))
-			return hr;
-
-		break;
-	}
-
-	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_THEO:
-	{
 		// Get frame timestamp as reference time
 		// TODO: I don't like the floating point math here
 		timeStart =
@@ -407,17 +395,76 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 		// Note that this is against the recommendations of microsoft for directshow but otherwise
 		// renderers don't start as they're often designed for file based video which starts at 0
 		if (m_startTimeOffset == 0)
+		{
 			m_startTimeOffset = timeStart;
+
+			DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): Setting start time offset to %I64u"),
+				videoFrame.GetCounter(), m_startTimeOffset));
+		}
+
 		timeStart -= m_startTimeOffset;
+		break;
+
+	case DirectShowStartStopTimeMethod::DS_SSTM_THEO_THEO:
+	case DirectShowStartStopTimeMethod::DS_SSTM_THEO_NONE:
+
+		assert(m_startTimeOffset == 0);
+		timeStart = (streamFrameCounter * m_frameDuration);
+		break;
+
+	}
+
+	// Determine stop time
+	switch (m_timestamp)
+	{
+	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_SMART:
+
+		timeStop = NextFrameTimestamp();
+		if (timeStop == REFERENCE_TIME_INVALID)
+		{
+			timeStop = timeStart + m_frameDuration;
+		}
+		else
+		{
+			assert(m_startTimeOffset > 0);
+			timeStop -= m_startTimeOffset;
+		}
+
+		assert(timeStop > timeStart);
+		break;
+
+	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_THEO:
+	case DirectShowStartStopTimeMethod::DS_SSTM_THEO_THEO:
 
 		timeStop = timeStart + m_frameDuration;
+		break;
+
+	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_CLOCK:
+
+		timeStop = NextFrameTimestamp();
+		assert(timeStop != REFERENCE_TIME_INVALID);
+		assert(timeStop > timeStart);
+
+		assert(m_startTimeOffset > 0);
+		timeStop -= m_startTimeOffset;
+		break;
+	}
+
+	// Set right amount of values
+	switch (m_timestamp)
+	{
+	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_SMART:
+	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_THEO:
+	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_CLOCK:
+	case DirectShowStartStopTimeMethod::DS_SSTM_THEO_THEO:
 
 		hr = pSample->SetTime(&timeStart, &timeStop);
 		if (FAILED(hr))
 			return hr;
 
 #ifdef _DEBUG
-		// Every n frames output a bunch of consecutive frames to check start/stop
+		// Every n frames output a bunch of consecutive frames to check start/stop for all applicable formats
+		// TODO: If we adjust the stop-time for the clock's resolution we might get smaller gaps here
 		if (m_frameCounter % 200 < 5)
 		{
 			const double durationMs = (timeStop - timeStart) / 10000.0;
@@ -425,73 +472,20 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 
 			DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): StartTS: %I64d StopTS: %I64d, duration: %.02f, diffPrevStopStartMs: %.02f"),
 				videoFrame.GetCounter(), timeStart, timeStop, durationMs, diffStopMs));
+
+			m_previousTimeStop = timeStop;
 		}
 #endif // _DEBUG
-
-		m_previousTimeStop = timeStop;
 		break;
-	}
 
-	case RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK:
-	{
-		// Get frame timestamp as reference time
-		// TODO: I don't like the floating point math here
-		timeStart =
-			videoFrame.GetTimingTimestamp() *
-			(10000000.0 / m_timingClock->TimingClockTicksPerSecond());
+	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_NONE:
+	case DirectShowStartStopTimeMethod::DS_SSTM_THEO_NONE:
 
-		assert(m_frameDuration > 0);
-		timeStop = NextFrameTimestamp();
-		assert(timeStop != REFERENCE_TIME_INVALID);
-		assert(timeStop > timeStart);
-
-		// Guarantee first frame to start counting at time zero
-		// Note that this is against the recommendations of microsoft for directshow but otherwise
-		// renderers don't start as they're often designed for file based video which starts at 0
-
-		if (m_startTimeOffset == 0)
-			m_startTimeOffset = timeStart;
-
-		timeStart -= m_startTimeOffset;
-		timeStop -= m_startTimeOffset;
-
-		hr = pSample->SetTime(&timeStart, &timeStop);
+		hr = pSample->SetTime(&timeStart, nullptr);
 		if (FAILED(hr))
 			return hr;
-
-#ifdef _DEBUG
-		// Every n frames output a bunch of consecutive frames to check start/stop
-		if (m_frameCounter % 200 < 5)
-		{
-			const double durationMs = (timeStop - timeStart) / 10000.0;
-
-			DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): StartTS: %I64d StopTS: %I64d, duration: %.02f"),
-				videoFrame.GetCounter(), timeStart, timeStop, durationMs));
-		}
-#endif // _DEBUG
-
 		break;
 	}
-
-	default:
-		assert(false);
-	}
-
-	//
-	// New segment
-	//
-
-	//if (m_newSegment &&
-	//	timeStart != REFERENCE_TIME_INVALID)
-	//{
-	//	DbgLog((LOG_TRACE, 1, TEXT("::FillBuffer(#%I64u): New segment"),
-	//		videoFrame.GetCounter()));
-
-	//	if (FAILED(DeliverNewSegment(timeStart, 0, 1.0)))
-	//		throw std::runtime_error("Failed to deliver new segment");
-
-	//	m_newSegment = false;
-	//}
 
 	//
 	// Data copy/formatting

@@ -37,7 +37,7 @@ public:
 		UINT eventMsg,
 		ITimingClock* timingClock,
 		VideoStateComPtr& videoState,
-		RendererTimestamp timestamp,
+		DirectShowStartStopTimeMethod timestamp,
 		bool useFrameQueue,
 		size_t frameQueueMaxSize,
 		bool useHDRDdata);
@@ -71,7 +71,7 @@ protected:
 	UINT m_eventMsg;
 	ITimingClock* m_timingClock;
 	VideoStateComPtr m_videoState;
-	RendererTimestamp m_timestamp;
+	DirectShowStartStopTimeMethod m_timestamp;
 	bool m_useFrameQueue;
 	size_t m_frameQueueMaxSize;
 	bool m_useHDRDdata;

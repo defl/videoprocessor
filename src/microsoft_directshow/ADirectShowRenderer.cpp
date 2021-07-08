@@ -26,7 +26,7 @@ ADirectShowRenderer::ADirectShowRenderer(
 	UINT eventMsg,
 	ITimingClock* timingClock,
 	VideoStateComPtr& videoState,
-	RendererTimestamp timestamp,
+	DirectShowStartStopTimeMethod timestamp,
 	bool useFrameQueue,
 	size_t frameQueueMaxSize,
 	bool useHDRDdata):
@@ -54,7 +54,7 @@ ADirectShowRenderer::ADirectShowRenderer(
 	if (timingClock && timingClock->TimingClockTicksPerSecond() < 1000LL)
 		throw std::runtime_error("TimingClock needs resolution of at least millisecond level");
 
-	if (!useFrameQueue && timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK)
+	if (!useFrameQueue && timestamp == DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_CLOCK)
 		throw std::runtime_error("No queue cannot be used with clock-clock, pick another mode and restart");
 
 	ZeroMemory(&m_pmt, sizeof(AM_MEDIA_TYPE));
@@ -200,6 +200,7 @@ void ADirectShowRenderer::OnSize()
 	m_renderBoxWidth = rectWindow.right - rectWindow.left;
 	m_renderBoxHeight = rectWindow.bottom - rectWindow.top;
 
+	// TODO: Saw this blow up when resizing when the renderer is changing
 	if (FAILED(m_videoWindow->SetWindowPosition(0, 0, m_renderBoxWidth, m_renderBoxHeight)))
 		throw std::runtime_error("Failed to SetWindowPosition");
 }

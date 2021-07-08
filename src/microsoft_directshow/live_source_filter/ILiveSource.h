@@ -13,7 +13,7 @@
 #include <VideoState.h>
 #include <IVideoFrameFormatter.h>
 #include <guiddef.h>
-#include <RendererTimestamp.h>
+#include <microsoft_directshow/DirectShowRendererStartStopTimeMethod.h>
 
 
 static const GUID IID_ILiveSource =
@@ -31,7 +31,7 @@ DECLARE_INTERFACE_(ILiveSource, IUnknown)
 		const AM_MEDIA_TYPE& mediaSubType,
 		timestamp_t frameDuration,
 		ITimingClock * timingClock,
-		RendererTimestamp timestamp,
+		DirectShowStartStopTimeMethod timestamp,
 		bool useFrameQueue,
 		size_t frameQueueMaxSize,
 		bool useHDRData) PURE;

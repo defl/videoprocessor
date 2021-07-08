@@ -10,7 +10,7 @@
 
 
 #include <IVideoFrameFormatter.h>
-#include <RendererTimestamp.h>
+#include <microsoft_directshow/DirectShowRendererStartStopTimeMethod.h>
 #include <microsoft_directshow/DirectShowDefines.h>
 
 #include "CLiveSource.h"
@@ -39,7 +39,7 @@ public:
 		IVideoFrameFormatter* const videoFrameFormatter,
 		timestamp_t frameDuration,
 		ITimingClock* const timingClock,
-		RendererTimestamp timestamp,
+		DirectShowStartStopTimeMethod timestamp,
 		const AM_MEDIA_TYPE& mediaType,
 		bool useHDRData);
 
@@ -114,7 +114,7 @@ protected:
 	IVideoFrameFormatter* m_videoFrameFormatter;
 	timestamp_t m_frameDuration;
 	ITimingClock* m_timingClock;
-	RendererTimestamp m_timestamp;
+	DirectShowStartStopTimeMethod m_timestamp;
 	AM_MEDIA_TYPE m_mediaType;
 	bool m_useHDRData = false;
 

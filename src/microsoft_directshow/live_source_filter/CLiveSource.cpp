@@ -50,7 +50,7 @@ STDMETHODIMP CLiveSource::Initialize(
 	const AM_MEDIA_TYPE& mediaType,
 	timestamp_t frameDuration,
 	ITimingClock* timingClock,
-	RendererTimestamp timestamp,
+	DirectShowStartStopTimeMethod timestamp,
 	bool useFrameQueue,
 	size_t frameQueueMaxSize,
 	bool useHDRData)

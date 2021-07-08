@@ -22,7 +22,7 @@ CVideoInfo1DirectShowRenderer::CVideoInfo1DirectShowRenderer(
 	UINT eventMsg,
 	ITimingClock* timingClock,
 	VideoStateComPtr& videoState,
-	RendererTimestamp timestamp,
+	DirectShowStartStopTimeMethod timestamp,
 	bool useFrameQueue,
 	size_t frameQueueMaxSize):
 	ADirectShowRenderer(

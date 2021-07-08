@@ -187,8 +187,8 @@ DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 				break;
 
 			// For most timing empty is really empty, however for the clock-to-clock
-			// we need to keep one frame in
-			if (m_timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK)
+			// we need to keep one frame in.
+			if (m_timestamp == DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_CLOCK)
 			{
 				if (m_videoFrameQueue.size() <= 1)
 					continue;
@@ -204,15 +204,25 @@ DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 			m_videoFrameQueue.pop_front();
 
 			// Get the current front's start time
-			if (m_timestamp == RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK)
+			switch (m_timestamp)
 			{
+			case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_CLOCK:
 				assert(!m_videoFrameQueue.empty());
+				// break;  not here intentionally
 
-				VideoFrame videoFrame2 = m_videoFrameQueue.front();
+			case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_SMART:
 
-				m_nextVideoFrameStartTime =
-					videoFrame2.GetTimingTimestamp() *
-					(10000000.0 / m_timingClock->TimingClockTicksPerSecond());
+				if (!m_videoFrameQueue.empty())
+				{
+					m_nextVideoFrameStartTime =
+						m_videoFrameQueue.front().GetTimingTimestamp() *
+						(10000000.0 / m_timingClock->TimingClockTicksPerSecond());
+				}
+				else
+				{
+					m_nextVideoFrameStartTime = REFERENCE_TIME_INVALID;
+				}
+				break;
 			}
 		}
 

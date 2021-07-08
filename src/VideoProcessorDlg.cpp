@@ -73,12 +73,16 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 END_MESSAGE_MAP()
 
 
-static const std::vector<std::pair<LPCTSTR, RendererTimestamp>> RENDERER_TIMESTAMP_OPTIONS =
+static const std::vector<DirectShowStartStopTimeMethod> RENDERER_DIRECTSHOW_START_STOP_TIME_OPTIONS =
 {
-	std::make_pair(TEXT("Clock+Theo"),  RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_THEO),
-	std::make_pair(TEXT("Clock-Clock"), RendererTimestamp::RENDERER_TIMESTAMP_CLOCK_CLOCK),
-	std::make_pair(TEXT("Theoretical"), RendererTimestamp::RENDERER_TIMESTAMP_THEORETICAL),
-	std::make_pair(TEXT("None"),        RendererTimestamp::RENDERER_TIMESTAMP_NONE),
+	// Sorted in preferred order
+	DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_SMART,
+	DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_THEO,
+	DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_CLOCK,
+	DirectShowStartStopTimeMethod::DS_SSTM_THEO_THEO,
+	DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_NONE,
+	DirectShowStartStopTimeMethod::DS_SSTM_THEO_NONE,
+	DirectShowStartStopTimeMethod::DS_SSTM_NONE
 };
 
 
@@ -1277,10 +1281,10 @@ void CVideoProcessorDlg::RenderStart()
 
 	GUID* rendererClSID= (GUID*)m_rendererCombo.GetItemData(i);
 
-	// Get timestamp
+	// Get directshow start-stop method
 	i = m_rendererTimestampCombo.GetCurSel();
 	assert(i >= 0);
-	RendererTimestamp rendererTimestamp = (RendererTimestamp)m_rendererTimestampCombo.GetItemData(i);
+	DirectShowStartStopTimeMethod rendererTimestamp = (DirectShowStartStopTimeMethod)m_rendererTimestampCombo.GetItemData(i);
 
 	// Capture card always provides the clock
 	ITimingClock* timingClock = m_captureDevice->GetTimingClock();
@@ -1780,10 +1784,10 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	RebuildRendererCombo();
 
 	// Fill renderer selection boxes
-	for (const auto& p : RENDERER_TIMESTAMP_OPTIONS)
+	for (auto p : RENDERER_DIRECTSHOW_START_STOP_TIME_OPTIONS)
 	{
-		int index = m_rendererTimestampCombo.AddString(p.first);
-		m_rendererTimestampCombo.SetItemData(index, (int)p.second);
+		int index = m_rendererTimestampCombo.AddString(ToString(p));
+		m_rendererTimestampCombo.SetItemData(index, (int)p);
 	}
 	m_rendererTimestampCombo.SetCurSel(0);
 

@@ -4,6 +4,7 @@ Next (0.3.2)
 - keyboard shortcut added for renderer reset (r)
 - Renderer can now be selected by command line option /renderer, example: /renderer "DirectShow - Video Renderer"
 - Command line options /renderer [name] and /fullscreen together now immediately leads to fullscreen again (fire-and-forget)
+- Extended the DirectShow start-stop options to include non-stop and smart selection options
 
 0.3.1
 - Default frame timing changed to clock+theo as multiple users reported blips in clock-clock

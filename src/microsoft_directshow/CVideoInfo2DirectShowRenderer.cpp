@@ -27,7 +27,7 @@ CVideoInfo2DirectShowRenderer::CVideoInfo2DirectShowRenderer(
 	UINT eventMsg,
 	ITimingClock* timingClock,
 	VideoStateComPtr& videoState,
-	RendererTimestamp timestamp,
+	DirectShowStartStopTimeMethod timestamp,
 	bool useFrameQueue,
 	size_t frameQueueMaxSize,
 	DXVA_NominalRange forceNominalRange,

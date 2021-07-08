@@ -9,11 +9,8 @@ Roadmap
 - If the CAM thread throws that's never shown, make errors visible
 - invertedVertical from the blackmagic not used because it's inverted?!?
 - Let the chosen renderer id itself in the GUI
-- Add clock+nothing option as frame-time
-- adjust clock+theo stop timestamp for clock resolution (should not matter practically)
 
-
-0.4.0: DVD & upscaling
+0.4.0: Interlaced support & upscaling
 - Change display modes to be real frame interval and display interval
 - Support for interlaced formats
 - Optionally force YCbCr422 to YCbCr420 so that the renderer can do the upscaling

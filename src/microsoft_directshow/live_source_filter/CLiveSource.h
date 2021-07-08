@@ -13,7 +13,7 @@
 
 #include <VideoState.h>
 #include <IVideoFrameFormatter.h>
-#include <RendererTimestamp.h>
+#include <microsoft_directshow/DirectShowRendererStartStopTimeMethod.h>
 
 #include "ILiveSource.h"
 
@@ -50,7 +50,7 @@ public:
 		const AM_MEDIA_TYPE& mediaType,
 		timestamp_t frameDuration,
 		ITimingClock* timingClock,
-		RendererTimestamp timestamp,
+		DirectShowStartStopTimeMethod timestamp,
 		bool useFrameQueue,
 		size_t frameQueueMaxSize,
 		bool useHDRData) override;
