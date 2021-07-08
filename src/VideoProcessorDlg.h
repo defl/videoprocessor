@@ -31,6 +31,7 @@
 #define WM_MESSAGE_CAPTURE_DEVICE_CARD_STATE_CHANGE		(WM_APP + 5)
 #define WM_MESSAGE_DIRECTSHOW_NOTIFICATION              (WM_APP + 6)
 #define WM_MESSAGE_RENDERER_STATE_CHANGE                (WM_APP + 7)
+#define WM_MESSAGE_RENDERER_DETAIL_STRING               (WM_APP + 8)
 
 
 /**
@@ -77,6 +78,7 @@ public:
 	afx_msg LRESULT OnMessageCaptureDeviceVideoStateChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnMessageDirectShowNotification(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnMessageRendererStateChange(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnMessageRendererDetailString(WPARAM wParam, LPARAM lParam);
 
 	// Command handlers
 	void OnCommandFullScreenToggle();
@@ -95,6 +97,7 @@ public:
 
 	// IRendererCallback
 	void OnRendererState(RendererState rendererState) override;
+	void OnRendererDetailString(const CString& details) override;
 
 protected:
 
@@ -143,6 +146,7 @@ protected:
 
 	// Renderer group
 	CComboBox m_rendererCombo;
+	CStatic m_rendererDetailStringStatic;
 	CComboBox m_rendererTimestampCombo;
 	CComboBox m_rendererNominalRangeCombo;
 	CComboBox m_rendererTransferFunctionCombo;

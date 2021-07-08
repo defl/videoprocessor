@@ -22,33 +22,26 @@ END_MESSAGE_MAP()
 WindowedVideoWindow::WindowedVideoWindow()
 {
 	m_brush.CreateSolidBrush(BLACK);
+
+	m_logoBmp = (HBITMAP)LoadImage(
+		GetModuleHandle(nullptr), MAKEINTRESOURCE(IDB_LOGO),
+		IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
+
+	if (!m_logoBmp)
+		throw std::runtime_error("Failed to load logo bitmap");
 }
 
 
 WindowedVideoWindow::~WindowedVideoWindow()
 {
 	m_brush.DeleteObject();
+
+	DeleteObject(m_logoBmp);
 }
 
 
 void WindowedVideoWindow::OnPaint()
 {
-	// TODO: This is using the GDI, probably also possible though MFC
-
-	//
-	// Load logo
-	//
-
-	if (!m_logoBmp)
-	{
-		m_logoBmp = (HBITMAP)LoadImage(
-			GetModuleHandle(nullptr), MAKEINTRESOURCE(IDB_LOGO),
-			IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
-
-		if (!m_logoBmp)
-			throw std::runtime_error("Failed to load logo bitmap");
-	}
-
 	//
 	// Figure out usable rectangle and where to draw
 	//

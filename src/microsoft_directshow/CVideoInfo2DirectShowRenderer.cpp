@@ -51,6 +51,7 @@ CVideoInfo2DirectShowRenderer::CVideoInfo2DirectShowRenderer(
 	m_forceVideoTransferMatrix(forceVideoTransferMatrix),
 	m_forceVideoPrimaries(forceVideoPrimaries)
 {
+	callback.OnRendererDetailString(TEXT("DirectShow VideoInfo2 (HDR)"));
 }
 
 

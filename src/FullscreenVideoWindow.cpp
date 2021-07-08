@@ -8,15 +8,15 @@
 
 #include <stdafx.h>
 
-#include "FullscreenWindow.h"
+#include "FullscreenVideoWindow.h"
 
 
-FullscreenWindow::FullscreenWindow()
+FullscreenVideoWindow::FullscreenVideoWindow()
 {
 }
 
 
-FullscreenWindow::~FullscreenWindow()
+FullscreenVideoWindow::~FullscreenVideoWindow()
 {
     if (m_hwnd)
     {
@@ -26,21 +26,21 @@ FullscreenWindow::~FullscreenWindow()
 }
 
 
-LRESULT CALLBACK FullscreenWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK FullscreenVideoWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    FullscreenWindow* pThis = nullptr;
+    FullscreenVideoWindow* pThis = nullptr;
 
     if (uMsg == WM_NCCREATE)
     {
         CREATESTRUCT* pCreate = (CREATESTRUCT*)lParam;
-        pThis = (FullscreenWindow*)pCreate->lpCreateParams;
+        pThis = (FullscreenVideoWindow*)pCreate->lpCreateParams;
         SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pThis);
 
         pThis->m_hwnd = hwnd;
     }
     else
     {
-        pThis = (FullscreenWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+        pThis = (FullscreenVideoWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
     }
 
     if (pThis)
@@ -51,7 +51,7 @@ LRESULT CALLBACK FullscreenWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wPara
 }
 
 
-void FullscreenWindow::Create(HMONITOR hmon, HWND parentWindow)
+void FullscreenVideoWindow::Create(HMONITOR hmon, HWND parentWindow)
 {
     //
     // Register the window class
@@ -59,7 +59,7 @@ void FullscreenWindow::Create(HMONITOR hmon, HWND parentWindow)
 
     WNDCLASS wc = { 0 };
 
-    wc.lpfnWndProc = FullscreenWindow::WindowProc;
+    wc.lpfnWndProc = FullscreenVideoWindow::WindowProc;
     wc.hInstance = GetModuleHandle(nullptr);
     wc.lpszClassName = FULLSCREEN_WINDOW_CLASS_NAME;
 
@@ -73,9 +73,9 @@ void FullscreenWindow::Create(HMONITOR hmon, HWND parentWindow)
     if (!GetMonitorInfo(hmon, &mi))
         throw std::runtime_error("Failed to get monitor info");
 
-    // When debugging it's REALLY handy to not cover the whole screen and capture key inputs...
     LONG width = mi.rcMonitor.right - mi.rcMonitor.left;
 #ifdef _DEBUG
+    // When debugging it's REALLY handy to not cover the whole screen and capture key inputs...
     width = width  / 5;
 #endif
 
@@ -98,7 +98,7 @@ void FullscreenWindow::Create(HMONITOR hmon, HWND parentWindow)
 }
 
 
-LRESULT __forceinline FullscreenWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT __forceinline FullscreenVideoWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {

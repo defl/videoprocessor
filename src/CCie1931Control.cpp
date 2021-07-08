@@ -20,6 +20,23 @@ BEGIN_MESSAGE_MAP(CCie1931Control, CStatic)
 END_MESSAGE_MAP()
 
 
+CCie1931Control::CCie1931Control()
+{
+    m_cie1931xyBmp = (HBITMAP)LoadImage(
+        GetModuleHandle(nullptr), MAKEINTRESOURCE(IDB_CIE1931XY),
+        IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
+
+    if (!m_cie1931xyBmp)
+        throw std::runtime_error("Failed to load CIE1931XY bitmap");
+}
+
+
+CCie1931Control::~CCie1931Control()
+{
+    DeleteObject(m_cie1931xyBmp);
+}
+
+
 void CCie1931Control::SetColorSpace(ColorSpace colorSpace)
 {
     m_colorSpace = colorSpace;
@@ -36,23 +53,6 @@ void CCie1931Control::SetHDRData(std::shared_ptr<HDRData> hdrData)
 
 void CCie1931Control::OnPaint(void)
 {
-    // TODO: This is using the GDI, probably also possible though MFC
-
-    // Load bitmap on first use
-    // TODO: Figure how to get OnCreate() called here. Apparently not happening because this is a custom widget which
-    //       is hook up to the resource generated magic something. Destructors also not allowed. So nevermind and just leak
-    //       for now until I can be arsed to figure it out.
-    //       details: https://social.msdn.microsoft.com/Forums/en-US/c659741c-5330-406d-92c7-c089a48872ff/ccustomcontroloncreate-not-called?forum=vcgeneral
-    if (!m_cie1931xyBmp)
-    {
-        m_cie1931xyBmp = (HBITMAP)LoadImage(
-            GetModuleHandle(nullptr), MAKEINTRESOURCE(IDB_CIE1931XY),
-            IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
-
-        if (!m_cie1931xyBmp)
-            throw std::runtime_error("Failed to load CIE1931XY bitmap");
-    }
-
     //
     // Figure out usable rectangle and where to draw
     //

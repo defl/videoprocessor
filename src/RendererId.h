@@ -9,39 +9,14 @@
 #pragma once
 
 
-#include <afxwin.h>
-
-#include <ColorSpace.h>
-#include <HDRData.h>
-
-
-/**
- * Win32 gui control which draws the CIE1931 XY chart and can plot HDR and colorspace on it
+/*
+ * Identifies a renderer by GUID.
+ * Works great for DirectShow, but will need revising once we get away from it.
  */
-class CCie1931Control:
-	public CStatic
+struct RendererId
 {
-public:
+	CString name;
+	GUID guid;
 
-	CCie1931Control();
-	virtual ~CCie1931Control();
-
-	// Set colorspace
-	void SetColorSpace(ColorSpace);
-
-	// Set HDR data
-	void SetHDRData(std::shared_ptr<HDRData>);
-
-protected:
-
-	// Handlers for ON_WM_* messages
-	void OnPaint();
-
-private:
-
-	HBITMAP m_cie1931xyBmp = nullptr;
-	ColorSpace m_colorSpace = ColorSpace::UNKNOWN;
-	std::shared_ptr<HDRData> m_hdrData = nullptr;
-
-	DECLARE_MESSAGE_MAP()
+	bool operator< (const RendererId& other) const;
 };

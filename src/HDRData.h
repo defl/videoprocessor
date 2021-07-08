@@ -42,3 +42,7 @@ public:
 
 
 typedef std::shared_ptr<HDRData> HDRDataSharedPtr;
+
+
+// Check if 2 lumen values are effectively equal
+bool LumenEqual(double a, double b);

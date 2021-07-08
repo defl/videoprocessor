@@ -38,6 +38,7 @@ CVideoInfo1DirectShowRenderer::CVideoInfo1DirectShowRenderer(
 		frameQueueMaxSize,
 		false /* useHDRDdata */)
 {
+	callback.OnRendererDetailString(TEXT("DirectShow compatibility (SDR)"));
 }
 
 void CVideoInfo1DirectShowRenderer::MediaTypeGenerate()
@@ -47,7 +48,6 @@ void CVideoInfo1DirectShowRenderer::MediaTypeGenerate()
 
 	m_videoFramFormatter = new CNoopVideoFrameFormatter();
 	m_videoFramFormatter->OnVideoState(m_videoState);
-
 
 	// Build PMT
 	assert(!m_pmt.pbFormat);

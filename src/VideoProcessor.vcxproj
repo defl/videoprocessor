@@ -225,10 +225,12 @@
     <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.h" />
     <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.h" />
     <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.h" />
+    <ClInclude Include="HDRData.h" />
     <ClInclude Include="ITimingClock.h" />
     <ClInclude Include="microsoft_directshow\ADirectShowRenderer.h" />
     <ClInclude Include="microsoft_directshow\CVideoInfo1DirectShowRenderer.h" />
     <ClInclude Include="microsoft_directshow\CVideoInfo2DirectShowRenderer.h" />
+    <ClInclude Include="microsoft_directshow\DirectShowRenderers.h" />
     <ClInclude Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.h" />
     <ClInclude Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.h" />
     <ClInclude Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.h" />
@@ -236,6 +238,7 @@
     <ClInclude Include="CaptureInput.h" />
     <ClInclude Include="CCie1931Control.h" />
     <ClInclude Include="cie.h" />
+    <ClInclude Include="RendererId.h" />
     <ClInclude Include="TimingClock.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="WallClock.h" />
@@ -288,6 +291,7 @@
     <ClCompile Include="microsoft_directshow\ADirectShowRenderer.cpp" />
     <ClCompile Include="microsoft_directshow\CVideoInfo1DirectShowRenderer.cpp" />
     <ClCompile Include="microsoft_directshow\CVideoInfo2DirectShowRenderer.cpp" />
+    <ClCompile Include="microsoft_directshow\DirectShowRenderers.cpp" />
     <ClCompile Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.cpp" />
     <ClCompile Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.cpp" />
     <ClCompile Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.cpp" />
@@ -295,6 +299,7 @@
     <ClCompile Include="CaptureInput.cpp" />
     <ClCompile Include="CCie1931Control.cpp" />
     <ClCompile Include="cie.cpp" />
+    <ClCompile Include="RendererId.cpp" />
     <ClCompile Include="TimingClock.cpp" />
     <ClCompile Include="version.cpp" />
     <ClCompile Include="WallClock.cpp" />

@@ -39,6 +39,10 @@ struct IRendererCallback
 	// Note that this will be synchronous with calls to the renderer. No external thread
 	// will cause calls. Most likely this will be a result of OnWindowsEvent() and Stop() handling.
 	virtual void OnRendererState(RendererState rendererState) = 0;
+
+	// The renderer can report a human-readable string to say what it's doing
+	// No need to do anything but just display.
+	virtual void OnRendererDetailString(const CString& details) = 0;
 };
 
 

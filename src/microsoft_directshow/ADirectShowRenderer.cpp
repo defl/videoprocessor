@@ -592,7 +592,7 @@ void ADirectShowRenderer::GraphStop()
 
 	m_liveSource->Reset();
 
-	// Check if filter really stoppedd
+	// Check if filter really stopped
 	OAFilterState filterState = -1;  // Known invalid state
 	if (FAILED(m_pControl->GetState(500, &filterState)))
 		throw std::runtime_error("Failed to get filter state");

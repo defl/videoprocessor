@@ -11,8 +11,6 @@
 #include <atlstr.h>
 #include <algorithm>
 #include <vector>
-#include <dxva.h>
-#include <propvarutil.h>
 
 #include <version.h>
 #include <cie.h>
@@ -21,6 +19,7 @@
 #include <microsoft_directshow/CVideoInfo1DirectShowRenderer.h>
 #include <microsoft_directshow/CVideoInfo2DirectShowRenderer.h>
 #include <microsoft_directshow/DirectShowDefines.h>
+#include <microsoft_directshow/DirectShowRenderers.h>
 #include <guid.h>
 
 #include "VideoProcessorDlg.h"
@@ -48,6 +47,7 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	ON_MESSAGE(WM_MESSAGE_CAPTURE_DEVICE_VIDEO_STATE_CHANGE, &CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange)
 	ON_MESSAGE(WM_MESSAGE_DIRECTSHOW_NOTIFICATION, &CVideoProcessorDlg::OnMessageDirectShowNotification)
 	ON_MESSAGE(WM_MESSAGE_RENDERER_STATE_CHANGE, &CVideoProcessorDlg::OnMessageRendererStateChange)
+	ON_MESSAGE(WM_MESSAGE_RENDERER_DETAIL_STRING, &CVideoProcessorDlg::OnMessageRendererDetailString)
 
 	// UI element messages
 	ON_CBN_SELCHANGE(IDC_CAPTURE_DEVICE_COMBO, &CVideoProcessorDlg::OnCaptureDeviceSelected)
@@ -718,6 +718,17 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 }
 
 
+LRESULT CVideoProcessorDlg::OnMessageRendererDetailString(WPARAM wParam, LPARAM lParam)
+{
+	CString* pDetailString = (CString*)wParam;
+
+	m_rendererDetailStringStatic.SetWindowText(*pDetailString);
+
+	delete pDetailString;
+	return 0;
+}
+
+
 //
 // Command handlers
 //
@@ -862,6 +873,20 @@ void CVideoProcessorDlg::OnRendererState(RendererState rendererState)
 	PostMessage(
 		WM_MESSAGE_RENDERER_STATE_CHANGE,
 		rendererState,
+		0);
+}
+
+
+void CVideoProcessorDlg::OnRendererDetailString(const CString& details)
+{
+	// Will be called synchronous as a response to our calls and hence does
+	// not need posting messages, we still do so to de-couple actions.
+
+	CString* pDetailString = new CString(details);
+
+	PostMessage(
+		WM_MESSAGE_RENDERER_DETAIL_STRING,
+		(WPARAM)pDetailString,
 		0);
 }
 
@@ -1377,7 +1402,6 @@ void CVideoProcessorDlg::RenderStart()
 			m_rendererStateText.SetWindowText(TEXT("Failed"));
 
 			// Show error in renderer box
-			// TODO: Move this code to some sort of reusable function
 			size_t size = strlen(e.what()) + 1;
 			wchar_t* wtext = new wchar_t[size];
 			size_t outSize;
@@ -1444,6 +1468,7 @@ void CVideoProcessorDlg::RenderRemove()
 
 void CVideoProcessorDlg::RenderGUIClear()
 {
+	m_rendererDetailStringStatic.SetWindowText(TEXT(""));
 	m_rendererVideoFrameQueueSizeText.SetWindowText(TEXT(""));
 	m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
 }
@@ -1541,116 +1566,20 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 {
 	ClearRendererCombo();
 
-	struct RendererEntry
-	{
-		CString name;
-		GUID guid;
-
-		bool operator< (const RendererEntry& other) const {
-			return name < other.name;
-		}
-	};
-	std::vector<RendererEntry> rendererEntries;
+	std::vector<RendererId> rendererIds;
 
 	//
-	// Iterate all renderers
-	// https://docs.microsoft.com/en-us/windows/win32/directshow/using-the-filter-mapper
-	// TODO: Move this to the directshow dir and make a nice clean abstraction to use here
+	// Get all supported renderer ids
 	//
-	{
-		IFilterMapper2* pMapper = nullptr;
-		IEnumMoniker* pEnum = nullptr;
-		HRESULT hr;
 
-		hr = CoCreateInstance(CLSID_FilterMapper2,
-			nullptr, CLSCTX_INPROC, IID_IFilterMapper2,
-			(void**)&pMapper);
-
-		if (FAILED(hr))
-			FatalError(TEXT("Failed to instantiate the filter mapper"));
-
-		GUID arrayInTypes[2];
-		arrayInTypes[0] = MEDIATYPE_Video;
-		arrayInTypes[1] = GUID_NULL;
-
-		hr = pMapper->EnumMatchingFilters(
-			&pEnum,
-			0,                  // Reserved.
-			TRUE,               // Use exact match?
-			MERIT_DO_NOT_USE,   // Minimum merit.
-			TRUE,               // At least one input pin?
-			1,                  // Number of major type/subtype pairs for input.
-			arrayInTypes,       // Array of major type/subtype pairs for input.
-			nullptr,               // Input medium.
-			nullptr,               // Input pin category.
-			FALSE,              // Must be a renderer?
-			FALSE,              // At least one output pin?
-			0,                  // Number of major type/subtype pairs for output.
-			nullptr,               // Array of major type/subtype pairs for output.
-			nullptr,               // Output medium.
-			nullptr);              // Output pin category.
-
-		// Enumerate the monikers.
-		IMoniker* pMoniker;
-		ULONG cFetched;
-		while (pEnum->Next(1, &pMoniker, &cFetched) == S_OK)
-		{
-			IPropertyBag* pPropBag = nullptr;
-			hr = pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)&pPropBag);
-
-			if (SUCCEEDED(hr))
-			{
-				VARIANT nameVariant;
-				VARIANT clsidVariant;
-				VariantInit(&nameVariant);
-				VariantInit(&clsidVariant);
-
-				HRESULT nameHr = pPropBag->Read(L"FriendlyName", &nameVariant, 0);
-				HRESULT clsidHr = pPropBag->Read(L"CLSID", &clsidVariant, 0);
-				if (SUCCEEDED(nameHr) && SUCCEEDED(clsidHr))
-				{
-					CString name = nameVariant.bstrVal;
-
-					// Filter by name.
-					// Unforuntately renderes don't actually tell us if they can render
-					// so we need a hand-maintained list here.
-					// VR = Abbreviation of Video Renderer
-					if (((name.Find(TEXT("Video")) >= 0) && (name.Find(TEXT("Render")) >= 0)) ||
-						(name.Find(TEXT("VR")) >= 0)
-						)
-					{
-						CString rendererEntityName;
-						rendererEntityName.Format(_T("DirectShow - %s"), name);
-
-						RendererEntry rendererEntry;
-						rendererEntry.name = rendererEntityName;
-
-						hr = VariantToGUID(clsidVariant, &(rendererEntry.guid));
-						if (FAILED(hr))
-							FatalError(TEXT("Failed to convert veriant to GUID"));
-
-						rendererEntries.push_back(rendererEntry);
-					}
-				}
-
-				VariantClear(&nameVariant);
-				VariantClear(&clsidVariant);
-
-				pPropBag->Release();
-			}
-			pMoniker->Release();
-		}
-
-		pMapper->Release();
-		pEnum->Release();
-	}
+	DirectShowGetRendererIds(rendererIds);
 
 	//
 	// Populate selection box, sorted
 	//
 
-	std::sort(rendererEntries.begin(), rendererEntries.end());
-	for (const auto& rendererEntry : rendererEntries)
+	std::sort(rendererIds.begin(), rendererIds.end());
+	for (const auto& rendererEntry : rendererIds)
 	{
 		GUID* clsid = new GUID(rendererEntry.guid);
 
@@ -1739,6 +1668,7 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 
 	// Renderer group
 	DDX_Control(pDX, IDC_RENDERER_COMBO, m_rendererCombo);
+	DDX_Control(pDX, IDC_RENDERER_DETAIL_STRING_STATIC, m_rendererDetailStringStatic);
 	DDX_Control(pDX, IDC_RENDERER_TIMESTAMP_COMBO, m_rendererTimestampCombo);
 	DDX_Control(pDX, IDC_RENDERER_NOMINAL_RANGE_COMBO, m_rendererNominalRangeCombo);
 	DDX_Control(pDX, IDC_RENDERER_TRANSFER_FUNCTION_COMBO, m_rendererTransferFunctionCombo);

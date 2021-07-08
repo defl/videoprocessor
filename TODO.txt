@@ -1,16 +1,10 @@
 Roadmap
 =======
 
-0.3.2: GUI
-- Cleanup TODOs
-- If the blackmagic capture thread throws that's never shown a new one is spun up silently, try-catch external calls, make errors visible
-- If the CAM thread throws that's never shown, make errors visible
-- invertedVertical from the blackmagic not used because it's inverted?!?
-- Let the chosen renderer id itself in the GUI
-
-0.4.0: Interlaced support & upscaling
+0.4.0: Upscaling
 - Change display modes to be real frame interval and display interval
-- Support for interlaced formats
+- Change pixelformat to be something between that and an encoding format?
+- Add support for interlaced formats (but no testing or further plumbing)
 - Optionally force YCbCr422 to YCbCr420 so that the renderer can do the upscaling
 
 1.0.0: Out of beta
@@ -25,7 +19,7 @@ Roadmap
 - Cropping-zoom in y and x dimensions
 - Auto shifting (hwf)
 
-Ideas for later:
+Stuff & ideas to do for later:
 - Integrate MPV renderer (that would be a non-DirectShow renderer, so quite some plumbing required)
 - CaptureInput as a first-class citizen rather than a POD (rename to capture device input?)
 - Toggelable HDCP on video output through the win32 Output Protection Manager
@@ -38,3 +32,12 @@ Ideas for later:
 - Build a git version to version.rc generator and use that to set VS_VERSION_INFO version etc
 - Make group names clickable and open help page
 - Add menu bar with help link
+- Support for interlaced modes (don't have hardware which does this)
+- If the blackmagic capture thread throws that's never shown a new one is spun up silently, try-catch external calls, make errors visible
+- If the CAM thread throws that's never shown, make errors visible
+- Replace GDI drawing with MFC
+- Clean up all TODOs
+
+Can't fix:
+- DeckLink cannot handle 12bit YUV
+- DeckLink forces YUV 444 to 422

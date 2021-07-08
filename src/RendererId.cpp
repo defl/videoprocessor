@@ -6,42 +6,12 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see < https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+
+#include <stdafx.h>
+
+#include "RendererId.h"
 
 
-#include <afxwin.h>
-
-#include <ColorSpace.h>
-#include <HDRData.h>
-
-
-/**
- * Win32 gui control which draws the CIE1931 XY chart and can plot HDR and colorspace on it
- */
-class CCie1931Control:
-	public CStatic
-{
-public:
-
-	CCie1931Control();
-	virtual ~CCie1931Control();
-
-	// Set colorspace
-	void SetColorSpace(ColorSpace);
-
-	// Set HDR data
-	void SetHDRData(std::shared_ptr<HDRData>);
-
-protected:
-
-	// Handlers for ON_WM_* messages
-	void OnPaint();
-
-private:
-
-	HBITMAP m_cie1931xyBmp = nullptr;
-	ColorSpace m_colorSpace = ColorSpace::UNKNOWN;
-	std::shared_ptr<HDRData> m_hdrData = nullptr;
-
-	DECLARE_MESSAGE_MAP()
-};
+bool RendererId::operator< (const RendererId& other) const {
+	return name < other.name;
+}

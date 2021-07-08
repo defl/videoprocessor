@@ -386,7 +386,6 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 	case DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_NONE:
 
 		// Get frame timestamp as reference time
-		// TODO: I don't like the floating point math here
 		timeStart =
 			videoFrame.GetTimingTimestamp() *
 			(10000000.0 / m_timingClock->TimingClockTicksPerSecond());

@@ -183,6 +183,15 @@
     <ClInclude Include="WindowedVideoWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HDRData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererId.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\DirectShowRenderers.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -307,6 +316,12 @@
     </ClCompile>
     <ClCompile Include="WindowedVideoWindow.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererId.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\DirectShowRenderers.cpp">
+      <Filter>Source Files\microsoft_directshow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

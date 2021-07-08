@@ -28,12 +28,11 @@ bool HDRData::operator == (const HDRData& other) const
 		CieEquals(whitePointX, other.whitePointX) &&
 		CieEquals(whitePointY, other.whitePointY) &&
 
-		// TODO: Make dedicated luminance comparators
-		fabs(masteringDisplayMaxLuminance-other.masteringDisplayMaxLuminance) < 0.0001 &&
-		fabs(masteringDisplayMinLuminance-other.masteringDisplayMinLuminance) < 0.0001 &&
+		LumenEqual(masteringDisplayMaxLuminance, other.masteringDisplayMaxLuminance) &&
+		LumenEqual(masteringDisplayMinLuminance, other.masteringDisplayMinLuminance) &&
 
-		fabs(maxCll-other.maxCll) < 0.0001 &&
-		fabs(maxFall-other.maxFall) < 0.0001;
+		LumenEqual(maxCll, other.maxCll) &&
+		LumenEqual(maxFall, other.maxFall);
 }
 
 
@@ -58,4 +57,10 @@ bool HDRData::IsValid() const
 		masteringDisplayMinLuminance > 0 &&
 		maxCll > 0 &&
 		maxFall > 0;
+}
+
+
+bool LumenEqual(double a, double b)
+{
+	return fabs(a - b) < 0.00001;
 }
