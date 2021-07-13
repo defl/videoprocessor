@@ -1,3 +1,6 @@
+next (0.4.0)
+- Display modes now stores and uess ticks/duration for video frames
+
 0.3.2
 - Most throws now lead to error popup
 - keyboard shortcut added for renderer reset (r)
