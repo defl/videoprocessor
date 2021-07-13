@@ -6,36 +6,31 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see < https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "stdafx.h"
 
 
-#include "ADirectShowRenderer.h"
+#include "DirectShowEnhancedVideoRenderer.h"
 
 
-/**
- * DirectShow renderer which supports FORMAT_VideoInfo connections
- */
-class CVideoInfo1DirectShowRenderer :
-	public ADirectShowRenderer
+DirectShowEnhancedVideoRenderer::DirectShowEnhancedVideoRenderer(
+	IRendererCallback& callback,
+	HWND videoHwnd,
+	HWND eventHwnd,
+	UINT eventMsg,
+	ITimingClock* timingClock,
+	DirectShowStartStopTimeMethod timestamp,
+	bool useFrameQueue,
+	size_t frameQueueMaxSize):
+	DirectShowGenericVideoRenderer(
+		CLSID_EnhancedVideoRenderer,
+		callback,
+		videoHwnd,
+		eventHwnd,
+		eventMsg,
+		timingClock,
+		timestamp,
+		useFrameQueue,
+		frameQueueMaxSize)
 {
-public:
-
-	CVideoInfo1DirectShowRenderer(
-		GUID rendererCLSID,
-		IRendererCallback& callback,
-		HWND videoHwnd,
-		HWND eventHwnd,
-		UINT eventMsg,
-		ITimingClock* timingClock,
-		VideoStateComPtr& videoState,
-		DirectShowStartStopTimeMethod timestamp,
-		bool useFrameQueue,
-		size_t frameQueueMaxSize);
-
-	virtual ~CVideoInfo1DirectShowRenderer() {}
-
-private:
-
-	void MediaTypeGenerate() override;
-	void Connect() override;
-};
+	callback.OnRendererDetailString(TEXT("DirectShow Enhanced Video Renderer"));
+}

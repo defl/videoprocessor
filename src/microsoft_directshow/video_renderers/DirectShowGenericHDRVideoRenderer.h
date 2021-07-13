@@ -9,26 +9,27 @@
 #pragma once
 
 
-#include "ADirectShowRenderer.h"
+#include "DirectShowVideoRenderer.h"
 
 
 /**
- * DirectShow renderer which supports FORMAT_VideoInfo2 connections
+ * DirectShow HDR video renderer.
+ *
+ * Will try to build a direct VIDEOINFOHEADER2 connection.
  */
-class CVideoInfo2DirectShowRenderer :
-	public ADirectShowRenderer
+class DirectShowGenericHDRVideoRenderer :
+	public DirectShowVideoRenderer
 {
 public:
 
-	CVideoInfo2DirectShowRenderer(
+	DirectShowGenericHDRVideoRenderer(
 		GUID rendererCLSID,
 		IRendererCallback& callback,
 		HWND videoHwnd,
 		HWND eventHwnd,
 		UINT eventMsg,
 		ITimingClock* timingClock,
-		VideoStateComPtr& videoState,
-		DirectShowStartStopTimeMethod timestamp,
+		DirectShowStartStopTimeMethod directShowStartStopTimeMethod,
 		bool useFrameQueue,
 		size_t frameQueueMaxSize,
 		DXVA_NominalRange forceNominalRange,
@@ -36,15 +37,25 @@ public:
 		DXVA_VideoTransferMatrix forceVideoTransferMatrix,
 		DXVA_VideoPrimaries forceVideoPrimaries);
 
-	virtual ~CVideoInfo2DirectShowRenderer() {}
+	virtual ~DirectShowGenericHDRVideoRenderer() {}
+
+	// IRenderer
+	bool OnVideoState(VideoStateComPtr&) override;
+	void OnPaint() override { /* not implemented */ }
+
+protected:
+
+	// DirectShowVideoRenderer
+	void RendererBuild() override;
+	void MediaTypeGenerate() override;
+	void RendererConnect() override;
+	void LiveSourceBuildAndConnect() override;
 
 private:
 
-	DXVA_NominalRange m_forceNominalRange;
-	DXVA_VideoTransferFunction m_forceVideoTransferFunction;
-	DXVA_VideoTransferMatrix m_forceVideoTransferMatrix;
-	DXVA_VideoPrimaries m_forceVideoPrimaries;
-
-	void MediaTypeGenerate() override;
-	void Connect() override;
+	const GUID m_rendererCLSID;
+	const DXVA_NominalRange m_forceNominalRange;
+	const DXVA_VideoTransferFunction m_forceVideoTransferFunction;
+	const DXVA_VideoTransferMatrix m_forceVideoTransferMatrix;
+	const DXVA_VideoPrimaries m_forceVideoPrimaries;
 };

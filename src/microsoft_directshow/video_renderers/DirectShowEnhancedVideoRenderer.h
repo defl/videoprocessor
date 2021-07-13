@@ -6,34 +6,30 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see < https://www.gnu.org/licenses/>.
  */
 
-#include "stdafx.h"
+#pragma once
 
 
-#include "MPCDirectShowRenderer.h"
+#include "DirectShowGenericVideoRenderer.h"
 
 
-MPCDirectShowRenderer::MPCDirectShowRenderer(
-	GUID rendererCLSID,
-	IRendererCallback& callback,
-	HWND videoHwnd,
-	HWND eventHwnd,
-	UINT eventMsg,
-	ITimingClock* timingClock,
-	VideoStateComPtr& videoState,
-	DirectShowStartStopTimeMethod timestamp,
-	bool useFrameQueue,
-	size_t frameQueueMaxSize):
-	CVideoInfo1DirectShowRenderer(
-		rendererCLSID,
-		callback,
-		videoHwnd,
-		eventHwnd,
-		eventMsg,
-		timingClock,
-		videoState,
-		timestamp,
-		useFrameQueue,
-		frameQueueMaxSize)
+/**
+ * Enhanced Video Renderer
+ * TODO: This does not work as is, it's incomplete, see https://docs.microsoft.com/en-us/windows/win32/medfound/how-to-write-an-evr-presenter
+ */
+class DirectShowEnhancedVideoRenderer:
+	public DirectShowGenericVideoRenderer
 {
-	callback.OnRendererDetailString(TEXT("MPC Video Renderer DirectShow"));
-}
+public:
+
+	DirectShowEnhancedVideoRenderer(
+		IRendererCallback& callback,
+		HWND videoHwnd,
+		HWND eventHwnd,
+		UINT eventMsg,
+		ITimingClock* timingClock,
+		DirectShowStartStopTimeMethod directShowStartStopTimeMethod,
+		bool useFrameQueue,
+		size_t frameQueueMaxSize);
+
+	virtual ~DirectShowEnhancedVideoRenderer() {}
+};

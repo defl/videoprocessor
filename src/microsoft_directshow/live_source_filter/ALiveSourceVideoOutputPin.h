@@ -40,8 +40,7 @@ public:
 		timestamp_t frameDuration,
 		ITimingClock* const timingClock,
 		DirectShowStartStopTimeMethod timestamp,
-		const AM_MEDIA_TYPE& mediaType,
-		bool useHDRData);
+		const AM_MEDIA_TYPE& mediaType);
 
 	// CBaseOutputPin overrides
 	HRESULT GetMediaType(int iPosition, CMediaType* pmt);

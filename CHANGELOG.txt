@@ -1,5 +1,8 @@
 next (0.4.0)
+- Support for MPC Video Renderer (https://github.com/Aleksoid1978/VideoRenderer)
 - Display modes now stores and uess ticks/duration for video frames
+- Major overhaul of renderer code
+
 
 0.3.2
 - Most throws now lead to error popup

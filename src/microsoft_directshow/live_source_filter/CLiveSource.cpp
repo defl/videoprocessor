@@ -52,8 +52,7 @@ STDMETHODIMP CLiveSource::Initialize(
 	ITimingClock* timingClock,
 	DirectShowStartStopTimeMethod timestamp,
 	bool useFrameQueue,
-	size_t frameQueueMaxSize,
-	bool useHDRData)
+	size_t frameQueueMaxSize)
 {
 	assert(!m_videoOutputPin);
 	assert(videoFrameFormatter);
@@ -88,8 +87,7 @@ STDMETHODIMP CLiveSource::Initialize(
 		frameDuration,
 		timingClock,
 		timestamp,
-		mediaType,
-		useHDRData);
+		mediaType);
 
 	if (useFrameQueue)
 		m_videoOutputPin->SetFrameQueueMaxSize(frameQueueMaxSize);

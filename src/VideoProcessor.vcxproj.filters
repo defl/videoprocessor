@@ -43,6 +43,12 @@
     <Filter Include="Tools">
       <UniqueIdentifier>{fe9494c9-405a-408e-b9d8-c51b7b573c39}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\microsoft_directshow\video_renderers">
+      <UniqueIdentifier>{60ada6a3-8291-49d2-b8fb-228fbf45bf2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\microsoft_directshow\video_renderers">
+      <UniqueIdentifier>{3fc1f7df-efb9-4f93-8f3f-ce0359ebd440}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VideoProcessorDlg.h">
@@ -132,9 +138,6 @@
     <ClInclude Include="microsoft_directshow\DirectShowDefines.h">
       <Filter>Header Files\microsoft_directshow</Filter>
     </ClInclude>
-    <ClInclude Include="microsoft_directshow\DirectShowTranslations.h">
-      <Filter>Header Files\microsoft_directshow</Filter>
-    </ClInclude>
     <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSource.h">
       <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
     </ClInclude>
@@ -168,15 +171,6 @@
     <ClInclude Include="TimingClock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="microsoft_directshow\ADirectShowRenderer.h">
-      <Filter>Header Files\microsoft_directshow</Filter>
-    </ClInclude>
-    <ClInclude Include="microsoft_directshow\CVideoInfo1DirectShowRenderer.h">
-      <Filter>Header Files\microsoft_directshow</Filter>
-    </ClInclude>
-    <ClInclude Include="microsoft_directshow\CVideoInfo2DirectShowRenderer.h">
-      <Filter>Header Files\microsoft_directshow</Filter>
-    </ClInclude>
     <ClInclude Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.h">
       <Filter>Header Files\microsoft_directshow</Filter>
     </ClInclude>
@@ -189,11 +183,23 @@
     <ClInclude Include="RendererId.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="microsoft_directshow\DirectShowRenderers.h">
-      <Filter>Header Files\microsoft_directshow</Filter>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowEnhancedVideoRenderer.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
     </ClInclude>
-    <ClInclude Include="microsoft_directshow\MPCDirectShowRenderer.h">
-      <Filter>Header Files\microsoft_directshow</Filter>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowGenericVideoRenderer.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowMPCVideoRenderer.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowVideoRenderer.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowVideoRenderers.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowGenericHDRVideoRenderer.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -305,15 +311,6 @@
     <ClCompile Include="TimingClock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="microsoft_directshow\ADirectShowRenderer.cpp">
-      <Filter>Source Files\microsoft_directshow</Filter>
-    </ClCompile>
-    <ClCompile Include="microsoft_directshow\CVideoInfo1DirectShowRenderer.cpp">
-      <Filter>Source Files\microsoft_directshow</Filter>
-    </ClCompile>
-    <ClCompile Include="microsoft_directshow\CVideoInfo2DirectShowRenderer.cpp">
-      <Filter>Source Files\microsoft_directshow</Filter>
-    </ClCompile>
     <ClCompile Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.cpp">
       <Filter>Source Files\microsoft_directshow</Filter>
     </ClCompile>
@@ -323,11 +320,23 @@
     <ClCompile Include="RendererId.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="microsoft_directshow\DirectShowRenderers.cpp">
-      <Filter>Source Files\microsoft_directshow</Filter>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowEnhancedVideoRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
     </ClCompile>
-    <ClCompile Include="microsoft_directshow\MPCDirectShowRenderer.cpp">
-      <Filter>Source Files\microsoft_directshow</Filter>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowGenericVideoRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowMPCVideoRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowVideoRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowVideoRenderers.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowGenericHDRVideoRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -30,8 +30,7 @@ void ALiveSourceVideoOutputPin::Initialize(
 	timestamp_t frameDuration,
 	ITimingClock* const timingClock,
 	DirectShowStartStopTimeMethod timestamp,
-	const AM_MEDIA_TYPE& mediaType,
-	bool useHDRData)
+	const AM_MEDIA_TYPE& mediaType)
 {
 	if (!videoFrameFormatter)
 		throw std::runtime_error("Cannot set null IVideoFrameFormatter");
@@ -46,7 +45,6 @@ void ALiveSourceVideoOutputPin::Initialize(
 	m_timingClock = timingClock;
 	m_timestamp = timestamp;
 	m_mediaType = mediaType;
-	m_useHDRData = useHDRData;
 }
 
 
@@ -535,7 +533,7 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 	//
 
 	// TODO: This is now called from a different thread, warning!
-	if (m_useHDRData && m_hdrData)
+	if (m_hdrData)
 	{
 		if ((streamFrameCounter % 100) == 1 || m_hdrChanged)
 		{

@@ -9,29 +9,44 @@
 #pragma once
 
 
-#include "CVideoInfo1DirectShowRenderer.h"
+#include "DirectShowVideoRenderer.h"
 
 
 /**
- * MPC Video Renderer
- * https://github.com/Aleksoid1978/VideoRenderer/
+ * DirectShow generic video renderer. Will try to build something reasonable.
+ *
+ * Will try to build a FORMAT_VideoInfo connection, allowing any filter
+ * in between just to get a connection.
  */
-class MPCDirectShowRenderer:
-	public CVideoInfo1DirectShowRenderer
+class DirectShowGenericVideoRenderer :
+	public DirectShowVideoRenderer
 {
 public:
 
-	MPCDirectShowRenderer(
+	DirectShowGenericVideoRenderer(
 		GUID rendererCLSID,
 		IRendererCallback& callback,
 		HWND videoHwnd,
 		HWND eventHwnd,
 		UINT eventMsg,
 		ITimingClock* timingClock,
-		VideoStateComPtr& videoState,
-		DirectShowStartStopTimeMethod timestamp,
+		DirectShowStartStopTimeMethod directShowStartStopTimeMethod,
 		bool useFrameQueue,
 		size_t frameQueueMaxSize);
 
-	virtual ~MPCDirectShowRenderer() {}
+	virtual ~DirectShowGenericVideoRenderer() {}
+
+	// IRenderer
+	void OnPaint() override { /* not implemented */ }
+
+protected:
+
+	// DirectShowVideoRenderer
+	void RendererBuild() override;
+	void MediaTypeGenerate() override;
+	void RendererConnect() override;
+
+private:
+
+	const GUID m_rendererCLSID;
 };

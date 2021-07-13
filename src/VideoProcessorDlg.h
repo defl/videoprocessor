@@ -147,7 +147,7 @@ protected:
 	// Renderer group
 	CComboBox m_rendererCombo;
 	CStatic m_rendererDetailStringStatic;
-	CComboBox m_rendererTimestampCombo;
+	CComboBox m_rendererDirectShowStartStopTimeMethodCombo;
 	CComboBox m_rendererNominalRangeCombo;
 	CComboBox m_rendererTransferFunctionCombo;
 	CComboBox m_rendererTransferMatrixCombo;
@@ -183,7 +183,7 @@ protected:
 	VideoStateComPtr m_captureDeviceVideoState = nullptr;
 
 	CString m_defaultRendererName;
-	IRenderer* m_renderer = nullptr;
+	IRenderer* m_videoRenderer = nullptr;
 	RendererState m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
 
 	std::atomic_bool m_deliverCaptureDataToRenderer = false;

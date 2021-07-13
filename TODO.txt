@@ -1,13 +1,13 @@
 Roadmap
 =======
 
-0.4.0: Upscaling
+0.4.0: Upscaling, added MPCVR renderer, HDR controls
 - Optionally force YCbCr422 to YCbCr420 so that the renderer can do the upscaling
 - Change pixelformat to be something between that and an encoding format?
-- Make sure Enhanced Video Renderer and MPC video renderer work
-
-0.5.0: Fully configurable HDR
+- Do not show text/logo in display if renderer is running
 - Be able to override all HDR data
+- Fix all compliaton errors
+- Clean up TODO
 
 1.0.0: Out of beta
 - No changes expected, re-release of 0.4.0 code

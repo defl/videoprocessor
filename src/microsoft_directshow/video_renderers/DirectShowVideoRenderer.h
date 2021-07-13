@@ -22,27 +22,23 @@
 
 
 /**
- * Abstract DirectShow renderer
+ * Abstract DirectShow video renderer
  */
-class ADirectShowRenderer:
+class DirectShowVideoRenderer:
 	public IRenderer
 {
 public:
 
-	ADirectShowRenderer(
-		GUID rendererCLSID,
+	DirectShowVideoRenderer(
 		IRendererCallback& callback,
 		HWND videoHwnd,
 		HWND eventHwnd,
 		UINT eventMsg,
 		ITimingClock* timingClock,
-		VideoStateComPtr& videoState,
 		DirectShowStartStopTimeMethod timestamp,
 		bool useFrameQueue,
-		size_t frameQueueMaxSize,
-		bool useHDRDdata);
-
-	virtual ~ADirectShowRenderer();
+		size_t frameQueueMaxSize);
+	virtual ~DirectShowVideoRenderer();
 
 	// IRenderer
 	bool OnVideoState(VideoStateComPtr&) override;
@@ -61,10 +57,6 @@ public:
 
 protected:
 
-	virtual void MediaTypeGenerate() = 0;
-	virtual void Connect() = 0;
-
-	const GUID m_rendererCLSID;
 	IRendererCallback& m_callback;
 	HWND m_videoHwnd;
 	HWND m_eventHwnd;
@@ -74,16 +66,13 @@ protected:
 	DirectShowStartStopTimeMethod m_timestamp;
 	bool m_useFrameQueue;
 	size_t m_frameQueueMaxSize;
-	bool m_useHDRDdata;
-	DXVA_NominalRange m_forceNominalRange;
-	DXVA_VideoTransferFunction m_forceVideoTransferFunction;
-	DXVA_VideoTransferMatrix m_forceVideoTransferMatrix;
-	DXVA_VideoPrimaries m_forceVideoPrimaries;
+	DXVA_NominalRange m_forceNominalRange = DXVA_NominalRange::DXVA_NominalRange_Unknown;
+	DXVA_VideoTransferFunction m_forceVideoTransferFunction = DXVA_VideoTransferFunction::DXVA_VideoTransFunc_Unknown;
+	DXVA_VideoTransferMatrix m_forceVideoTransferMatrix = DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_Unknown;
+	DXVA_VideoPrimaries m_forceVideoPrimaries = DXVA_VideoPrimaries::DXVA_VideoPrimaries_Unknown;
 
 	LONG m_renderBoxWidth = 0;
 	LONG m_renderBoxHeight = 0;
-
-	RendererState m_state = RendererState::RENDERSTATE_UNKNOWN;
 
 	IGraphBuilder* m_pGraph = nullptr;
 	IMediaControl* m_pControl = nullptr;
@@ -109,9 +98,39 @@ protected:
 	// Helper for state setting and callbacks
 	void SetState(RendererState state);
 
-	// Graph management functions.
-	void GraphBuild();
-	void GraphTeardown();
-	void GraphRun();
-	void GraphStop();
+	// This is the whole thing, with everything included
+	virtual void GraphBuild();
+	virtual void GraphTeardown();
+	virtual void GraphRun();
+	virtual void GraphStop();
+
+	virtual void FilterGraphBuild();
+	virtual void FilterGraphDestroy();
+
+	// Window management
+	virtual void WindowSetup();
+	virtual void WindowTeardown();
+
+	// Live source filter management
+	virtual void LiveSourceBuildAndConnect();
+	virtual void LiveSourceDisconnect();
+	virtual void LiveSourceDestroy();
+
+	// If called the implementation should instantiate a renderer
+	// in m_pRenderer.
+	// Most probably by calling CoCreateInstance(...).
+	// A nullptr return will signal an error
+	virtual void RendererBuild() = 0;
+
+	// Add renderer to the graph and connect
+	virtual void RendererConnect() = 0;
+	virtual void RendererDestroy();
+
+	virtual void MediaTypeGenerate() = 0;
+
+
+private:
+
+	// Use SetState()
+	RendererState m_state = RendererState::RENDERSTATE_UNKNOWN;
 };

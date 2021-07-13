@@ -11,22 +11,20 @@
 #include <dvdmedia.h>
 
 #include <guid.h>
-#include <microsoft_directshow/live_source_filter/CLiveSource.h>
-#include <microsoft_directshow/DIrectShowTranslations.h>
 #include <CNoopVideoFrameFormatter.h>
+#include <microsoft_directshow/DirectShowTranslations.h>
 #include <ffmpeg/CFFMpegDecoderVideoFrameFormatter.h>
 
-#include "CVideoInfo2DirectShowRenderer.h"
+#include "DirectShowGenericHDRVideoRenderer.h"
 
 
-CVideoInfo2DirectShowRenderer::CVideoInfo2DirectShowRenderer(
+DirectShowGenericHDRVideoRenderer::DirectShowGenericHDRVideoRenderer(
 	GUID rendererCLSID,
 	IRendererCallback& callback,
 	HWND videoHwnd,
 	HWND eventHwnd,
 	UINT eventMsg,
 	ITimingClock* timingClock,
-	VideoStateComPtr& videoState,
 	DirectShowStartStopTimeMethod timestamp,
 	bool useFrameQueue,
 	size_t frameQueueMaxSize,
@@ -34,28 +32,69 @@ CVideoInfo2DirectShowRenderer::CVideoInfo2DirectShowRenderer(
 	DXVA_VideoTransferFunction forceVideoTransferFunction,
 	DXVA_VideoTransferMatrix forceVideoTransferMatrix,
 	DXVA_VideoPrimaries forceVideoPrimaries):
-	ADirectShowRenderer(
-		rendererCLSID,
+	DirectShowVideoRenderer(
 		callback,
 		videoHwnd,
 		eventHwnd,
 		eventMsg,
 		timingClock,
-		videoState,
 		timestamp,
 		useFrameQueue,
-		frameQueueMaxSize,
-		true /* useHDRDdata */),
+		frameQueueMaxSize),
+	m_rendererCLSID(rendererCLSID),
 	m_forceNominalRange(forceNominalRange),
 	m_forceVideoTransferFunction(forceVideoTransferFunction),
 	m_forceVideoTransferMatrix(forceVideoTransferMatrix),
 	m_forceVideoPrimaries(forceVideoPrimaries)
 {
-	callback.OnRendererDetailString(TEXT("DirectShow VideoInfo2 (HDR)"));
+	callback.OnRendererDetailString(TEXT("DirectShow HDR renderer"));
 }
 
 
-void CVideoInfo2DirectShowRenderer::MediaTypeGenerate()
+//
+// IRenderer
+//
+
+bool DirectShowGenericHDRVideoRenderer::OnVideoState(VideoStateComPtr& videoState)
+{
+	if (!DirectShowVideoRenderer::OnVideoState(videoState))
+		return false;
+
+	// Handle HDR data
+	if (videoState->hdrData)
+	{
+		if (!m_videoState->hdrData || *videoState->hdrData != *(m_videoState->hdrData))
+		{
+			if (FAILED(m_liveSource->OnHDRData(videoState->hdrData)))
+				throw std::runtime_error("Failed to set HDR data");
+
+			// Update the HDR in our local videostate copy
+			m_videoState->hdrData = videoState->hdrData;
+		}
+	}
+
+	return true;
+}
+
+
+//
+// DirectShowVideoRenderer
+//
+
+
+void DirectShowGenericHDRVideoRenderer::RendererBuild()
+{
+	if (FAILED(CoCreateInstance(
+		m_rendererCLSID,
+		nullptr,
+		CLSCTX_INPROC_SERVER,
+		IID_IBaseFilter,
+		(void**)&m_pRenderer)))
+		throw std::runtime_error("Failed to create renderer instance");
+}
+
+
+void DirectShowGenericHDRVideoRenderer::MediaTypeGenerate()
 {
 	GUID mediaSubType;
 	int bitCount;
@@ -64,7 +103,21 @@ void CVideoInfo2DirectShowRenderer::MediaTypeGenerate()
 	switch (m_videoState->pixelFormat)
 	{
 
-	// r210 to RGB48
+		//// v210 (YUV422)
+		//case PixelFormat::YUV_10BIT:
+
+		//	// Fails: P010/P010, YV12/YUV420P,
+
+		//	mediaSubType = MEDIASUBTYPE_P010;
+		//	bitCount = 10;
+
+		//	m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
+		//		AV_CODEC_ID_V210,
+		//		AV_PIX_FMT_P010);
+		//	break;
+
+
+		// r210 to RGB48
 	case PixelFormat::R210:
 
 		mediaSubType = MEDIASUBTYPE_RGB48LE;
@@ -76,7 +129,7 @@ void CVideoInfo2DirectShowRenderer::MediaTypeGenerate()
 			AV_PIX_FMT_RGB48LE);
 		break;
 
-	// RGB 12-bit to RGB48
+		// RGB 12-bit to RGB48
 	case PixelFormat::R12B:
 
 		mediaSubType = MEDIASUBTYPE_RGB48LE;
@@ -88,7 +141,7 @@ void CVideoInfo2DirectShowRenderer::MediaTypeGenerate()
 			AV_PIX_FMT_RGB48LE);
 		break;
 
-	// No conversion needed
+		// No conversion needed
 	default:
 		mediaSubType = TranslateToMediaSubType(m_videoState->pixelFormat);
 		bitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);;
@@ -161,8 +214,11 @@ void CVideoInfo2DirectShowRenderer::MediaTypeGenerate()
 }
 
 
-void CVideoInfo2DirectShowRenderer::Connect()
+void DirectShowGenericHDRVideoRenderer::RendererConnect()
 {
+	if (FAILED(m_pGraph->AddFilter(m_pRenderer, L"Renderer")))
+		throw std::runtime_error("Failed to add renderer to the graph");
+
 	IEnumPins* pEnum = nullptr;
 	IPin* pLiveSourceOutputPin = nullptr;
 	IPin* pRendererInputPin = nullptr;
@@ -200,8 +256,7 @@ void CVideoInfo2DirectShowRenderer::Connect()
 	pEnum->Release();
 	pEnum = nullptr;
 
-	// Given that VideoInfo2 is not understood by any usable filter, we connect directly here
-	// and if that fails it's bad luck
+	// Directly connect
 	if (FAILED(m_pGraph->ConnectDirect(pLiveSourceOutputPin, pRendererInputPin, &m_pmt)))
 	{
 		pLiveSourceOutputPin->Release();
@@ -212,4 +267,13 @@ void CVideoInfo2DirectShowRenderer::Connect()
 
 	pLiveSourceOutputPin->Release();
 	pRendererInputPin->Release();
+}
+
+
+void DirectShowGenericHDRVideoRenderer::LiveSourceBuildAndConnect()
+{
+	DirectShowVideoRenderer::LiveSourceBuildAndConnect();
+
+	if (m_videoState->hdrData)
+		m_liveSource->OnHDRData(m_videoState->hdrData);
 }

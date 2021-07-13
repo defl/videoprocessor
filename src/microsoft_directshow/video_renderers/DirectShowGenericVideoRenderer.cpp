@@ -10,43 +10,82 @@
 
 #include <CNoopVideoFrameFormatter.h>
 #include <microsoft_directshow/DirectShowTranslations.h>
+#include <ffmpeg/CFFMpegDecoderVideoFrameFormatter.h>
 
-#include "CVideoInfo1DirectShowRenderer.h"
+
+#include "DirectShowGenericVideoRenderer.h"
 
 
-CVideoInfo1DirectShowRenderer::CVideoInfo1DirectShowRenderer(
+DirectShowGenericVideoRenderer::DirectShowGenericVideoRenderer(
 	GUID rendererCLSID,
 	IRendererCallback& callback,
 	HWND videoHwnd,
 	HWND eventHwnd,
 	UINT eventMsg,
 	ITimingClock* timingClock,
-	VideoStateComPtr& videoState,
 	DirectShowStartStopTimeMethod timestamp,
 	bool useFrameQueue,
 	size_t frameQueueMaxSize):
-	ADirectShowRenderer(
-		rendererCLSID,
+	DirectShowVideoRenderer(
 		callback,
 		videoHwnd,
 		eventHwnd,
 		eventMsg,
 		timingClock,
-		videoState,
 		timestamp,
 		useFrameQueue,
-		frameQueueMaxSize,
-		false /* useHDRDdata */)
+		frameQueueMaxSize),
+	m_rendererCLSID(rendererCLSID)
 {
-	callback.OnRendererDetailString(TEXT("DirectShow compatibility (SDR)"));
+	callback.OnRendererDetailString(TEXT("DirectShow generic renderer"));
 }
 
-void CVideoInfo1DirectShowRenderer::MediaTypeGenerate()
-{
-	GUID mediaSubType = TranslateToMediaSubType(m_videoState->pixelFormat);
-	int bitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);
 
-	m_videoFramFormatter = new CNoopVideoFrameFormatter();
+//
+// DirectShowVideoRenderer
+//
+
+
+void DirectShowGenericVideoRenderer::RendererBuild()
+{
+	if (FAILED(CoCreateInstance(
+		m_rendererCLSID,
+		nullptr,
+		CLSCTX_INPROC_SERVER,
+		IID_IBaseFilter,
+		(void**)&m_pRenderer)))
+		throw std::runtime_error("Failed to create renderer instance");
+}
+
+
+void DirectShowGenericVideoRenderer::MediaTypeGenerate()
+{
+	GUID mediaSubType;
+	int bitCount;
+
+	switch (m_videoState->pixelFormat)
+	{
+
+	////TODO: This conversion is always green
+	// TODO: Merge this code higher in the hierarchy so more can use it
+	//// v210 (YUV422)
+	//case PixelFormat::YUV_10BIT:
+
+	//	mediaSubType = MEDIASUBTYPE_P010;
+	//	bitCount = 10;
+
+	//	m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
+	//		AV_CODEC_ID_V210,
+	//		AV_PIX_FMT_P010);
+	//	break;
+
+	default:
+		mediaSubType = TranslateToMediaSubType(m_videoState->pixelFormat);
+		bitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);
+
+		m_videoFramFormatter = new CNoopVideoFrameFormatter();
+	}
+
 	m_videoFramFormatter->OnVideoState(m_videoState);
 
 	// Build PMT
@@ -85,12 +124,16 @@ void CVideoInfo1DirectShowRenderer::MediaTypeGenerate()
 }
 
 
-void CVideoInfo1DirectShowRenderer::Connect()
+void DirectShowGenericVideoRenderer::RendererConnect()
 {
+	if (FAILED(m_pGraph->AddFilter(m_pRenderer, L"Renderer")))
+		throw std::runtime_error("Failed to add renderer to the graph");
+
 	IEnumPins* pEnum = nullptr;
 	IPin* pLiveSourceOutputPin = nullptr;
 	IPin* pRendererInputPin = nullptr;
 
+	assert(m_liveSource);
 	if (FAILED(m_liveSource->EnumPins(&pEnum)))
 		throw std::runtime_error("Failed to get livesource pin enumerator");
 
@@ -104,6 +147,7 @@ void CVideoInfo1DirectShowRenderer::Connect()
 	pEnum->Release();
 	pEnum = nullptr;
 
+	assert(m_pRenderer);
 	if (FAILED(m_pRenderer->EnumPins(&pEnum)))
 	{
 		pLiveSourceOutputPin->Release();
@@ -136,4 +180,3 @@ void CVideoInfo1DirectShowRenderer::Connect()
 	pLiveSourceOutputPin->Release();
 	pRendererInputPin->Release();
 }
-

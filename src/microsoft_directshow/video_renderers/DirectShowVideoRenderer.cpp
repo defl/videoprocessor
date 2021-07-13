@@ -15,32 +15,26 @@
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>
 #include <microsoft_directshow/DIrectShowTranslations.h>
 
-#include "ADirectShowRenderer.h"
+#include "DirectShowVideoRenderer.h"
 
 
-ADirectShowRenderer::ADirectShowRenderer(
-	GUID rendererCLSID,
+DirectShowVideoRenderer::DirectShowVideoRenderer(
 	IRendererCallback& callback,
 	HWND videoHwnd,
 	HWND eventHwnd,
 	UINT eventMsg,
 	ITimingClock* timingClock,
-	VideoStateComPtr& videoState,
 	DirectShowStartStopTimeMethod timestamp,
 	bool useFrameQueue,
-	size_t frameQueueMaxSize,
-	bool useHDRDdata):
-	m_rendererCLSID(rendererCLSID),
+	size_t frameQueueMaxSize):
 	m_callback(callback),
 	m_videoHwnd(videoHwnd),
 	m_eventHwnd(eventHwnd),
 	m_eventMsg(eventMsg),
 	m_timingClock(timingClock),
-	m_videoState(videoState),
 	m_timestamp(timestamp),
 	m_useFrameQueue(useFrameQueue),
-	m_frameQueueMaxSize(frameQueueMaxSize),
-	m_useHDRDdata(useHDRDdata)
+	m_frameQueueMaxSize(frameQueueMaxSize)
 {
 	if (!videoHwnd)
 		throw std::runtime_error("Invalid videoHwnd");
@@ -48,8 +42,6 @@ ADirectShowRenderer::ADirectShowRenderer(
 		throw std::runtime_error("Invalid eventHwnd");
 	if (!eventMsg)
 		throw std::runtime_error("Invalid eventMsg");
-	if (!videoState)
-		throw std::runtime_error("Invalid videoState object");
 
 	if (timingClock && timingClock->TimingClockTicksPerSecond() < 1000LL)
 		throw std::runtime_error("TimingClock needs resolution of at least millisecond level");
@@ -61,38 +53,33 @@ ADirectShowRenderer::ADirectShowRenderer(
 }
 
 
-ADirectShowRenderer::~ADirectShowRenderer()
+DirectShowVideoRenderer::~DirectShowVideoRenderer()
 {
 	GraphTeardown();
 }
 
 
-bool ADirectShowRenderer::OnVideoState(VideoStateComPtr& videoState)
+bool DirectShowVideoRenderer::OnVideoState(VideoStateComPtr& videoState)
 {
 	if (!videoState)
 		throw std::runtime_error("null video state is invalid");
 
-	// Unacceptable changes to this renderer, return false and get cleaned up
-	if (videoState->valid == false ||
-		videoState->colorspace != m_videoState->colorspace ||
-		videoState->eotf != m_videoState->eotf ||
-		*(videoState->displayMode) != *(m_videoState->displayMode) ||
-		videoState->pixelFormat != m_videoState->pixelFormat)
+	if (m_videoState)
 	{
-		return false;
-	}
-
-	if (videoState->hdrData)
-	{
-		if (!m_videoState->hdrData ||
-			*(videoState->hdrData) != *(m_videoState->hdrData))
+		// Unacceptable changes to this renderer, return false and get cleaned up
+		if (videoState->valid == false ||
+			videoState->colorspace != m_videoState->colorspace ||
+			videoState->eotf != m_videoState->eotf ||
+			*(videoState->displayMode) != *(m_videoState->displayMode) ||
+			videoState->pixelFormat != m_videoState->pixelFormat)
 		{
-			if (FAILED(m_liveSource->OnHDRData(videoState->hdrData)))
-				throw std::runtime_error("Failed to set HDR data");
-
-			// Update the HDR in the videostate
-			m_videoState->hdrData = videoState->hdrData;
+			return false;
 		}
+	}
+	else
+	{
+		// No video state yet, initialize
+		m_videoState = videoState;
 	}
 
 	// All good, continue
@@ -100,7 +87,7 @@ bool ADirectShowRenderer::OnVideoState(VideoStateComPtr& videoState)
 }
 
 
-void ADirectShowRenderer::OnVideoFrame(VideoFrame& videoFrame)
+void DirectShowVideoRenderer::OnVideoFrame(VideoFrame& videoFrame)
 {
 	// Called from some unknown thread, but with promise that Start() has completed
 
@@ -119,14 +106,14 @@ void ADirectShowRenderer::OnVideoFrame(VideoFrame& videoFrame)
 
 	if (FAILED(m_liveSource->OnVideoFrame(videoFrame)))
 	{
-		DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::OnVideoFrame(): Failed to deliver frame #%I64u"), m_frameCounter));
+		DbgLog((LOG_TRACE, 1, TEXT("DirectShowVideoRenderer::OnVideoFrame(): Failed to deliver frame #%I64u"), m_frameCounter));
 	}
 
 	++m_frameCounter;
 }
 
 
-HRESULT ADirectShowRenderer::OnWindowsEvent(LONG_PTR, LONG_PTR)
+HRESULT DirectShowVideoRenderer::OnWindowsEvent(LONG_PTR, LONG_PTR)
 {
 	// ! Do not tear down graph here
 
@@ -156,25 +143,25 @@ HRESULT ADirectShowRenderer::OnWindowsEvent(LONG_PTR, LONG_PTR)
 }
 
 
-void ADirectShowRenderer::Build()
+void DirectShowVideoRenderer::Build()
 {
 	GraphBuild();
 }
 
 
-void ADirectShowRenderer::Start()
+void DirectShowVideoRenderer::Start()
 {
 	GraphRun();
 }
 
 
-void ADirectShowRenderer::Stop()
+void DirectShowVideoRenderer::Stop()
 {
 	GraphStop();
 }
 
 
-void ADirectShowRenderer::Reset()
+void DirectShowVideoRenderer::Reset()
 {
 	// Stop directshow graph
 	if (FAILED(m_pControl->Stop()))
@@ -190,7 +177,7 @@ void ADirectShowRenderer::Reset()
 }
 
 
-void ADirectShowRenderer::OnSize()
+void DirectShowVideoRenderer::OnSize()
 {
 	// Get window size
 	RECT rectWindow;
@@ -206,13 +193,13 @@ void ADirectShowRenderer::OnSize()
 }
 
 
-void ADirectShowRenderer::SetFrameQueueMaxSize(size_t frameMaxQueueSize)
+void DirectShowVideoRenderer::SetFrameQueueMaxSize(size_t frameMaxQueueSize)
 {
 	// TODO
 }
 
 
-size_t ADirectShowRenderer::GetFrameQueueSize()
+size_t DirectShowVideoRenderer::GetFrameQueueSize()
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		throw std::runtime_error("Invalid state, can only be called while rendering");
@@ -221,7 +208,7 @@ size_t ADirectShowRenderer::GetFrameQueueSize()
 }
 
 
-double ADirectShowRenderer::EntryLatencyMs() const
+double DirectShowVideoRenderer::EntryLatencyMs() const
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		throw std::runtime_error("Invalid state, can only be called while rendering");
@@ -230,7 +217,7 @@ double ADirectShowRenderer::EntryLatencyMs() const
 }
 
 
-double ADirectShowRenderer::ExitLatencyMs() const
+double DirectShowVideoRenderer::ExitLatencyMs() const
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		throw std::runtime_error("Invalid state, can only be called while rendering");
@@ -239,7 +226,7 @@ double ADirectShowRenderer::ExitLatencyMs() const
 }
 
 
-uint64_t ADirectShowRenderer::DroppedFrameCount() const
+uint64_t DirectShowVideoRenderer::DroppedFrameCount() const
 {
 	if (m_state != RendererState::RENDERSTATE_RENDERING)
 		throw std::runtime_error("Invalid state, can only be called while rendering");
@@ -248,7 +235,7 @@ uint64_t ADirectShowRenderer::DroppedFrameCount() const
 }
 
 
-void ADirectShowRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PTR param2)
+void DirectShowVideoRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PTR param2)
 {
 	// ! Do not tear down graph here
 	// https://docs.microsoft.com/en-us/windows/win32/directshow/responding-to-events
@@ -267,9 +254,9 @@ void ADirectShowRenderer::OnGraphEvent(long evCode, LONG_PTR param1, LONG_PTR pa
 }
 
 
-void ADirectShowRenderer::SetState(RendererState state)
+void DirectShowVideoRenderer::SetState(RendererState state)
 {
-	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::SetState(): %s"), ToString(state)));
+	DbgLog((LOG_TRACE, 1, TEXT("DirectShowVideoRenderer::SetState(): %s"), ToString(state)));
 
 	assert(state != RendererState::RENDERSTATE_UNKNOWN);
 	assert(m_state != state);
@@ -279,9 +266,9 @@ void ADirectShowRenderer::SetState(RendererState state)
 }
 
 
-void ADirectShowRenderer::GraphBuild()
+void DirectShowVideoRenderer::GraphBuild()
 {
-	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphBuild(): Begin")));
+	DbgLog((LOG_TRACE, 1, TEXT("DirectShowVideoRenderer::GraphBuild(): Begin")));
 
 	assert(m_videoState);
 
@@ -297,6 +284,146 @@ void ADirectShowRenderer::GraphBuild()
 	m_renderBoxWidth = rectWindow.right - rectWindow.left;
 	m_renderBoxHeight = rectWindow.bottom - rectWindow.top;
 
+	//
+	// Directshow graph
+	//
+
+	FilterGraphBuild();
+
+	//
+	// Clock
+	//
+
+	if (m_timingClock)
+	{
+		m_referenceClock = new DirectShowTimingClock(*m_timingClock);
+		m_referenceClock->AddRef();
+		if (FAILED(m_mediaFilter->SetSyncSource(m_referenceClock)))
+			throw std::runtime_error("Failed to set sync source to our reference clock");
+
+		if (FAILED(m_amGraphStreams->SyncUsingStreamOffset(TRUE)))
+			throw std::runtime_error("Failed to call SyncUsingStreamOffset");
+	}
+
+	//
+	// Build conversion dependent stuff and media type
+	//
+
+	MediaTypeGenerate();
+
+	//
+	// Live source filter
+	//
+
+	LiveSourceBuildAndConnect();
+
+	//
+	// Renderer
+	//
+
+	RendererBuild();
+
+	if (!m_pRenderer)
+		throw std::runtime_error("Created renderer instance wes nullptr");
+
+	RendererConnect();
+
+	//
+	// Window setup
+	//
+
+	WindowSetup();
+
+	//
+	// Set up event notification.
+	//
+
+	if (FAILED(m_pEvent->SetNotifyWindow((OAHWND)m_eventHwnd, m_eventMsg, NULL)))
+		throw std::runtime_error("Failed to setup event notification");
+
+	SetState(RendererState::RENDERSTATE_READY);
+
+	DbgLog((LOG_TRACE, 1, TEXT("DirectShowVideoRenderer::GraphBuild(): End")));
+}
+
+
+void DirectShowVideoRenderer::GraphTeardown()
+{
+	// Details of how to clean up here https://docs.microsoft.com/en-us/windows/win32/directshow/using-windowed-mode
+
+	DbgLog((LOG_TRACE, 1, TEXT("DirectShowVideoRenderer::GraphTeardown(): Begin")));
+
+	//
+	// Stop sending event notifications
+	//
+	// https://docs.microsoft.com/en-us/windows/win32/directshow/responding-to-events for notes on cleanup
+	if (m_pEvent)
+	{
+		m_pEvent->SetNotifyWindow((OAHWND)nullptr, NULL, NULL);
+		m_pEvent->Release();
+		m_pEvent = nullptr;
+	}
+
+	//
+	// Teardown window
+	//
+
+	WindowTeardown();
+
+	//
+	// Disonnect
+	//
+
+	LiveSourceDisconnect();
+
+	//
+	// Free
+	//
+
+	FilterGraphDestroy();
+
+	if (m_referenceClock)
+	{
+		m_referenceClock->Release();
+		m_referenceClock = nullptr;
+	}
+
+	LiveSourceDestroy();
+
+	RendererDestroy();
+
+	if (m_videoFramFormatter)
+	{
+		delete m_videoFramFormatter;
+		m_videoFramFormatter = nullptr;
+	}
+
+	if (m_pmt.pbFormat)
+	{
+		CoTaskMemFree(m_pmt.pbFormat);
+		m_pmt.pbFormat = nullptr;
+	}
+
+	DbgLog((LOG_TRACE, 1, TEXT("DirectShowVideoRenderer::GraphTeardown(): End")));
+}
+
+
+void DirectShowVideoRenderer::GraphRun()
+{
+	DbgLog((LOG_TRACE, 1, TEXT("DirectShowVideoRenderer::GraphRun()")));
+
+	assert(m_pGraph);
+	assert(m_pControl);
+
+	if (FAILED(m_pControl->Run()))
+		throw std::runtime_error("Failed to Run() graph");
+
+	SetState(RendererState::RENDERSTATE_RENDERING);
+}
+
+
+void DirectShowVideoRenderer::FilterGraphBuild()
+{
 	//
 	// Directshow graph, note that we're not using a capture graph but DIY one
 	// - https://docs.microsoft.com/en-us/windows/win32/directshow/about-the-capture-graph-builder
@@ -329,258 +456,58 @@ void ADirectShowRenderer::GraphBuild()
 
 	if (FAILED(m_pGraph->QueryInterface(IID_IAMGraphStreams, (void**)&m_amGraphStreams)))
 		throw std::runtime_error("Failed to get IID_IAMGraphStreams interface");
-
-	//
-	// Clock
-	//
-
-	if (m_timingClock)
-	{
-		m_referenceClock = new DirectShowTimingClock(*m_timingClock);
-		m_referenceClock->AddRef();
-		if (FAILED(m_mediaFilter->SetSyncSource(m_referenceClock)))
-			throw std::runtime_error("Failed to set sync source to our reference clock");
-
-		if (FAILED(m_amGraphStreams->SyncUsingStreamOffset(TRUE)))
-			throw std::runtime_error("Failed to call SyncUsingStreamOffset");
-	}
-
-	//
-	// Build conversion dependent stuff and media type
-	//
-
-	MediaTypeGenerate();
-
-	//
-	// Live source filter
-	//
-
-	m_liveSource = dynamic_cast<CLiveSource*>(CLiveSource::CreateInstance(nullptr, nullptr));
-	if (!m_liveSource)
-		throw std::runtime_error("Failed to build a CLiveSource");
-
-	m_liveSource->AddRef();
-
-	const timestamp_t frameDuration100ns = (1.0 / m_videoState->displayMode->RefreshRateHz()) * UNITS;
-
-	m_liveSource->Initialize(
-		m_videoFramFormatter,
-		m_pmt,
-		frameDuration100ns,
-		m_timingClock,
-		m_timestamp,
-		m_useFrameQueue,
-		m_frameQueueMaxSize,
-		m_useHDRDdata);
-
-	if (m_videoState->hdrData)
-		m_liveSource->OnHDRData(m_videoState->hdrData);
-
-	if (m_pGraph->AddFilter(m_liveSource, L"LiveSource") != S_OK)
-	{
-		m_liveSource->Release();
-		throw std::runtime_error("Failed to add LiveSource to the graph");
-	}
-
-	//
-	// Renderer
-	//
-
-	if (FAILED(CoCreateInstance(
-		m_rendererCLSID,
-		nullptr,
-		CLSCTX_INPROC_SERVER,
-		IID_IBaseFilter,
-		(void**)&m_pRenderer)))
-		throw std::runtime_error("Failed to create renderer instance");
-
-	if (!m_pRenderer)
-		throw std::runtime_error("Created renderer instance wes nullptr");
-
-	if (FAILED(m_pGraph->AddFilter(m_pRenderer, L"Renderer")))
-		throw std::runtime_error("Failed to add renderer to the graph");
-
-
-	//
-	// Set up window
-	// https://docs.microsoft.com/en-us/windows/win32/directshow/using-windowed-mode
-	//
-
-	if (FAILED(m_videoWindow->put_Owner((OAHWND)m_videoHwnd)))
-		throw std::runtime_error("Failed to set owner of video window");
-
-	if (FAILED(m_videoWindow->put_WindowStyle(WS_CHILD | WS_CLIPSIBLINGS)))
-		throw std::runtime_error("Failed to set window style in video window");
-
-	if (FAILED(m_videoWindow->SetWindowPosition(0, 0, m_renderBoxWidth, m_renderBoxHeight)))
-		throw std::runtime_error("Failed to SetWindowPosition in video window");
-
-	if (FAILED(m_videoWindow->HideCursor(OATRUE)))
-		throw std::runtime_error("Failed to HideCursor in video window");
-
-	//
-	// Connect pins
-	//
-
-	Connect();
-
-	//
-	// Set up event notification.
-	//
-
-	if (FAILED(m_pEvent->SetNotifyWindow((OAHWND)m_eventHwnd, m_eventMsg, NULL)))
-		throw std::runtime_error("Failed to setup event notification");
-
-	SetState(RendererState::RENDERSTATE_READY);
-
-	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphBuild(): End")));
 }
 
 
-void ADirectShowRenderer::GraphTeardown()
+void DirectShowVideoRenderer::FilterGraphDestroy()
 {
-	// Details of how to clean up here https://docs.microsoft.com/en-us/windows/win32/directshow/using-windowed-mode
-
-	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphTeardown(): Begin")));
-
-	//
-	// Stop sending event notifications
-	//
-	// https://docs.microsoft.com/en-us/windows/win32/directshow/responding-to-events for notes on cleanup
-	if (m_pEvent)
-	{
-		m_pEvent->SetNotifyWindow((OAHWND)nullptr, NULL, NULL);
-		m_pEvent->Release();
-		m_pEvent = nullptr;
-	}
-
-	//
-	// Disable output window
-	// These can fail if we are terminating and there is no visible window anymore, no problem
-	//
-	if (m_videoWindow)
-	{
-		m_videoWindow->put_Visible(OAFALSE);
-		m_videoWindow->put_Owner(NULL);
-		m_videoWindow->HideCursor(OAFALSE);
-	}
-
-	//
-	// Disonnect
-	//
-
-	if (m_liveSource)
-	{
-		IEnumPins* pEnum = nullptr;
-		IPin* pLiveSourceOutputPin = nullptr;
-
-		if (FAILED(m_liveSource->EnumPins(&pEnum)))
-			throw std::runtime_error("Failed to get livesource pin enumerator");
-
-		if (pEnum->Next(1, &pLiveSourceOutputPin, nullptr) != S_OK)
-			throw std::runtime_error("Failed to run next on livesource pin");
-
-		pEnum->Release();
-		pEnum = nullptr;
-
-		if (FAILED(m_pGraph->Disconnect(pLiveSourceOutputPin)))
-			throw std::runtime_error("Failed to disconnect pins");
-
-		pLiveSourceOutputPin->Release();
-	}
-
-	//
-	// Free
-	//
-
-	if (m_pGraph)
-	{
-		m_pGraph->Release();
-		m_pGraph = nullptr;
-	}
 	if (m_pControl)
 	{
 		m_pControl->Release();
 		m_pControl = nullptr;
 	}
+
 	if (m_pEvent)
 	{
 		m_pEvent->Release();
 		m_pEvent = nullptr;
 	}
+
 	if (m_videoWindow)
 	{
 		m_videoWindow->Release();
 		m_videoWindow = nullptr;
 	}
+
 	if (m_pGraph2)
 	{
 		m_pGraph2->Release();
 		m_pGraph2 = nullptr;
 	}
+
 	if (m_mediaFilter)
 	{
 		m_mediaFilter->Release();
 		m_mediaFilter = nullptr;
 	}
+
 	if (m_amGraphStreams)
 	{
 		m_amGraphStreams->Release();
 		m_amGraphStreams = nullptr;
 	}
 
-	if (m_referenceClock)
+	if (m_pGraph)
 	{
-		m_referenceClock->Release();
-		m_referenceClock = nullptr;
+		m_pGraph->Release();
+		m_pGraph = nullptr;
 	}
-
-	if (m_liveSource)
-	{
-		m_liveSource->Destroy();
-		m_liveSource->Release();
-		m_liveSource = nullptr;
-	}
-
-	if (m_pRenderer)
-	{
-		m_pRenderer->Release();
-		m_pRenderer = nullptr;
-	}
-
-	if (m_videoFramFormatter)
-	{
-		delete m_videoFramFormatter;
-		m_videoFramFormatter = nullptr;
-	}
-
-	if (m_pmt.pbFormat)
-	{
-		CoTaskMemFree(m_pmt.pbFormat);
-		m_pmt.pbFormat = nullptr;
-	}
-
-	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphTeardown(): End")));
 }
 
 
-void ADirectShowRenderer::GraphRun()
+void DirectShowVideoRenderer::GraphStop()
 {
-	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphRun()")));
-
-	assert(m_pGraph);
-	assert(m_pControl);
-
-	if (FAILED(m_pControl->Run()))
-		throw std::runtime_error("Failed to Run() graph");
-
-	SetState(RendererState::RENDERSTATE_RENDERING);
-}
-
-
-void ADirectShowRenderer::GraphStop()
-{
-	DbgLog((LOG_TRACE, 1, TEXT("ADirectShowRenderer::GraphStop()")));
+	DbgLog((LOG_TRACE, 1, TEXT("DirectShowVideoRenderer::GraphStop()")));
 
 	assert(m_pGraph);
 	assert(m_pControl);
@@ -606,4 +533,113 @@ void ADirectShowRenderer::GraphStop()
 	assert(m_liveSource->GetFrameQueueSize() == 0);
 
 	SetState(RendererState::RENDERSTATE_STOPPED);
+}
+
+
+void DirectShowVideoRenderer::WindowSetup()
+{
+	// https://docs.microsoft.com/en-us/windows/win32/directshow/using-windowed-mode
+
+	assert(m_videoHwnd);
+	assert(m_renderBoxWidth > 0);
+	assert(m_renderBoxHeight > 0);
+
+	if (FAILED(m_videoWindow->put_Owner((OAHWND)m_videoHwnd)))
+		throw std::runtime_error("Failed to set owner of video window");
+
+	if (FAILED(m_videoWindow->put_WindowStyle(WS_CHILD | WS_CLIPSIBLINGS)))
+		throw std::runtime_error("Failed to set window style in video window");
+
+	if (FAILED(m_videoWindow->SetWindowPosition(0, 0, m_renderBoxWidth, m_renderBoxHeight)))
+		throw std::runtime_error("Failed to SetWindowPosition in video window");
+
+	if (FAILED(m_videoWindow->HideCursor(OATRUE)))
+		throw std::runtime_error("Failed to HideCursor in video window");
+}
+
+
+void DirectShowVideoRenderer::WindowTeardown()
+{
+	// These can fail if we are terminating and there is no visible window anymore, no problem
+	if (m_videoWindow)
+	{
+		m_videoWindow->put_Visible(OAFALSE);
+		m_videoWindow->put_Owner(NULL);
+		m_videoWindow->HideCursor(OAFALSE);
+	}
+}
+
+
+void DirectShowVideoRenderer::LiveSourceBuildAndConnect()
+{
+	assert(!m_liveSource);
+
+	m_liveSource = dynamic_cast<CLiveSource*>(CLiveSource::CreateInstance(nullptr, nullptr));
+	if (!m_liveSource)
+		throw std::runtime_error("Failed to build a CLiveSource");
+
+	m_liveSource->AddRef();
+
+	const timestamp_t frameDuration100ns =
+		(1.0 / m_videoState->displayMode->RefreshRateHz()) * UNITS;
+
+	m_liveSource->Initialize(
+		m_videoFramFormatter,
+		m_pmt,
+		frameDuration100ns,
+		m_timingClock,
+		m_timestamp,
+		m_useFrameQueue,
+		m_frameQueueMaxSize);
+
+	if (m_pGraph->AddFilter(m_liveSource, L"LiveSource") != S_OK)
+	{
+		m_liveSource->Release();
+		throw std::runtime_error("Failed to add LiveSource to the graph");
+	}
+}
+
+
+void DirectShowVideoRenderer::LiveSourceDisconnect()
+{
+	if (m_liveSource)
+	{
+		IEnumPins* pEnum = nullptr;
+		IPin* pLiveSourceOutputPin = nullptr;
+
+		if (FAILED(m_liveSource->EnumPins(&pEnum)))
+			throw std::runtime_error("Failed to get livesource pin enumerator");
+
+		if (pEnum->Next(1, &pLiveSourceOutputPin, nullptr) != S_OK)
+			throw std::runtime_error("Failed to run next on livesource pin");
+
+		pEnum->Release();
+		pEnum = nullptr;
+
+		if (FAILED(m_pGraph->Disconnect(pLiveSourceOutputPin)))
+			throw std::runtime_error("Failed to disconnect pins");
+
+		pLiveSourceOutputPin->Release();
+	}
+}
+
+
+void DirectShowVideoRenderer::LiveSourceDestroy()
+{
+	if (m_liveSource)
+	{
+		m_liveSource->Destroy();
+		m_liveSource->Release();
+		m_liveSource = nullptr;
+	}
+}
+
+
+void DirectShowVideoRenderer::RendererDestroy()
+{
+	if (m_pRenderer)
+	{
+		m_pRenderer->Release();
+		m_pRenderer = nullptr;
+	}
 }

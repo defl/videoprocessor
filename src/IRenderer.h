@@ -47,6 +47,7 @@ struct IRendererCallback
 
 
 /**
+ * TODO: Rename to IVideoRenderer
  * Renderer interface
  */
 class IRenderer
@@ -55,6 +56,10 @@ public:
 
 	virtual ~IRenderer() {}
 
+	//
+	// Runtime
+	//
+
 	// Update the video information.
 	// The renderer can decide to stop after this and it will signal so by returning false,
 	// a return of true means the new state was accepted.
@@ -62,6 +67,7 @@ public:
 	virtual bool OnVideoState(VideoStateComPtr&) = 0;
 
 	// Draw the current buffer as frame
+	// VideoFrames can be buffered and they can be internally refcounted, hence non-constant
 	// ! Only can be called if Start() exectued correctly and before Stop() is called
 	virtual void OnVideoFrame(VideoFrame&) = 0;
 
@@ -86,8 +92,11 @@ public:
 	// GUI
 	//
 
-	// Handle window resize event
+	// Window got resized
 	virtual void OnSize() = 0;
+
+	// Window needs repainting
+	virtual void OnPaint() = 0;
 
 	//
 	// Queues

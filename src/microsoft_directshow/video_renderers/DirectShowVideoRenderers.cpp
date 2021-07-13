@@ -13,9 +13,10 @@
 #include <guiddef.h>
 
 #include <guid.h>
-#include "DirectShowRenderers.h"
-#include <microsoft_directshow/renderers/MPCVRDirectShowRenderer.h>
-#include <microsoft_directshow/renderers/GenerticDirectShowRenderer.h>
+#include "DirectShowVideoRenderers.h"
+#include <microsoft_directshow/video_renderers/DirectShowMPCVideoRenderer.h>
+#include <microsoft_directshow/video_renderers/DirectShowGenericVideoRenderer.h>
+#include <microsoft_directshow/video_renderers/DirectShowEnhancedVideoRenderer.h>
 
 
 void DirectShowVideoRendererIds(std::vector<RendererId>& rendererIds)

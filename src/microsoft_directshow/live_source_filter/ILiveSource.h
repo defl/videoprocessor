@@ -33,8 +33,7 @@ DECLARE_INTERFACE_(ILiveSource, IUnknown)
 		ITimingClock * timingClock,
 		DirectShowStartStopTimeMethod timestamp,
 		bool useFrameQueue,
-		size_t frameQueueMaxSize,
-		bool useHDRData) PURE;
+		size_t frameQueueMaxSize) PURE;
 
 	// Destroy, can only be called once
 	STDMETHOD(Destroy)(void) PURE;

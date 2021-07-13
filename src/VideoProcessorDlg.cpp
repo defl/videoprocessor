@@ -16,10 +16,13 @@
 #include <cie.h>
 #include <resource.h>
 #include <VideoProcessorApp.h>
-#include <microsoft_directshow/CVideoInfo1DirectShowRenderer.h>
-#include <microsoft_directshow/CVideoInfo2DirectShowRenderer.h>
+#include <microsoft_directshow/video_renderers/DirectShowVideoRenderers.h>
+#include <microsoft_directshow/video_renderers/DirectShowMPCVideoRenderer.h>
+#include <microsoft_directshow/video_renderers/DirectShowEnhancedVideoRenderer.h>
+#include <microsoft_directshow/video_renderers/DirectShowGenericVideoRenderer.h>
+#include <microsoft_directshow/video_renderers/DirectShowGenericHDRVideoRenderer.h>
+#include <microsoft_directshow/DirectShowRendererStartStopTimeMethod.h>
 #include <microsoft_directshow/DirectShowDefines.h>
-#include <microsoft_directshow/DirectShowRenderers.h>
 #include <guid.h>
 
 #include "VideoProcessorDlg.h"
@@ -293,16 +296,16 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 
 	if (m_rendererState == RendererState::RENDERSTATE_RENDERING)
 	{
-		cstring.Format(_T("%lu"), m_renderer->GetFrameQueueSize());
+		cstring.Format(_T("%lu"), m_videoRenderer->GetFrameQueueSize());
 		m_rendererVideoFrameQueueSizeText.SetWindowText(cstring);
 
-		cstring.Format(_T("%.01f"), m_renderer->EntryLatencyMs());
+		cstring.Format(_T("%.01f"), m_videoRenderer->EntryLatencyMs());
 		m_latencyToVPRendererText.SetWindowText(cstring);
 
-		cstring.Format(_T("%.01f"), m_renderer->ExitLatencyMs());
+		cstring.Format(_T("%.01f"), m_videoRenderer->ExitLatencyMs());
 		m_latencyToDSRendererText.SetWindowText(cstring);
 
-		cstring.Format(_T("%lu"), m_renderer->DroppedFrameCount());
+		cstring.Format(_T("%lu"), m_videoRenderer->DroppedFrameCount());
 		m_rendererDroppedFrameCountText.SetWindowText(cstring);
 	}
 	else
@@ -343,7 +346,7 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 	if (m_timerSeconds % 5 == 0 &&
 		m_rendererState == RendererState::RENDERSTATE_RENDERING)
 	{
-		assert(m_renderer);
+		assert(m_videoRenderer);
 		assert(m_captureDevice);
 
 		bool queueOk = true;
@@ -352,13 +355,13 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 		const bool rendererResetAuto = m_rendererResetAutoCheck.GetCheck();
 		if(rendererResetAuto)
 		{
-			const bool needsReset = m_renderer->GetFrameQueueSize() >= 3;
+			const bool needsReset = m_videoRenderer->GetFrameQueueSize() >= 3;
 			queueOk = !needsReset;
 
 			if (needsReset)
 			{
 				DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnTimer(): Resetting renderer")));
-				m_renderer->Reset();
+				m_videoRenderer->Reset();
 			}
 		}
 
@@ -367,11 +370,12 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 		const bool timingClockFrameOffsetAuto = m_timingClockFrameOffsetAutoCheck.GetCheck();
 		if (queueOk && timingClockFrameOffsetAuto)
 		{
-			const double videoFrameLead = -(m_renderer->ExitLatencyMs());
+			const double videoFrameLead = -(m_videoRenderer->ExitLatencyMs());
+			const double frameDurationMs = 1000.0 / m_captureDeviceVideoState->displayMode->RefreshRateHz();
 
 			const bool needsAdjusting =
 				videoFrameLead < 0 ||
-				videoFrameLead > (m_captureDeviceVideoState->displayMode->FrameDurationMs() * 2);
+				videoFrameLead > (frameDurationMs * 2);
 
 			if (needsAdjusting)
 			{
@@ -426,10 +430,10 @@ void CVideoProcessorDlg::OnBnClickedRendererReset()
 {
 	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedRendererReset()")));
 
-	if (!m_renderer)
+	if (!m_videoRenderer)
 		return;
 
-	m_renderer->Reset();
+	m_videoRenderer->Reset();
 }
 
 
@@ -661,8 +665,8 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 // it works by using the GUI's message queue.
 LRESULT CVideoProcessorDlg::OnMessageDirectShowNotification(WPARAM wParam, LPARAM lParam)
 {
-	if (m_renderer)
-		if (FAILED(m_renderer->OnWindowsEvent(wParam, lParam)))
+	if (m_videoRenderer)
+		if (FAILED(m_videoRenderer->OnWindowsEvent(wParam, lParam)))
 			FatalError(TEXT("Failed to handle windows event in renderer"));
 
 	return 0;
@@ -679,7 +683,7 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 
 	bool enableButtons = false;
 
-	assert(m_renderer);
+	assert(m_videoRenderer);
 	assert(m_rendererState != newRendererState);
 	m_rendererState = newRendererState;
 
@@ -753,9 +757,9 @@ void CVideoProcessorDlg::OnCommandFullScreenExit()
 
 void CVideoProcessorDlg::OnCommandRendererReset()
 {
-	if (m_renderer)
+	if (m_videoRenderer)
 	{
-		m_renderer->Reset();
+		m_videoRenderer->Reset();
 	}
 }
 
@@ -834,10 +838,10 @@ void CVideoProcessorDlg::OnCaptureDeviceVideoStateChange(VideoStateComPtr videoS
 	{
 		assert(m_captureDevice);
 		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
-		assert(m_renderer);
+		assert(m_videoRenderer);
 		assert(m_rendererState == RendererState::RENDERSTATE_RENDERING);
 
-		rendererAcceptedState = m_renderer->OnVideoState(videoState);
+		rendererAcceptedState = m_videoRenderer->OnVideoState(videoState);
 	}
 
 	PostMessage(
@@ -857,10 +861,10 @@ void CVideoProcessorDlg::OnCaptureDeviceVideoFrame(VideoFrame& videoFrame)
 	{
 		assert(m_captureDevice);
 		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
-		assert(m_renderer);
+		assert(m_videoRenderer);
 		assert(m_rendererState == RendererState::RENDERSTATE_RENDERING);
 
-		m_renderer->OnVideoFrame(videoFrame);
+		m_videoRenderer->OnVideoFrame(videoFrame);
 	}
 }
 
@@ -901,14 +905,14 @@ void CVideoProcessorDlg::UpdateState()
 		m_captureInputCombo.EnableWindow(FALSE);
 
 		// Have a render and it's rendering, stop it
-		if (m_renderer &&
+		if (m_videoRenderer &&
 			m_rendererState == RendererState::RENDERSTATE_RENDERING)
 			RenderStop();
 
 		// Waiting for render to go away
 		// (This has to come before stopping the capture as the renderer might be
 		//  using the capture card as a clock.)
-		if (m_renderer)
+		if (m_videoRenderer)
 			return;
 
 		// Have a capture and it's capturing, stop it
@@ -925,9 +929,10 @@ void CVideoProcessorDlg::UpdateState()
 			return;
 
 		// From this point on we should be clean, set up new card if so desired
-		assert(!m_renderer);
+		assert(!m_videoRenderer);
 		assert(!m_captureDevice);
-		assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
+		assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
+			   m_rendererState == RendererState::RENDERSTATE_FAILED);
 		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
 
 		if (m_desiredCaptureDevice)
@@ -943,7 +948,7 @@ void CVideoProcessorDlg::UpdateState()
 	}
 
 	// Capture card gone, but still have renderer, can't live for much longer
-	if (!m_captureDevice && m_renderer)
+	if (!m_captureDevice && m_videoRenderer)
 	{
 		assert(m_rendererState != RendererState::RENDERSTATE_RENDERING);
 		return;
@@ -954,7 +959,7 @@ void CVideoProcessorDlg::UpdateState()
 	{
 		assert(!m_captureDevice);
 		assert(!m_desiredCaptureDevice);
-		assert(!m_renderer);
+		assert(!m_videoRenderer);
 		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
 		assert(
 			m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
@@ -985,14 +990,14 @@ void CVideoProcessorDlg::UpdateState()
 		m_desiredCaptureInputId != m_currentCaptureInputId)
 	{
 		// Have a render and it's rendering, stop it
-		if (m_renderer &&
+		if (m_videoRenderer &&
 			m_rendererState == RendererState::RENDERSTATE_RENDERING)
 			RenderStop();
 
 		// Waiting for render to go away
 		// (This has to come before stopping the capture as the renderer might be
 		//  using the capture card as a clock.)
-		if (m_renderer)
+		if (m_videoRenderer)
 			return;
 
 		// Have a capture and it's capturing, stop it
@@ -1005,7 +1010,7 @@ void CVideoProcessorDlg::UpdateState()
 			return;
 
 		// From this point on we should be clean, set up new card
-		assert(!m_renderer);
+		assert(!m_videoRenderer);
 		assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
 		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_READY);
 
@@ -1030,7 +1035,7 @@ void CVideoProcessorDlg::UpdateState()
 	//
 
 	// No render, start one if the current state is not failed and we have a valid video state
-	if (!m_renderer)
+	if (!m_videoRenderer)
 	{
 		// If we still have a full screen window and don't want to be full screen anymore clean it up
 		if (!m_rendererfullScreen && m_fullScreenVideoWindow)
@@ -1051,7 +1056,7 @@ void CVideoProcessorDlg::UpdateState()
 		return;
 	}
 
-	assert(m_renderer);
+	assert(m_videoRenderer);
 
 	// If we have a renderer but the video state is invalid stop if rendering
 	if (m_rendererState == RendererState::RENDERSTATE_RENDERING &&
@@ -1192,7 +1197,7 @@ void CVideoProcessorDlg::CaptureStart()
 
 	assert(m_captureDevice);
 	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_READY);
-	assert(!m_renderer);
+	assert(!m_videoRenderer);
 	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
 
 	// Update internal state before call to StartCapture as that might be synchronous
@@ -1211,7 +1216,7 @@ void CVideoProcessorDlg::CaptureStop()
 
 	assert(m_captureDevice);
 	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
-	assert(!m_renderer);
+	assert(!m_videoRenderer);
 	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
 		   m_rendererState == RendererState::RENDERSTATE_FAILED);
 
@@ -1236,8 +1241,9 @@ void CVideoProcessorDlg::CaptureRemove()
 
 	assert(m_captureDevice);
 	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_READY);
-	assert(!m_renderer);
-	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN);
+	assert(!m_videoRenderer);
+	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
+		   m_rendererState == RendererState::RENDERSTATE_FAILED);
 
 	m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN;
 	m_captureDevice->SetCallbackHandler(nullptr);
@@ -1290,7 +1296,7 @@ void CVideoProcessorDlg::RenderStart()
 {
 	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::RenderStart(): Begin")));
 
-	assert(!m_renderer);
+	assert(!m_videoRenderer);
 	assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
 		   m_rendererState == RendererState::RENDERSTATE_STOPPED);
 
@@ -1305,12 +1311,13 @@ void CVideoProcessorDlg::RenderStart()
 	if (i < 0)
 		return;
 
-	GUID* rendererClSID= (GUID*)m_rendererCombo.GetItemData(i);
+	GUID* rendererClSID = (GUID*)m_rendererCombo.GetItemData(i);
 
 	// Get directshow start-stop method
-	i = m_rendererTimestampCombo.GetCurSel();
+	i = m_rendererDirectShowStartStopTimeMethodCombo.GetCurSel();
 	assert(i >= 0);
-	DirectShowStartStopTimeMethod rendererTimestamp = (DirectShowStartStopTimeMethod)m_rendererTimestampCombo.GetItemData(i);
+	DirectShowStartStopTimeMethod directShowStartStopTimeMethod =
+		(DirectShowStartStopTimeMethod)m_rendererDirectShowStartStopTimeMethodCombo.GetItemData(i);
 
 	// Capture card always provides the clock
 	ITimingClock* timingClock = m_captureDevice->GetTimingClock();
@@ -1320,7 +1327,10 @@ void CVideoProcessorDlg::RenderStart()
 	m_windowedVideoWindow.SetWindowTextW(TEXT("Starting..."));
 	m_rendererState = RendererState::RENDERSTATE_STARTING;
 
-	// Try to construct and start a VideoInfo2 renderer
+	//
+	// Construct renderer
+	//
+
 	try
 	{
 		i = m_rendererNominalRangeCombo.GetCurSel();
@@ -1339,15 +1349,14 @@ void CVideoProcessorDlg::RenderStart()
 		assert(i >= 0);
 		DXVA_VideoPrimaries forceVideoPrimaries = (DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
 
-		m_renderer = new CVideoInfo2DirectShowRenderer(
+		m_videoRenderer = new DirectShowGenericHDRVideoRenderer(
 			*rendererClSID,
 			*this,
 			GetRenderWindow(),
 			this->GetSafeHwnd(),
 			WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
 			timingClock,
-			m_captureDeviceVideoState,
-			rendererTimestamp,
+			directShowStartStopTimeMethod,
 			GetRendererVideoFrameUseQueue(),
 			GetRendererVideoFrameQueueSizeMax(),
 			forceNominalRange,
@@ -1355,48 +1364,76 @@ void CVideoProcessorDlg::RenderStart()
 			forceVideoTransferMatrix,
 			forceVideoPrimaries);
 
-		if (!m_renderer)
-			FatalError(TEXT("Failed to build CVideoInfo2DirectShowRenderer"));
+		if (m_captureDeviceVideoState)
+			m_videoRenderer->OnVideoState(m_captureDeviceVideoState);
 
-		m_renderer->Build();
-		m_renderer->Start();
+		m_videoRenderer->Build();
+		m_videoRenderer->Start();
+
+		m_rendererStateText.SetWindowText(TEXT("Started HDR renderer, waiting for image..."));
+
 	}
 	catch (std::runtime_error e)
 	{
-		if (m_renderer)
+		if (m_videoRenderer)
 		{
-			delete m_renderer;
-			m_renderer = nullptr;
+			delete m_videoRenderer;
+			m_videoRenderer = nullptr;
 		}
 
-		// That didn't work, try the fallback to VideoInfo1 renderer
 		try
 		{
-			m_renderer = new CVideoInfo1DirectShowRenderer(
-				*rendererClSID,
-				*this,
-				GetRenderWindow(),
-				this->GetSafeHwnd(),
-				WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
-				timingClock,
-				m_captureDeviceVideoState,
-				rendererTimestamp,
-				GetRendererVideoFrameUseQueue(),
-				GetRendererVideoFrameQueueSizeMax());
+			if (IsEqualCLSID(*rendererClSID, CLSID_MPCVR))
+			{
+				m_videoRenderer = new DirectShowMPCVideoRenderer(
+					*this,
+					GetRenderWindow(),
+					this->GetSafeHwnd(),
+					WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
+					timingClock,
+					directShowStartStopTimeMethod,
+					GetRendererVideoFrameUseQueue(),
+					GetRendererVideoFrameQueueSizeMax());
+			}
+			else if (IsEqualCLSID(*rendererClSID, CLSID_EnhancedVideoRenderer))
+			{
+				m_videoRenderer = new DirectShowEnhancedVideoRenderer(
+					*this,
+					GetRenderWindow(),
+					this->GetSafeHwnd(),
+					WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
+					timingClock,
+					directShowStartStopTimeMethod,
+					GetRendererVideoFrameUseQueue(),
+					GetRendererVideoFrameQueueSizeMax());
+			}
+			else
+				m_videoRenderer = new DirectShowGenericVideoRenderer(
+					*rendererClSID,
+					*this,
+					GetRenderWindow(),
+					this->GetSafeHwnd(),
+					WM_MESSAGE_DIRECTSHOW_NOTIFICATION,
+					timingClock,
+					directShowStartStopTimeMethod,
+					GetRendererVideoFrameUseQueue(),
+					GetRendererVideoFrameQueueSizeMax());
 
-			if (!m_renderer)
-				FatalError(TEXT("Failed to build CVideoInfo1DirectShowRenderer"));
+			if (!m_videoRenderer)
+				FatalError(TEXT("Failed to build DirectShow Video Renderer"));
 
-			m_renderer->Build();
-			m_renderer->Start();
+			if (m_captureDeviceVideoState)
+				m_videoRenderer->OnVideoState(m_captureDeviceVideoState);
+
+			m_videoRenderer->Build();
+			m_videoRenderer->Start();
+
+			m_rendererStateText.SetWindowText(TEXT("Started, waiting for image..."));
 		}
 		catch (std::runtime_error e)
 		{
-			if (m_renderer)
-			{
-				delete m_renderer;
-				m_renderer = nullptr;
-			}
+			delete m_videoRenderer;
+			m_videoRenderer = nullptr;
 
 			m_rendererState = RendererState::RENDERSTATE_FAILED;
 			m_rendererStateText.SetWindowText(TEXT("Failed"));
@@ -1418,8 +1455,6 @@ void CVideoProcessorDlg::RenderStart()
 		}
 	}
 
-	m_rendererStateText.SetWindowText(TEXT("Started, waiting for image..."));
-
 	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::RenderStart(): End")));
 }
 
@@ -1431,7 +1466,7 @@ void CVideoProcessorDlg::RenderStop()
 	assert(m_captureDevice);
 	assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
 
-	assert(m_renderer);
+	assert(m_videoRenderer);
 	assert(m_rendererState == RendererState::RENDERSTATE_RENDERING);
 	assert(m_deliverCaptureDataToRenderer.load(std::memory_order_acquire));
 
@@ -1441,7 +1476,7 @@ void CVideoProcessorDlg::RenderStop()
 	// Update internal state before call to StartCapture as that might be synchronous
 	m_rendererState = RendererState::RENDERSTATE_STOPPING;
 
-	m_renderer->Stop();
+	m_videoRenderer->Stop();
 
 	m_rendererStateText.SetWindowText(TEXT("Stopping"));
 
@@ -1453,12 +1488,12 @@ void CVideoProcessorDlg::RenderRemove()
 {
 	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::RenderRemove(): Begin")));
 
-	assert(m_renderer);
+	assert(m_videoRenderer);
 	assert(m_rendererState == RendererState::RENDERSTATE_STOPPED);
 	assert(!m_deliverCaptureDataToRenderer);
 
-	delete m_renderer;
-	m_renderer = nullptr;
+	delete m_videoRenderer;
+	m_videoRenderer = nullptr;
 
 	m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
 
@@ -1557,8 +1592,8 @@ void CVideoProcessorDlg::UpdateTimingClockFrameOffset()
 	if (m_captureDevice)
 		m_captureDevice->SetFrameOffsetMs(GetTimingClockFrameOffsetMs());
 
-	if (m_renderer)
-		m_renderer->Reset();
+	if (m_videoRenderer)
+		m_videoRenderer->Reset();
 }
 
 
@@ -1572,7 +1607,7 @@ void CVideoProcessorDlg::RebuildRendererCombo()
 	// Get all supported renderer ids
 	//
 
-	DirectShowGetRendererIds(rendererIds);
+	DirectShowVideoRendererIds(rendererIds);
 
 	//
 	// Populate selection box, sorted
@@ -1609,7 +1644,7 @@ void CVideoProcessorDlg::_FatalError(int line, const std::string& functionName, 
 {
 	CString s;
 	s.Format(
-		_T("%s\r\n\r\File: VideoProcessorDlg.cpp:%i\r\nFunction: %s"),
+		_T("%s\r\n\rFile: VideoProcessorDlg.cpp:%i\r\nFunction: %s"),
 		error, line, CString(functionName.c_str()));
 
 	::MessageBox(nullptr, s, TEXT("Fatal error"), MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
@@ -1669,7 +1704,7 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	// Renderer group
 	DDX_Control(pDX, IDC_RENDERER_COMBO, m_rendererCombo);
 	DDX_Control(pDX, IDC_RENDERER_DETAIL_STRING_STATIC, m_rendererDetailStringStatic);
-	DDX_Control(pDX, IDC_RENDERER_TIMESTAMP_COMBO, m_rendererTimestampCombo);
+	DDX_Control(pDX, IDC_RENDERER_TIMESTAMP_COMBO, m_rendererDirectShowStartStopTimeMethodCombo);
 	DDX_Control(pDX, IDC_RENDERER_NOMINAL_RANGE_COMBO, m_rendererNominalRangeCombo);
 	DDX_Control(pDX, IDC_RENDERER_TRANSFER_FUNCTION_COMBO, m_rendererTransferFunctionCombo);
 	DDX_Control(pDX, IDC_RENDERER_TRANSFER_MATRIX_COMBO, m_rendererTransferMatrixCombo);
@@ -1717,10 +1752,10 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	// Fill renderer selection boxes
 	for (auto p : RENDERER_DIRECTSHOW_START_STOP_TIME_OPTIONS)
 	{
-		int index = m_rendererTimestampCombo.AddString(ToString(p));
-		m_rendererTimestampCombo.SetItemData(index, (int)p);
+		int index = m_rendererDirectShowStartStopTimeMethodCombo.AddString(ToString(p));
+		m_rendererDirectShowStartStopTimeMethodCombo.SetItemData(index, (int)p);
 	}
-	m_rendererTimestampCombo.SetCurSel(0);
+	m_rendererDirectShowStartStopTimeMethodCombo.SetCurSel(0);
 
 	for (const auto& p : DIRECTSHOW_NOMINAL_RANGE_OPTIONS)
 	{
@@ -1798,9 +1833,9 @@ void CVideoProcessorDlg::OnOK()
 			break;
 
 		case IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_MAX_EDIT:
-			if (m_renderer)
+			if (m_videoRenderer)
 			{
-				m_renderer->SetFrameQueueMaxSize(GetRendererVideoFrameQueueSizeMax());
+				m_videoRenderer->SetFrameQueueMaxSize(GetRendererVideoFrameQueueSizeMax());
 			}
 			break;
 
@@ -1841,8 +1876,8 @@ void CVideoProcessorDlg::OnPaint()
 
 void CVideoProcessorDlg::OnSize(UINT nType, int cx, int cy)
 {
-	if (m_renderer)
-		m_renderer->OnSize();
+	if (m_videoRenderer)
+		m_videoRenderer->OnSize();
 
 	CDialog::OnSize(nType, cx, cy);
 }
