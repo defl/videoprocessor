@@ -33,11 +33,12 @@ struct BMDDisplayModeData
 
 static const std::map<BMDDisplayMode, BMDDisplayModeData> BD_DISPLAY_MODE_DATA =
 {
+	{bmdModeNTSCp,    {720, 486, 1, 60000, 1001}},
+	{bmdModePALp,     {720, 576, 1, 50000, 1000}},
+
 	{bmdModeNTSC,     {720, 486, 2, 30000, 1001}},
 	{bmdModeNTSC2398, {720, 486, 2, 24000, 1001}},
-	{bmdModeNTSCp,    {720, 486, 1, 60000, 1001}},
 	{bmdModePAL,      {720, 576, 2, 25000, 1000}},
-	{bmdModePALp,     {720, 576, 1, 50000, 1000}},
 
 	// 720 modes
 	{bmdModeHD720p50,   {1280, 720, 1, 50000, 1000}},
@@ -52,9 +53,6 @@ static const std::map<BMDDisplayMode, BMDDisplayModeData> BD_DISPLAY_MODE_DATA =
 	{bmdModeHD1080p30,    {1920, 1080, 1,  30000, 1000}},
 	{bmdModeHD1080p4795,  {1920, 1080, 1,  48000, 1001}},
 	{bmdModeHD1080p48,    {1920, 1080, 1,  48000, 1000}},
-	{bmdModeHD1080i50,    {1920, 1080, 2,  25000, 1000}},
-	{bmdModeHD1080i5994,  {1920, 1080, 2,  30000, 1001}},
-	{bmdModeHD1080i6000,  {1920, 1080, 2,  30000, 1000}},
 	{bmdModeHD1080p50,    {1920, 1080, 1,  50000, 1000}},
 	{bmdModeHD1080p5994,  {1920, 1080, 1,  60000, 1001}},
 	{bmdModeHD1080p6000,  {1920, 1080, 1,  60000, 1000}},
@@ -62,80 +60,87 @@ static const std::map<BMDDisplayMode, BMDDisplayModeData> BD_DISPLAY_MODE_DATA =
 	{bmdModeHD1080p96,    {1920, 1080, 1,  96000, 1000}},
 	{bmdModeHD1080p100,   {1920, 1080, 1, 100000, 1000}},
 	{bmdModeHD1080p11988, {1920, 1080, 1, 120000, 1001}},
+	{bmdModeHD1080p120,   {1920, 1080, 1, 120000, 1000}},
+
+	{bmdModeHD1080i50,    {1920, 1080, 2,  25000, 1000}},
+	{bmdModeHD1080i5994,  {1920, 1080, 2,  30000, 1001}},
+	{bmdModeHD1080i6000,  {1920, 1080, 2,  30000, 1000}},
 
 	// 2k modes
-	{bmdModeHD1080p120,{1920, 1080, 1, 120000, 1000}},
-	{bmdMode2k2398,{2048, 1556, 1, 24000, 1001}},
-	{bmdMode2k24,{2048, 1556, 1, 24000, 1000}},
-	{bmdMode2k25,{2048, 1556, 1, 25000, 1000}},
-	{bmdMode2kDCI2398,{2048, 1080, 1, 24000, 1001}},
-	{bmdMode2kDCI24,{2048, 1080, 1, 24000, 1000}},
-	{bmdMode2kDCI25,{2048, 1080, 1, 25000, 1000}},
-	{bmdMode2kDCI2997,{2048, 1080, 1, 30000, 1001}},
-	{bmdMode2kDCI30,{2048, 1080, 1, 30000, 1000}},
-	{bmdMode2kDCI4795,{2048, 1080, 1, 48000, 1001}},
-	{bmdMode2kDCI48,{2048, 1080, 1, 48000, 1000}},
-	{bmdMode2kDCI50,{2048, 1080, 1, 50000, 1000}},
-	{bmdMode2kDCI5994,{2048, 1080, 1, 60000, 1001}},
-	{bmdMode2kDCI60,{2048, 1080, 1, 60000, 1000}},
-	{bmdMode2kDCI9590,{2048, 1080, 1, 96000, 1001}},
-	{bmdMode2kDCI96,{2048, 1080, 1, 96000, 1000}},
-	{bmdMode2kDCI100,{2048, 1080, 1, 100000, 1000}},
-	{bmdMode2kDCI11988,{2048, 1080, 1, 120000, 1001}},
-	{bmdMode2kDCI120,{2048, 1080, 1, 120000, 1000}},
+	{bmdMode2k2398,     {2048, 1556, 1,  24000, 1001}},
+	{bmdMode2k24,       {2048, 1556, 1,  24000, 1000}},
+	{bmdMode2k25,       {2048, 1556, 1,  25000, 1000}},
+
+	{bmdMode2kDCI2398,  {2048, 1080, 1,  24000, 1001}},
+	{bmdMode2kDCI24,    {2048, 1080, 1,  24000, 1000}},
+	{bmdMode2kDCI25,    {2048, 1080, 1,  25000, 1000}},
+	{bmdMode2kDCI2997,  {2048, 1080, 1,  30000, 1001}},
+	{bmdMode2kDCI30,    {2048, 1080, 1,  30000, 1000}},
+	{bmdMode2kDCI4795,  {2048, 1080, 1,  48000, 1001}},
+	{bmdMode2kDCI48,    {2048, 1080, 1,  48000, 1000}},
+	{bmdMode2kDCI50,    {2048, 1080, 1,  50000, 1000}},
+	{bmdMode2kDCI5994,  {2048, 1080, 1,  60000, 1001}},
+	{bmdMode2kDCI60,    {2048, 1080, 1,  60000, 1000}},
+	{bmdMode2kDCI9590,  {2048, 1080, 1,  96000, 1001}},
+	{bmdMode2kDCI96,    {2048, 1080, 1,  96000, 1000}},
+	{bmdMode2kDCI100,   {2048, 1080, 1, 100000, 1000}},
+	{bmdMode2kDCI11988, {2048, 1080, 1, 120000, 1001}},
+	{bmdMode2kDCI120,   {2048, 1080, 1, 120000, 1000}},
 
 	// 4k modes
-	{bmdMode4K2160p2398,{3840, 2160, 1, 24000, 1001}},
-	{bmdMode4K2160p24,{3840, 2160, 1, 24000, 1000}},
-	{bmdMode4K2160p25,{3840, 2160, 1, 25000, 1000}},
-	{bmdMode4K2160p2997,{3840, 2160, 1, 30000, 1001}},
-	{bmdMode4K2160p30,{3840, 2160, 1, 30000, 1000}},
-	{bmdMode4K2160p4795,{3840, 2160, 1, 48000, 1001}},
-	{bmdMode4K2160p48,{3840, 2160, 1, 48000, 1000}},
-	{bmdMode4K2160p50,{3840, 2160, 1, 50000, 1000}},
-	{bmdMode4K2160p5994,{3840, 2160, 1, 60000, 1001}},
-	{bmdMode4K2160p60,{3840, 2160, 1, 60000, 1000}},
-	{bmdMode4K2160p9590,{3840, 2160, 1, 96000, 1001}},
-	{bmdMode4K2160p96,{3840, 2160, 1, 96000, 1000}},
-	{bmdMode4K2160p100,{3840, 2160, 1, 100000, 1000}},
-	{bmdMode4K2160p11988,{3840, 2160, 1, 120000, 1001}},
-	{bmdMode4K2160p120,{3840, 2160, 1, 120000, 1000}},
-	{bmdMode4kDCI2398,{4096, 2160, 1, 24000, 1001}},
-	{bmdMode4kDCI24,{4096, 2160, 1, 24000, 1000}},
-	{bmdMode4kDCI25,{4096, 2160, 1, 25000, 1000}},
-	{bmdMode4kDCI2997,{4096, 2160, 1, 30000, 1000}},
-	{bmdMode4kDCI30,{4096, 2160, 1, 30000, 1000}},
-	{bmdMode4kDCI4795,{4096, 2160, 1, 48000, 1001}},
-	{bmdMode4kDCI48,{4096, 2160, 1, 48000, 1000}},
-	{bmdMode4kDCI50,{4096, 2160, 1, 50000, 1000}},
-	{bmdMode4kDCI5994,{4096, 2160, 1, 60000, 1001}},
-	{bmdMode4kDCI9590,{4096, 2160, 1, 96000, 1001}},
-	{bmdMode4kDCI96,{4096, 2160, 1, 96000, 1000}},
-	{bmdMode4kDCI100,{4096, 2160, 1, 100000, 1000}},
-	{bmdMode4kDCI11988,{4096, 2160, 1, 120000, 1001}},
-	{bmdMode4kDCI120,{4096, 2160, 1, 120000, 1000}},
+	{bmdMode4K2160p2398,  {3840, 2160, 1,  24000, 1001}},
+	{bmdMode4K2160p24,    {3840, 2160, 1,  24000, 1000}},
+	{bmdMode4K2160p25,    {3840, 2160, 1,  25000, 1000}},
+	{bmdMode4K2160p2997,  {3840, 2160, 1,  30000, 1001}},
+	{bmdMode4K2160p30,    {3840, 2160, 1,  30000, 1000}},
+	{bmdMode4K2160p4795,  {3840, 2160, 1,  48000, 1001}},
+	{bmdMode4K2160p48,    {3840, 2160, 1,  48000, 1000}},
+	{bmdMode4K2160p50,    {3840, 2160, 1,  50000, 1000}},
+	{bmdMode4K2160p5994,  {3840, 2160, 1,  60000, 1001}},
+	{bmdMode4K2160p60,    {3840, 2160, 1,  60000, 1000}},
+	{bmdMode4K2160p9590,  {3840, 2160, 1,  96000, 1001}},
+	{bmdMode4K2160p96,    {3840, 2160, 1,  96000, 1000}},
+	{bmdMode4K2160p100,   {3840, 2160, 1, 100000, 1000}},
+	{bmdMode4K2160p11988, {3840, 2160, 1, 120000, 1001}},
+	{bmdMode4K2160p120,   {3840, 2160, 1, 120000, 1000}},
+
+	{bmdMode4kDCI2398,    {4096, 2160, 1,  24000, 1001}},
+	{bmdMode4kDCI24,      {4096, 2160, 1,  24000, 1000}},
+	{bmdMode4kDCI25,      {4096, 2160, 1,  25000, 1000}},
+	{bmdMode4kDCI2997,    {4096, 2160, 1,  30000, 1000}},
+	{bmdMode4kDCI30,      {4096, 2160, 1,  30000, 1000}},
+	{bmdMode4kDCI4795,    {4096, 2160, 1,  48000, 1001}},
+	{bmdMode4kDCI48,      {4096, 2160, 1,  48000, 1000}},
+	{bmdMode4kDCI50,      {4096, 2160, 1,  50000, 1000}},
+	{bmdMode4kDCI5994,    {4096, 2160, 1,  60000, 1001}},
+	{bmdMode4kDCI9590,    {4096, 2160, 1,  96000, 1001}},
+	{bmdMode4kDCI96,      {4096, 2160, 1,  96000, 1000}},
+	{bmdMode4kDCI100,     {4096, 2160, 1, 100000, 1000}},
+	{bmdMode4kDCI11988,   {4096, 2160, 1, 120000, 1001}},
+	{bmdMode4kDCI120,     {4096, 2160, 1, 120000, 1000}},
 
 	// 8k modes
-	{bmdMode8K4320p2398,{7680, 4320, 1, 24000, 1001}},
-	{bmdMode8K4320p24,{7680, 4320, 1, 24000, 1000}},
-	{bmdMode8K4320p25,{7680, 4320, 1, 25000, 1000}},
-	{bmdMode8K4320p2997,{7680, 4320, 1, 30000, 1001}},
-	{bmdMode8K4320p30,{7680, 4320, 1, 30000, 1000}},
-	{bmdMode8K4320p4795,{7680, 4320, 1, 48000, 1001}},
-	{bmdMode8K4320p48,{7680, 4320, 1, 48000, 1000}},
-	{bmdMode8K4320p50,{7680, 4320, 1, 50000, 1000}},
-	{bmdMode8K4320p5994,{7680, 4320, 1, 60000, 1001}},
-	{bmdMode8K4320p60,{7680, 4320, 1, 60000, 1000}},
-	{bmdMode8kDCI2398,{8192, 4320, 1, 24000, 1001}},
-	{bmdMode8kDCI24,{8192, 4320, 1, 24000, 1000}},
-	{bmdMode8kDCI25,{8192, 4320, 1, 25000, 1000}},
-	{bmdMode8kDCI2997,{8192, 4320, 1, 30000, 1001}},
-	{bmdMode8kDCI30,{8192, 4320, 1, 30000, 1000}},
-	{bmdMode8kDCI4795,{8192, 4320, 1, 48000, 1001}},
-	{bmdMode8kDCI48,{8192, 4320, 1, 48000, 1000}},
-	{bmdMode8kDCI50,{8192, 4320, 1, 50000, 1000}},
-	{bmdMode8kDCI5994,{8192, 4320, 1, 60000, 1001}},
-	{bmdMode8kDCI60,{8192, 4320, 1, 60000, 1000}},
+	{bmdMode8K4320p2398, {7680, 4320, 1, 24000, 1001}},
+	{bmdMode8K4320p24,   {7680, 4320, 1, 24000, 1000}},
+	{bmdMode8K4320p25,   {7680, 4320, 1, 25000, 1000}},
+	{bmdMode8K4320p2997, {7680, 4320, 1, 30000, 1001}},
+	{bmdMode8K4320p30,   {7680, 4320, 1, 30000, 1000}},
+	{bmdMode8K4320p4795, {7680, 4320, 1, 48000, 1001}},
+	{bmdMode8K4320p48,   {7680, 4320, 1, 48000, 1000}},
+	{bmdMode8K4320p50,   {7680, 4320, 1, 50000, 1000}},
+	{bmdMode8K4320p5994, {7680, 4320, 1, 60000, 1001}},
+	{bmdMode8K4320p60,   {7680, 4320, 1, 60000, 1000}},
+
+	{bmdMode8kDCI2398,   {8192, 4320, 1, 24000, 1001}},
+	{bmdMode8kDCI24,     {8192, 4320, 1, 24000, 1000}},
+	{bmdMode8kDCI25,     {8192, 4320, 1, 25000, 1000}},
+	{bmdMode8kDCI2997,   {8192, 4320, 1, 30000, 1001}},
+	{bmdMode8kDCI30,     {8192, 4320, 1, 30000, 1000}},
+	{bmdMode8kDCI4795,   {8192, 4320, 1, 48000, 1001}},
+	{bmdMode8kDCI48,     {8192, 4320, 1, 48000, 1000}},
+	{bmdMode8kDCI50,     {8192, 4320, 1, 50000, 1000}},
+	{bmdMode8kDCI5994,   {8192, 4320, 1, 60000, 1001}},
+	{bmdMode8kDCI60,     {8192, 4320, 1, 60000, 1000}},
 
 	// Computer screen modes
 	{bmdMode640x480p60,   { 640,  480, 1, 60000, 1000}},
@@ -232,9 +237,12 @@ PixelFormat Translate(BMDPixelFormat pixelFormat)
 
 EOTF TranslateEOTF(LONGLONG electroOpticalTransferFuncValue)
 {
+	// 3 bit value
+	assert(electroOpticalTransferFuncValue >= 0);
+	assert(electroOpticalTransferFuncValue <= 7);
+
 	// Comments in the SDK 12 docs: "EOTF in range 0-7 as per CEA 861.3",
 	// which is "A2016 HDR STATIC METADATA EXTENSIONS".
-
 	switch (electroOpticalTransferFuncValue)
 	{
 	case 0:
@@ -250,7 +258,6 @@ EOTF TranslateEOTF(LONGLONG electroOpticalTransferFuncValue)
 		return EOTF::HLG;
 
 	// 4-7 are reserved for future use
-	// Higher values not possible, spec only has 3 bits
 	}
 
 	throw std::runtime_error("Failed to translate EOTF");
@@ -286,10 +293,14 @@ DisplayModeSharedPtr Translate(BMDDisplayMode displayMode)
 	if(it == BD_DISPLAY_MODE_DATA.end())
 		throw std::runtime_error("Unknown BMDDisplayMode");
 
+	if (it->second.fieldsPerFrame != 1)
+		throw std::runtime_error("Interlaced format, not supported");
+
 	return std::make_shared<DisplayMode>(
 		it->second.width,
 		it->second.height,
-		(unsigned int)round(((double)(it->second.timeScale) / (double)(it->second.frameDuration)) * 1000.0));
+		it->second.timeScale,
+		it->second.frameDuration);
 }
 
 

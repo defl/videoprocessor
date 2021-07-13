@@ -14,10 +14,12 @@
 DisplayMode::DisplayMode(
 	unsigned int frameWidth,
 	unsigned int frameHeight,
-	unsigned int refreshRateMilliHz):
+	unsigned int timeScale,
+	unsigned int frameDuration):
 	m_frameWidth(frameWidth),
 	m_frameHeight(frameHeight),
-	m_refreshRateMilliHz(refreshRateMilliHz)
+	m_timeScale(timeScale),
+	m_frameDuration(frameDuration)
 {
 	if (frameWidth < 100 || frameWidth > 10000)
 		throw std::runtime_error("resolutionX not valid");
@@ -25,22 +27,23 @@ DisplayMode::DisplayMode(
 	if (frameHeight < 100 || frameHeight > 10000)
 		throw std::runtime_error("resolutionY not valid");
 
-	if (refreshRateMilliHz < 10000 || refreshRateMilliHz > 300000)
-		throw std::runtime_error("refreshRateMilliHz not valid");
+	if (timeScale == 0)
+		throw std::runtime_error("timeScale cannot be zero");
+
+	if (frameDuration == 0)
+		throw std::runtime_error("frameDuration cannot be zero");
+
+	if (frameDuration >= timeScale)
+		throw std::runtime_error("frameDuration cannot be >= timeScale");
+
+	if (RefreshRateHz() < 23 || RefreshRateHz() > 120)
+		throw std::runtime_error("frameDuration and timeScaledo not lead to a valid refresh rate");
 }
 
 
-timestamp_t DisplayMode::FrameDurationMs() const
+double DisplayMode::RefreshRateHz() const
 {
-	double interval = 1000000.0 / m_refreshRateMilliHz;
-	return round(interval);
-}
-
-
-timestamp_t DisplayMode::FrameDuration100ns() const
-{
-	double interval = 10000000000.0 / m_refreshRateMilliHz;
-	return round(interval);
+	return (double)m_timeScale / (double)m_frameDuration;
 }
 
 
@@ -69,7 +72,6 @@ CString DisplayMode::ToString() const
 	s += TEXT(" @ ");
 
 	// Refresh
-	double x = RefreshRateHz();
 	s.AppendFormat(_T("%.3f"), RefreshRateHz());
 
 	return s;
@@ -81,7 +83,8 @@ bool DisplayMode::operator == (const DisplayMode& other) const
 	return
 		FrameWidth() == other.FrameWidth() &&
 		FrameHeight() == other.FrameHeight() &&
-		RefreshRateMilliHz() == other.RefreshRateMilliHz();
+		TimeScale() == other.TimeScale() &&
+		FrameDuration() == other.FrameDuration();
 }
 
 

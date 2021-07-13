@@ -28,10 +28,14 @@ class DisplayMode
 public:
 
 	// Constructor, width and height in pixels/frame
+	// - width & height in pixels
+	// - timeScale in ticks per second
+	// - frameDuration in ticks per frame
 	DisplayMode(
 		unsigned int frameWidth,
 		unsigned int frameHeight,
-		unsigned int refreshRateMilliHz);
+		unsigned int timeScale,
+		unsigned int frameDuration);
 
 	// Amount of X-axis pixels per frame
 	unsigned int FrameWidth() const { return m_frameWidth; }
@@ -39,17 +43,17 @@ public:
 	// Amount of Y-axis pixels per frame
 	unsigned int FrameHeight() const { return m_frameHeight; }
 
-	// Refresh rate as an approximated double
-	double RefreshRateHz() const { return m_refreshRateMilliHz / 1000.0; }
+	// Ticks per second
+	unsigned int TimeScale() const { return m_timeScale; }
 
-	// Refresh rate in Milli Hz
-	int RefreshRateMilliHz() const { return m_refreshRateMilliHz; }
+	// Ticks per frame
+	unsigned int FrameDuration() const { return m_frameDuration; }
 
-	// timestamp ticks ms per frame
-	timestamp_t FrameDurationMs() const;
+	// Refresh rate in Hz as double
+	double RefreshRateHz() const;
 
-	// timestamp ticks (100ns units) per frame
-	timestamp_t FrameDuration100ns() const;
+	// Nanosecond per frame
+	uint64_t NanosecondsPerFrame() const {}
 
 	// Return the mode as a human-understandable string
 	CString ToString() const;
@@ -59,73 +63,11 @@ public:
 
 private:
 
-	unsigned int m_frameWidth = 0;
-	unsigned int m_frameHeight = 0;
-	uint32_t m_refreshRateMilliHz = 0;
+	const unsigned int m_frameWidth;
+	const unsigned int m_frameHeight;
+	const unsigned int m_timeScale;
+	const unsigned int m_frameDuration;
 };
 
 
 typedef std::shared_ptr<DisplayMode> DisplayModeSharedPtr;
-
-
-//
-// Well known modes
-//
-
-// 720p
-#define DISPLAYMODE_720p_50    DisplayMode(1280, 720, 50000)
-#define DISPLAYMODE_720p_59_94 DisplayMode(1280, 720, 59940)
-#define DISPLAYMODE_720p_60    DisplayMode(1280, 720, 60000)
-
-// 1080p
-#define DISPLAYMODE_1080p_23_976 DisplayMode(1920, 1080, 23976)
-#define DISPLAYMODE_1080p_24     DisplayMode(1920, 1080, 24000)
-#define DISPLAYMODE_1080p_25     DisplayMode(1920, 1080, 25000)
-#define DISPLAYMODE_1080p_29_97  DisplayMode(1920, 1080, 29970)
-#define DISPLAYMODE_1080p_30     DisplayMode(1920, 1080, 30000)
-#define DISPLAYMODE_1080p_47_95  DisplayMode(1920, 1080, 47950)
-#define DISPLAYMODE_1080p_48     DisplayMode(1920, 1080, 48000)
-#define DISPLAYMODE_1080p_50     DisplayMode(1920, 1080, 50000)
-#define DISPLAYMODE_1080p_59_94  DisplayMode(1920, 1080, 59940)
-#define DISPLAYMODE_1080p_60     DisplayMode(1920, 1080, 60000)
-
-// 2K 35mm full frame size
-#define DISPLAYMODE_2KFULLFRAME_23_976 DisplayMode(2048, 1556, 23976)
-#define DISPLAYMODE_2KFULLFRAME_24     DisplayMode(2048, 1556, 24000)
-#define DISPLAYMODE_2KFULLFRAME_25     DisplayMode(2048, 1556, 25000)
-
-// 2K DCI native (https://en.wikipedia.org/wiki/2K_resolution)
-#define DISPLAYMODE_2KDCI_23_976 DisplayMode(2048, 1080, 23976)
-#define DISPLAYMODE_2KDCI_24     DisplayMode(2048, 1080, 24000)
-#define DISPLAYMODE_2KDCI_25     DisplayMode(2048, 1080, 25000)
-#define DISPLAYMODE_2KDCI_29_97  DisplayMode(2048, 1080, 29970)
-#define DISPLAYMODE_2KDCI_30     DisplayMode(2048, 1080, 30000)
-#define DISPLAYMODE_2KDCI_47_95  DisplayMode(2048, 1080, 47950)
-#define DISPLAYMODE_2KDCI_48     DisplayMode(2048, 1080, 48000)
-#define DISPLAYMODE_2KDCI_50     DisplayMode(2048, 1080, 50000)
-#define DISPLAYMODE_2KDCI_59_94  DisplayMode(2048, 1080, 59940)
-#define DISPLAYMODE_2KDCI_60     DisplayMode(2048, 1080, 60000)
-
-// 4K UDHTV, 2160p (https://en.wikipedia.org/wiki/4K_resolution)
-#define DISPLAYMODE_4K_23_976 DisplayMode(3840, 2160, 23976)
-#define DISPLAYMODE_4K_24     DisplayMode(3840, 2160, 24000)
-#define DISPLAYMODE_4K_25     DisplayMode(3840, 2160, 25000)
-#define DISPLAYMODE_4K_29_97  DisplayMode(3840, 2160, 29970)
-#define DISPLAYMODE_4K_30     DisplayMode(3840, 2160, 30000)
-#define DISPLAYMODE_4K_47_95  DisplayMode(3840, 2160, 47950)
-#define DISPLAYMODE_4K_48     DisplayMode(3840, 2160, 48000)
-#define DISPLAYMODE_4K_50     DisplayMode(3840, 2160, 50000)
-#define DISPLAYMODE_4K_59_94  DisplayMode(3840, 2160, 59940)
-#define DISPLAYMODE_4K_60     DisplayMode(3840, 2160, 60000)
-
-// 4K DCI native (aka full frame) (https://en.wikipedia.org/wiki/4K_resolution)
-#define DISPLAYMODE_4KDCI_23_976 DisplayMode(4096, 2160, 23976)
-#define DISPLAYMODE_4KDCI_24     DisplayMode(4096, 2160, 24000)
-#define DISPLAYMODE_4KDCI_25     DisplayMode(4096, 2160, 25000)
-#define DISPLAYMODE_4KDCI_29_97  DisplayMode(4096, 2160, 29970)
-#define DISPLAYMODE_4KDCI_30     DisplayMode(4096, 2160, 30000)
-#define DISPLAYMODE_4KDCI_47_95  DisplayMode(4096, 2160, 47950)
-#define DISPLAYMODE_4KDCI_48     DisplayMode(4096, 2160, 48000)
-#define DISPLAYMODE_4KDCI_50     DisplayMode(4096, 2160, 50000)
-#define DISPLAYMODE_4KDCI_59_94  DisplayMode(4096, 2160, 59940)
-#define DISPLAYMODE_4KDCI_60     DisplayMode(4096, 2160, 60000)

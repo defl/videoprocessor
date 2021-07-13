@@ -361,10 +361,12 @@ void ADirectShowRenderer::GraphBuild()
 
 	m_liveSource->AddRef();
 
+	const timestamp_t frameDuration100ns = (1.0 / m_videoState->displayMode->RefreshRateHz()) * UNITS;
+
 	m_liveSource->Initialize(
 		m_videoFramFormatter,
 		m_pmt,
-		m_videoState->displayMode->FrameDuration100ns(),
+		frameDuration100ns,
 		m_timingClock,
 		m_timestamp,
 		m_useFrameQueue,
@@ -398,11 +400,6 @@ void ADirectShowRenderer::GraphBuild()
 	if (FAILED(m_pGraph->AddFilter(m_pRenderer, L"Renderer")))
 		throw std::runtime_error("Failed to add renderer to the graph");
 
-	//
-	// Connect pins
-	//
-
-	Connect();
 
 	//
 	// Set up window
@@ -420,6 +417,12 @@ void ADirectShowRenderer::GraphBuild()
 
 	if (FAILED(m_videoWindow->HideCursor(OATRUE)))
 		throw std::runtime_error("Failed to HideCursor in video window");
+
+	//
+	// Connect pins
+	//
+
+	Connect();
 
 	//
 	// Set up event notification.
