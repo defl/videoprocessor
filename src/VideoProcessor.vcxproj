@@ -122,7 +122,7 @@
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <AdditionalIncludeDirectories>.;..\3rdparty\blackmagic_decklink;..\3rdparty\microsoft_directshow_baseclasses;..\3rdparty\lavfilters;..\3rdparty\ffmpeg\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\3rdparty\blackmagic_decklink;..\3rdparty\microsoft_directshow_baseclasses;..\3rdparty\lavfilters;..\3rdparty\ffmpeg\include;..\3rdparty\mpc_video_renderer</AdditionalIncludeDirectories>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -190,7 +190,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>.;..\3rdparty\blackmagic_decklink;..\3rdparty\microsoft_directshow_baseclasses;..\3rdparty\lavfilters;..\3rdparty\ffmpeg\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\3rdparty\blackmagic_decklink;..\3rdparty\microsoft_directshow_baseclasses;..\3rdparty\lavfilters;..\3rdparty\ffmpeg\include;..\3rdparty\mpc_video_renderer</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -238,6 +238,7 @@
     <ClInclude Include="CaptureInput.h" />
     <ClInclude Include="CCie1931Control.h" />
     <ClInclude Include="cie.h" />
+    <ClInclude Include="microsoft_directshow\MPCDirectShowRenderer.h" />
     <ClInclude Include="RendererId.h" />
     <ClInclude Include="TimingClock.h" />
     <ClInclude Include="version.h" />
@@ -279,6 +280,9 @@
     <ProjectReference Include="..\3rdparty\microsoft_directshow_baseclasses\MicrosoftDirectshowBaseclasses.vcxproj">
       <Project>{fbc2d6cb-389e-4316-a41f-38b098e27ae1}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\3rdparty\mpc_video_renderer\mpc_video_renderer.vcxproj">
+      <Project>{0b36de56-2a17-4819-82a9-c21caa5fdd2b}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ACaptureDevice.cpp" />
@@ -299,6 +303,7 @@
     <ClCompile Include="CaptureInput.cpp" />
     <ClCompile Include="CCie1931Control.cpp" />
     <ClCompile Include="cie.cpp" />
+    <ClCompile Include="microsoft_directshow\MPCDirectShowRenderer.cpp" />
     <ClCompile Include="RendererId.cpp" />
     <ClCompile Include="TimingClock.cpp" />
     <ClCompile Include="version.cpp" />
