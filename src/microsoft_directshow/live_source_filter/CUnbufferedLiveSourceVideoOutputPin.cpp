@@ -42,7 +42,7 @@ HRESULT CUnbufferedLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame
 
 	// Render
 	hr = RenderVideoFrameIntoSample(videoFrame, pSample);
-	if (FAILED(hr))
+	if (FAILED(hr) || hr == S_FRAME_NOT_RENDERED)
 	{
 		pSample->Release();
 		return hr;

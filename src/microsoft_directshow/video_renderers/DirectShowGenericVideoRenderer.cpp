@@ -63,28 +63,9 @@ void DirectShowGenericVideoRenderer::MediaTypeGenerate()
 	GUID mediaSubType;
 	int bitCount;
 
-	switch (m_videoState->pixelFormat)
-	{
-
-	////TODO: This conversion is always green
-	// TODO: Merge this code higher in the hierarchy so more can use it
-	//// v210 (YUV422)
-	//case PixelFormat::YUV_10BIT:
-
-	//	mediaSubType = MEDIASUBTYPE_P010;
-	//	bitCount = 10;
-
-	//	m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
-	//		AV_CODEC_ID_V210,
-	//		AV_PIX_FMT_P010);
-	//	break;
-
-	default:
-		mediaSubType = TranslateToMediaSubType(m_videoState->pixelFormat);
-		bitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);
-
-		m_videoFramFormatter = new CNoopVideoFrameFormatter();
-	}
+	mediaSubType = TranslateToMediaSubType(m_videoState->videoFrameEncoding);
+	bitCount = VideoFrameEncodingBitsPerPixel(m_videoState->videoFrameEncoding);
+	m_videoFramFormatter = new CNoopVideoFrameFormatter();
 
 	m_videoFramFormatter->OnVideoState(m_videoState);
 

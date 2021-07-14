@@ -20,7 +20,6 @@
 #include <InputLocked.h>
 #include <Encoding.h>
 #include <BitDepth.h>
-#include <PixelFormat.h>
 #include <HDRData.h>
 #include <CaptureInput.h>
 #include <VideoFrame.h>

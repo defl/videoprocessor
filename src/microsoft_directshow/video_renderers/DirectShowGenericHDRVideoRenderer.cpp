@@ -100,25 +100,35 @@ void DirectShowGenericHDRVideoRenderer::MediaTypeGenerate()
 	int bitCount;
 	LONG heightMultiplier = 1;
 
-	switch (m_videoState->pixelFormat)
+	switch (m_videoState->videoFrameEncoding)
 	{
+		/* TODO: FIXME
+		// v210 (YUV422)
+		case VideoFrameEncoding::YUV_10BIT:
 
-		//// v210 (YUV422)
-		//case PixelFormat::YUV_10BIT:
+			// Fails:
+			//  - P010/P010: Solid green
+			//  - YV12/YUV420P: Solid green
+			//  - MEDIASUBTYPE_P216/16/AV_CODEC_ID_V210X/AV_PIX_FMT_YUV422P16 : some moving artifacts
+			//  - MEDIASUBTYPE_P210/10/AV_CODEC_ID_V210/AV_PIX_FMT_YUV422P10 : Solid green
+			//  - MEDIASUBTYPE_P010/10/AV_CODEC_ID_V210/AV_PIX_FMT_P010 : Solid green
+			//  - MEDIASUBTYPE_RGB48LE/48/AV_CODEC_ID_V210/AV_PIX_FMT_RGB48LE : Solid green (=decoder problem)
+			//  - MEDIASUBTYPE_RGB48LE/48/AV_CODEC_ID_V210X/AV_PIX_FMT_RGB48LE : Moving artifacts which look like expected video
+			//  - MEDIASUBTYPE_P210/10/AV_CODEC_ID_V210/AV_PIX_FMT_YUV422P10 : Solid green
+			//
+			// AV_CODEC_ID_V210 outputs AV_PIX_FMT_YUV422P10
+			// AV_CODEC_ID_V210X outputs AV_PIX_FMT_YUV422P16
 
-		//	// Fails: P010/P010, YV12/YUV420P,
+			mediaSubType = MEDIASUBTYPE_P010;
+			bitCount = 10;
 
-		//	mediaSubType = MEDIASUBTYPE_P010;
-		//	bitCount = 10;
-
-		//	m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
-		//		AV_CODEC_ID_V210,
-		//		AV_PIX_FMT_P010);
-		//	break;
-
-
+			m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
+				AV_CODEC_ID_V210,
+				AV_PIX_FMT_P010);
+			break;
+			*/
 		// r210 to RGB48
-	case PixelFormat::R210:
+	case VideoFrameEncoding::R210:
 
 		mediaSubType = MEDIASUBTYPE_RGB48LE;
 		bitCount = 48;
@@ -130,7 +140,7 @@ void DirectShowGenericHDRVideoRenderer::MediaTypeGenerate()
 		break;
 
 		// RGB 12-bit to RGB48
-	case PixelFormat::R12B:
+	case VideoFrameEncoding::R12B:
 
 		mediaSubType = MEDIASUBTYPE_RGB48LE;
 		bitCount = 48;
@@ -143,8 +153,8 @@ void DirectShowGenericHDRVideoRenderer::MediaTypeGenerate()
 
 		// No conversion needed
 	default:
-		mediaSubType = TranslateToMediaSubType(m_videoState->pixelFormat);
-		bitCount = PixelFormatBitsPerPixel(m_videoState->pixelFormat);;
+		mediaSubType = TranslateToMediaSubType(m_videoState->videoFrameEncoding);
+		bitCount = VideoFrameEncodingBitsPerPixel(m_videoState->videoFrameEncoding);;
 
 		m_videoFramFormatter = new CNoopVideoFrameFormatter();
 	}

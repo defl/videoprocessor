@@ -21,7 +21,7 @@
  *  - https://lurkertech.com/lg/fields/
  *  - https://docs.microsoft.com/en-us/windows/win32/medfound/video-interlacing
  *
- * (It does not store how the data is compressed, see the PixelFormat enum for that.)
+ * (It does not store how the data is encoded, see the VideoFrameEncodning enum for that.)
  */
 class DisplayMode
 {

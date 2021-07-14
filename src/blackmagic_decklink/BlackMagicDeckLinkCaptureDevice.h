@@ -110,8 +110,8 @@ private:
 	// and OnCaptureDeviceVideoFrame(). There a few helper functions for this as well here.
 	// WARNING: R/W from the capture thread, do not read from other thread
 	bool m_videoFrameSeen = false;
-	BMDPixelFormat m_pixelFormat = BMD_PIXEL_FORMAT_INVALID;
-	BMDDisplayMode m_videoDisplayMode = BMD_DISPLAY_MODE_INVALID;
+	BMDPixelFormat m_bmdPixelFormat = BMD_PIXEL_FORMAT_INVALID;
+	BMDDisplayMode m_bmdDisplayMode = BMD_DISPLAY_MODE_INVALID;
 	timingclocktime_t m_ticksPerFrame = TIMING_CLOCK_TIME_INVALID;
 	bool m_videoHasInputSource = false;
 	bool m_videoInvertedVertical = false;

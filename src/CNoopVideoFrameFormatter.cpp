@@ -21,7 +21,7 @@ void CNoopVideoFrameFormatter::OnVideoState(VideoStateComPtr& videoState)
 }
 
 
-void CNoopVideoFrameFormatter::FormatVideoFrame(
+bool CNoopVideoFrameFormatter::FormatVideoFrame(
 	const VideoFrame& inFrame,
 	BYTE* outBuffer)
 {
@@ -29,6 +29,7 @@ void CNoopVideoFrameFormatter::FormatVideoFrame(
 		throw std::runtime_error("bytes per frame not known, call OnVideoState() first");
 
 	memcpy(outBuffer, inFrame.GetData(), m_bytesPerVideoFrame);
+	return true;
 }
 
 

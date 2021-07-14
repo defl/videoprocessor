@@ -15,6 +15,8 @@
 
 #include "CLiveSource.h"
 
+// This is not an error by itself
+static const HRESULT S_FRAME_NOT_RENDERED = 1;
 
 /**
  * Abstract implementation of the video output pin
@@ -22,7 +24,6 @@
 class ALiveSourceVideoOutputPin:
 	public CBaseOutputPin,
 	public IAMPushSource,
-	public IQualityControl,
 	public IKsPropertySet
 {
 public:
@@ -105,6 +106,7 @@ protected:
 
 	// Render function to render a videoFrame onto a IMediaSample.
 	// Will not release the sample or dec videoframe nor do the Deliver()
+	// Will return S_FRAME_NOT_RENDERED if frame could not be renderered, not an error per-se
 	HRESULT RenderVideoFrameIntoSample(VideoFrame&, IMediaSample* const);
 
 	// Get the next frame timestamp. If it doesn't know it's invalid. Overridden by implementations

@@ -381,7 +381,7 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 			{
 				DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnTimer(): Adjusting clock frame offset + reset")));
 
-				const int delta = -videoFrameLead;
+				const int delta = (int)round(-videoFrameLead);
 				const int newOffset = GetTimingClockFrameOffsetMs() + delta;
 
 				SetTimingClockFrameOffsetMs(newOffset);
@@ -595,7 +595,7 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 	{
 		m_videoValidText.SetWindowText(_T("Yes"));
 		m_videoDisplayModeText.SetWindowText(videoState->displayMode->ToString());
-		m_videoPixelFormatText.SetWindowText(ToString(videoState->pixelFormat));
+		m_videoPixelFormatText.SetWindowText(ToString(videoState->videoFrameEncoding));
 		m_videoEotfText.SetWindowText(ToString(videoState->eotf));
 		m_videoColorSpaceText.SetWindowText(ToString(videoState->colorspace));
 	}
@@ -698,6 +698,7 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 	case RendererState::RENDERSTATE_RENDERING:
 		m_deliverCaptureDataToRenderer.store(true, std::memory_order_release);
 		enableButtons = true;
+		m_windowedVideoWindow.ShowLogo(false);
 		m_rendererStateText.SetWindowText(TEXT("Rendering"));
 		break;
 
@@ -705,7 +706,7 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 	case RendererState::RENDERSTATE_STOPPED:
 		RenderRemove();
 		RenderGUIClear();
-		m_rendererStateText.SetWindowText(TEXT("Stopped"));
+		m_rendererStateText.SetWindowText(TEXT(""));
 		break;
 
 	default:
@@ -1506,6 +1507,8 @@ void CVideoProcessorDlg::RenderGUIClear()
 	m_rendererDetailStringStatic.SetWindowText(TEXT(""));
 	m_rendererVideoFrameQueueSizeText.SetWindowText(TEXT(""));
 	m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
+
+	m_windowedVideoWindow.ShowLogo(true);
 }
 
 

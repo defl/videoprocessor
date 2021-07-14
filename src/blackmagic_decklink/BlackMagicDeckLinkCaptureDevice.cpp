@@ -406,24 +406,24 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 	//
 	// Determine pixel format
 	//
-	BMDPixelFormat pixelFormat;
+	BMDPixelFormat bmdPixelFormat;
 	if (detectedSignalFlags & bmdDetectedVideoInputRGB444)
 	{
 		if (detectedSignalFlags & bmdDetectedVideoInput8BitDepth)
-			pixelFormat = bmdFormat8BitARGB;
+			bmdPixelFormat = bmdFormat8BitARGB;
 		else if (detectedSignalFlags & bmdDetectedVideoInput10BitDepth)
-			pixelFormat = bmdFormat10BitRGB;
+			bmdPixelFormat = bmdFormat10BitRGB;
 		else if (detectedSignalFlags & bmdDetectedVideoInput12BitDepth)
-			pixelFormat = bmdFormat12BitRGB;
+			bmdPixelFormat = bmdFormat12BitRGB;
 		else
 			throw std::runtime_error("Unknown pixel format for RGB444");
 	}
 	else if (detectedSignalFlags & bmdDetectedVideoInputYCbCr422)
 	{
 		if (detectedSignalFlags & bmdDetectedVideoInput8BitDepth)
-			pixelFormat = bmdFormat8BitYUV;
+			bmdPixelFormat = bmdFormat8BitYUV;
 		else if (detectedSignalFlags & bmdDetectedVideoInput10BitDepth)
-			pixelFormat = bmdFormat10BitYUV;
+			bmdPixelFormat = bmdFormat10BitYUV;
 		else
 			throw std::runtime_error("Unknown pixel format for YCbCr422");
 	}
@@ -434,7 +434,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 	// Things changed and we will stop current capture and restart.
 	// That means the video state will be invalid and we'll need to wait for it be to be rebuilt.
 	//
-	if ((m_pixelFormat != pixelFormat) ||
+	if ((m_bmdPixelFormat != bmdPixelFormat) ||
 		(notificationEvents & bmdVideoInputDisplayModeChanged) ||
 		(notificationEvents & bmdVideoInputColorspaceChanged) ||
 		(notificationEvents & bmdVideoInputFieldDominanceChanged))
@@ -446,9 +446,9 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 		//
 
 		ResetVideoState();
-		m_pixelFormat = pixelFormat;
-		m_videoDisplayMode = newMode->GetDisplayMode();
-		m_ticksPerFrame = (1.0 / FPS(m_videoDisplayMode)) * TimingClockTicksPerSecond();
+		m_bmdPixelFormat = bmdPixelFormat;
+		m_bmdDisplayMode = newMode->GetDisplayMode();
+		m_ticksPerFrame = (timingclocktime_t)round((1.0 / FPS(m_bmdDisplayMode)) * TimingClockTicksPerSecond());
 
 		// Inform callback handlers that stream will be invalid before re-starting
 		// Must be locked!
@@ -467,7 +467,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 		// Set the video input mode
 		IF_NOT_S_OK(m_deckLinkInput->EnableVideoInput(
 			newMode->GetDisplayMode(),
-			pixelFormat,
+			bmdPixelFormat,
 			bmdVideoInputFlagDefault | bmdVideoInputEnableFormatDetection))
 		{
 			// TODO: StopStreams() or how does this work under failure conditions?
@@ -505,14 +505,14 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 	if (!m_outputCaptureData.load(std::memory_order_acquire))
 		return S_OK;
 
-	if (m_videoDisplayMode == BMD_DISPLAY_MODE_INVALID)
+	if (m_bmdDisplayMode == BMD_DISPLAY_MODE_INVALID)
 		return -1;
 
 	bool videoStateChanged = false;
 
 	if (videoFrame)
 	{
-		assert(m_videoDisplayMode);
+		assert(m_bmdDisplayMode);
 
 		timingclocktime_t timingClockFrameTime = 0;
 
@@ -525,9 +525,9 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 		{
 			assert(m_previousTimingClockFrameTime < timingClockFrameTime);
 
-			const double frameDiffTicks = timingClockFrameTime - m_previousTimingClockFrameTime;
+			const double frameDiffTicks = (double)(timingClockFrameTime - m_previousTimingClockFrameTime);
 			const int frames = (int)round(frameDiffTicks / m_ticksPerFrame);
-			assert(m_capturedVideoFrameCount == 0 || frames >= 1);
+			assert(frames >= 0 && frames < 1000);
 
 			m_capturedVideoFrameCount += frames;
 			m_missedVideoFrameCount += (frames - 1);
@@ -560,14 +560,14 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 #ifdef _DEBUG
 		{
 			// Check the incoming video frame against our known state and translations
-			DisplayModeSharedPtr dp = Translate(m_videoDisplayMode);
+			DisplayModeSharedPtr dp = Translate(m_bmdDisplayMode);
 			assert(videoFrame->GetHeight() == dp->FrameHeight());
 			assert(videoFrame->GetWidth() == dp->FrameWidth());
-			assert(videoFrame->GetPixelFormat() == m_pixelFormat);
+			assert(videoFrame->GetPixelFormat() == m_bmdPixelFormat);
 
 			VideoState vs;
 			vs.displayMode = dp;
-			vs.pixelFormat = Translate(m_pixelFormat);
+			vs.videoFrameEncoding = Translate(m_bmdPixelFormat);
 			assert(vs.BytesPerRow() == videoFrame->GetRowBytes());
 		}
 #endif // _DEBUG
@@ -863,8 +863,8 @@ ULONG BlackMagicDeckLinkCaptureDevice::Release(void)
 void BlackMagicDeckLinkCaptureDevice::ResetVideoState()
 {
 	m_videoFrameSeen = false;
-	m_pixelFormat = BMD_PIXEL_FORMAT_INVALID;
-	m_videoDisplayMode = BMD_DISPLAY_MODE_INVALID;
+	m_bmdPixelFormat = BMD_PIXEL_FORMAT_INVALID;
+	m_bmdDisplayMode = BMD_DISPLAY_MODE_INVALID;
 	m_videoHasInputSource = false;
 	m_videoEotf = BMD_EOTF_INVALID;
 	m_videoColorSpace = BMD_COLOR_SPACE_INVALID;
@@ -882,8 +882,8 @@ void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
 
 	const bool hasValidVideoState =
 		(m_videoFrameSeen) &&
-		(m_pixelFormat != BMD_PIXEL_FORMAT_INVALID) &&
-		(m_videoDisplayMode != BMD_DISPLAY_MODE_INVALID) &&
+		(m_bmdPixelFormat != BMD_PIXEL_FORMAT_INVALID) &&
+		(m_bmdDisplayMode != BMD_DISPLAY_MODE_INVALID) &&
 		(m_videoHasInputSource) &&
 		(m_videoEotf != BMD_EOTF_INVALID) &&
 		(m_videoColorSpace != BMD_COLOR_SPACE_INVALID);
@@ -910,14 +910,14 @@ void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
 	{
 		assert(m_videoFrameSeen);
 		assert(m_videoHasInputSource);
-		assert(m_pixelFormat != BMD_PIXEL_FORMAT_INVALID);
-		assert(m_videoDisplayMode != BMD_DISPLAY_MODE_INVALID);
+		assert(m_bmdPixelFormat != BMD_PIXEL_FORMAT_INVALID);
+		assert(m_bmdDisplayMode != BMD_DISPLAY_MODE_INVALID);
 		assert(m_videoEotf != BMD_EOTF_INVALID);
 		assert(m_videoColorSpace != BMD_EOTF_INVALID);
 
 		videoState->valid = true;
-		videoState->pixelFormat = Translate(m_pixelFormat);
-		videoState->displayMode = Translate(m_videoDisplayMode);
+		videoState->videoFrameEncoding = Translate(m_bmdPixelFormat);
+		videoState->displayMode = Translate(m_bmdDisplayMode);
 		videoState->eotf = TranslateEOTF(m_videoEotf);
 		videoState->colorspace = Translate(
 			(BMDColorspace)m_videoColorSpace,

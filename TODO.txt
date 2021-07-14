@@ -3,10 +3,13 @@ Roadmap
 
 0.4.0: Upscaling, added MPCVR renderer, HDR controls
 - Optionally force YCbCr422 to YCbCr420 so that the renderer can do the upscaling
-- Change pixelformat to be something between that and an encoding format?
-- Do not show text/logo in display if renderer is running
 - Be able to override all HDR data
+- Correct AR ratio for renderers
 - Fix all compliaton errors
+- OnPaint pipe through to renderers
+- HDR support for MPCVR?
+- ffmpeg logging
+- Check all round()'s to see if they're really needed and we can't just floor it
 - Clean up TODO
 
 1.0.0: Out of beta
@@ -21,14 +24,13 @@ Roadmap
 - Cropping-zoom in y and x dimensions
 - Auto shifting (hwf)
 
-1.3.0: Audio
-- Enable DirectShow audio (optional)
-
-1.4.0: MPV renderer
+1.3.0: MPV renderer
 - Integrate MPV renderer
 - Renderer options as own dialogs
 
+
 Stuff & ideas to do for later:
+- Support for audio
 - /fullscreen immediately to fullscreen and show logo + some short status update (replace button by checkbox?)
 - CaptureInput as a first-class citizen rather than a POD (rename to capture device input?)
 - Toggelable HDCP on video output through the win32 Output Protection Manager
@@ -45,10 +47,5 @@ Stuff & ideas to do for later:
 - If the blackmagic capture thread throws that's never shown a new one is spun up silently, try-catch external calls, make errors visible
 - If the CAM thread throws that's never shown, make errors visible
 - Replace GDI drawing with MFC
-- Clean up all TODOs
 - Make a CIE1932 diagram with the pixels painted into it once a sec or so to see if the video actually getting near it's stated performance
-- Add support for interlaced formats (cannot test so cannot build)
-
-Can't fix:
-- DeckLink cannot handle 12bit YUV
-- DeckLink forces YUV 444 to 422, loss of data
+- Add support for interlaced formats (cannot test)

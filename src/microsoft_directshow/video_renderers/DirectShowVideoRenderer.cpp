@@ -71,7 +71,7 @@ bool DirectShowVideoRenderer::OnVideoState(VideoStateComPtr& videoState)
 			videoState->colorspace != m_videoState->colorspace ||
 			videoState->eotf != m_videoState->eotf ||
 			*(videoState->displayMode) != *(m_videoState->displayMode) ||
-			videoState->pixelFormat != m_videoState->pixelFormat)
+			videoState->videoFrameEncoding != m_videoState->videoFrameEncoding)
 		{
 			return false;
 		}
@@ -581,7 +581,7 @@ void DirectShowVideoRenderer::LiveSourceBuildAndConnect()
 	m_liveSource->AddRef();
 
 	const timestamp_t frameDuration100ns =
-		(1.0 / m_videoState->displayMode->RefreshRateHz()) * UNITS;
+		(timestamp_t)round((1.0 / m_videoState->displayMode->RefreshRateHz()) * UNITS);
 
 	m_liveSource->Initialize(
 		m_videoFramFormatter,

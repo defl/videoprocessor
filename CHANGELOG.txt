@@ -2,7 +2,8 @@ next (0.4.0)
 - Support for MPC Video Renderer (https://github.com/Aleksoid1978/VideoRenderer)
 - Display modes now stores and uess ticks/duration for video frames
 - Major overhaul of renderer code
-
+- pixelformat changed to VideoFrameEncoding as that covers the meaning better
+- Do not show logo in display if renderer is running, show once renderer is done again
 
 0.3.2
 - Most throws now lead to error popup

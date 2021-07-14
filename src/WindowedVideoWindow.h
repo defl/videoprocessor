@@ -23,11 +23,14 @@ public:
 	WindowedVideoWindow();
 	virtual ~WindowedVideoWindow();
 
+	// If true will show the logo
+	void ShowLogo(bool show);
 
 protected:
 
 	HBITMAP m_logoBmp = nullptr;
 	CBrush m_brush;
+	bool m_showLogo = true;
 
 	// Handlers for ON_WM_* messages
 	afx_msg void OnPaint();

@@ -385,8 +385,9 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 
 		// Get frame timestamp as reference time
 		timeStart =
-			videoFrame.GetTimingTimestamp() *
-			(10000000.0 / m_timingClock->TimingClockTicksPerSecond());
+			(REFERENCE_TIME)round(
+				videoFrame.GetTimingTimestamp() *
+				(10000000.0 / m_timingClock->TimingClockTicksPerSecond()));
 
 		// Guarantee first frame to start counting at time zero
 		// Note that this is against the recommendations of microsoft for directshow but otherwise
@@ -503,7 +504,17 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 	timestamp_t startTime = ::GetWallClockTime();
 #endif
 
-	m_videoFrameFormatter->FormatVideoFrame(videoFrame, pData);
+	const bool formatSuccess =
+		m_videoFrameFormatter->FormatVideoFrame(videoFrame, pData);
+
+	if (!formatSuccess)
+	{
+		DbgLog((LOG_TRACE, 1,
+			TEXT("::FillBuffer(#%I64u): Format failed"),
+			videoFrame.GetCounter()));
+
+		return S_FRAME_NOT_RENDERED;
+	}
 
 #ifdef _DEBUG
 	if (streamFrameCounter % 100 == 0)

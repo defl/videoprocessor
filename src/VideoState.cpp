@@ -51,25 +51,25 @@ uint32_t VideoState::BytesPerRow() const
 {
 	// See docs/bmd_pixel_formats.pdf also in "Blackmagic DeckLink SDK.pdf" from v 12.0
 
-	switch (pixelFormat)
+	switch (videoFrameEncoding)
 	{
-	case PixelFormat::YUV_8BIT:
+	case VideoFrameEncoding::YUV_8BIT:
 		return displayMode->FrameWidth() * 16 / 8;
 
-	case PixelFormat::YUV_10BIT:
+	case VideoFrameEncoding::YUV_10BIT:
 		return ((displayMode->FrameWidth() + 47) / 48) * 128;
 
-	case PixelFormat::ARGB_8BIT:
-	case PixelFormat::BGRA_8BIT:
+	case VideoFrameEncoding::ARGB_8BIT:
+	case VideoFrameEncoding::BGRA_8BIT:
 		return ((displayMode->FrameWidth() + 32) / 8);
 
-	case PixelFormat::R210:
-	case PixelFormat::R10b:
-	case PixelFormat::R10l:
+	case VideoFrameEncoding::R210:
+	case VideoFrameEncoding::R10b:
+	case VideoFrameEncoding::R10l:
 		return ((displayMode->FrameWidth() + 63) / 64) * 256;
 
-	case PixelFormat::R12B:
-	case PixelFormat::R12L:
+	case VideoFrameEncoding::R12B:
+	case VideoFrameEncoding::R12L:
 		return ((displayMode->FrameWidth() * 36) / 8);
 	}
 

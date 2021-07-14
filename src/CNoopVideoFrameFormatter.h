@@ -22,7 +22,7 @@ public:
 
 	// IVideoFrameFormatter
 	void OnVideoState(VideoStateComPtr& videoState) override;
-	void FormatVideoFrame(const VideoFrame& inFrame, BYTE* outBuffer) override;
+	bool FormatVideoFrame(const VideoFrame& inFrame, BYTE* outBuffer) override;
 	LONG GetOutFrameSize() const override;
 
 private:

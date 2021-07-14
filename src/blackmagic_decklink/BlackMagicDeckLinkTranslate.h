@@ -13,7 +13,7 @@
 
 #include <Encoding.h>
 #include <BitDepth.h>
-#include <PixelFormat.h>
+#include <VideoFrameEncoding.h>
 #include <EOTF.h>
 #include <ColorSpace.h>
 #include <DisplayMode.h>
@@ -23,7 +23,7 @@ Encoding TranslateEncoding(BMDDetectedVideoInputFormatFlags detectedVideoInputFo
 
 BitDepth TranslateBithDepth(BMDDetectedVideoInputFormatFlags detectedVideoInputFormatFlagsValue);
 
-PixelFormat Translate(BMDPixelFormat);
+VideoFrameEncoding Translate(BMDPixelFormat);
 
 EOTF TranslateEOTF(LONGLONG electroOpticalTransferFuncValue);
 

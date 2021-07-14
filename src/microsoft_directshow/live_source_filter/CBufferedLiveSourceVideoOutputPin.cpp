@@ -87,6 +87,8 @@ HRESULT CBufferedLiveSourceVideoOutputPin::Inactive()
 			Close();
 		}
 	}
+
+	return S_OK;
 }
 
 
@@ -215,8 +217,9 @@ DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 				if (!m_videoFrameQueue.empty())
 				{
 					m_nextVideoFrameStartTime =
+						(REFERENCE_TIME)round(
 						m_videoFrameQueue.front().GetTimingTimestamp() *
-						(10000000.0 / m_timingClock->TimingClockTicksPerSecond());
+						(10000000.0 / m_timingClock->TimingClockTicksPerSecond()));
 				}
 				else
 				{
@@ -244,14 +247,20 @@ DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 			pSample->Release();
 			return -2;
 		}
+		if (hr == S_FRAME_NOT_RENDERED)
+		{
+			videoFrame.SourceBufferRelease();
+			pSample->Release();
+			continue;
+		}
 
 		// Deliver frame to renderer
 		hr = this->Deliver(pSample);
 		if (FAILED(hr))
 		{
 			DbgLog((LOG_TRACE, 1,
-				TEXT("::FillBuffer(#%I64u): Failed to deliver sample"),
-				videoFrame.GetCounter()));
+				TEXT("::FillBuffer(#%I64u): Failed to deliver sample, error: %l"),
+				videoFrame.GetCounter(), hr));
 
 			videoFrame.SourceBufferRelease();
 			pSample->Release();

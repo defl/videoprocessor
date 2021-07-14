@@ -200,7 +200,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;strmiids.lib;winmm.lib;libswscale.a;libavutil.a;libavcodec.a;bcrypt.lib;Propsys.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;strmiids.lib;winmm.lib;libswscale.a;libavcodec.a;libavutil.a;bcrypt.lib;Propsys.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\3rdparty\ffmpeg\lib\msvc2019_x64_release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -259,7 +259,7 @@
     <ClInclude Include="microsoft_directshow\DirectShowDefines.h" />
     <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSource.h" />
     <ClInclude Include="microsoft_directshow\live_source_filter\ILiveSource.h" />
-    <ClInclude Include="PixelFormat.h" />
+    <ClInclude Include="VideoFrameEncoding.h" />
     <ClInclude Include="PixelValueRange.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="VideoFrame.h" />
@@ -322,7 +322,7 @@
     <ClCompile Include="microsoft_directshow\DirectShowTimingClock.cpp" />
     <ClCompile Include="microsoft_directshow\DirectShowTranslations.cpp" />
     <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSource.cpp" />
-    <ClCompile Include="PixelFormat.cpp" />
+    <ClCompile Include="VideoFrameEncoding.cpp" />
     <ClCompile Include="PixelValueRange.cpp" />
     <ClCompile Include="VideoFrame.cpp" />
     <ClCompile Include="VideoProcessorApp.cpp" />

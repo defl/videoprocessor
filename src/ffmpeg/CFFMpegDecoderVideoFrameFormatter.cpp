@@ -8,6 +8,8 @@
 
 #include <stdafx.h>
 
+#include <libavutil/error.h>
+
 #include "CFFMpegDecoderVideoFrameFormatter.h"
 
 
@@ -43,8 +45,8 @@ CFFMpegDecoderVideoFrameFormatter::CFFMpegDecoderVideoFrameFormatter(
 	if (avcodec_open2(m_avCodecContext, avCodecDecoder, nullptr) < 0)
 		throw std::runtime_error("Could not open codec");
 
-	//if(!sws_isSupportedInput(m_avCodecContext->pix_fmt))
-	//	throw std::runtime_error("Source decoder pixel format not supported");
+	if(!sws_isSupportedInput(m_avCodecContext->pix_fmt))
+		throw std::runtime_error("Source decoder pixel format not supported");
 
 	// Alloc used buffers
 
@@ -138,7 +140,7 @@ void CFFMpegDecoderVideoFrameFormatter::OnVideoState(VideoStateComPtr& videoStat
 }
 
 
-void CFFMpegDecoderVideoFrameFormatter::FormatVideoFrame(
+bool CFFMpegDecoderVideoFrameFormatter::FormatVideoFrame(
 	const VideoFrame& inFrame,
 	BYTE* outBuffer)
 {
@@ -154,7 +156,9 @@ void CFFMpegDecoderVideoFrameFormatter::FormatVideoFrame(
 		throw std::runtime_error("Failed to send packet for decoding");
 
 	ret = avcodec_receive_frame(m_avCodecContext, inputFrame);
-	if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+	if (ret == AVERROR(EAGAIN))
+		return false;
+	if (ret == AVERROR_EOF)
 		throw std::runtime_error("Unexpected return for avcodec_receive_frame");
 	if (ret < 0)
 		throw std::runtime_error("avcodec_receive_frame errored");
@@ -178,6 +182,8 @@ void CFFMpegDecoderVideoFrameFormatter::FormatVideoFrame(
 
 	if (copiedSize != m_outFrameSize)
 		throw std::runtime_error("Failed to av_image_copy_to_buffer");
+
+	return true;
 }
 
 

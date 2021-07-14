@@ -177,7 +177,7 @@ ULONG CLiveSource::GetMiscFlags()
 
 int CLiveSource::GetFrameQueueSize()
 {
-	return m_videoOutputPin->GetFrameQueueSize();
+	return (int)m_videoOutputPin->GetFrameQueueSize();
 }
 
 

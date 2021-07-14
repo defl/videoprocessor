@@ -12,13 +12,13 @@
 #include <guiddef.h>
 #include <dxva.h>
 
-#include <PixelFormat.h>
+#include <VideoFrameEncoding.h>
 #include <ColorSpace.h>
 #include <EOTF.h>
 #include <PixelValueRange.h>
 
 
-const GUID TranslateToMediaSubType(PixelFormat);
+const GUID TranslateToMediaSubType(VideoFrameEncoding);
 
 DXVA_NominalRange TranslatePixelValueRange(PixelValueRange);
 
@@ -28,4 +28,4 @@ DXVA_VideoPrimaries TranslateVideoPrimaries(ColorSpace);
 
 DXVA_VideoTransferFunction TranslateVideoTranferFunction(EOTF, ColorSpace);
 
-DWORD TranslatePixelformatToBiCompression(PixelFormat);
+DWORD TranslateVideoFrameEncodingToBiCompression(VideoFrameEncoding);

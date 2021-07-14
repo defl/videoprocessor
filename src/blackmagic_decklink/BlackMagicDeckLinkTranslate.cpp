@@ -193,42 +193,42 @@ BitDepth TranslateBithDepth(BMDDetectedVideoInputFormatFlags detectedVideoInputF
 }
 
 
-PixelFormat Translate(BMDPixelFormat pixelFormat)
+VideoFrameEncoding Translate(BMDPixelFormat bmdPixelFormat)
 {
-	switch (pixelFormat)
+	switch (bmdPixelFormat)
 	{
 	case bmdFormat8BitYUV:
-		return PixelFormat::YUV_8BIT;
+		return VideoFrameEncoding::YUV_8BIT;
 
 	case bmdFormat10BitYUV:
-		return PixelFormat::YUV_10BIT;
+		return VideoFrameEncoding::YUV_10BIT;
 
 	case bmdFormat8BitARGB:
-		return PixelFormat::ARGB_8BIT;
+		return VideoFrameEncoding::ARGB_8BIT;
 
 	case bmdFormat8BitBGRA:
-		return PixelFormat::BGRA_8BIT;
+		return VideoFrameEncoding::BGRA_8BIT;
 
 	case bmdFormat10BitRGB:
-		return PixelFormat::R210;
+		return VideoFrameEncoding::R210;
 
 	case bmdFormat10BitRGBX:
-		return PixelFormat::R10b;
+		return VideoFrameEncoding::R10b;
 
 	case bmdFormat10BitRGBXLE:
-		return PixelFormat::R10l;
+		return VideoFrameEncoding::R10l;
 
 	case bmdFormat12BitRGB:
-		return PixelFormat::R12B;
+		return VideoFrameEncoding::R12B;
 
 	case bmdFormat12BitRGBLE:
-		return PixelFormat::R12L;
+		return VideoFrameEncoding::R12L;
 
 	case bmdFormatH265:
-		return PixelFormat::H265;
+		return VideoFrameEncoding::H265;
 
 	case bmdFormatDNxHR:
-		return PixelFormat::DNxHR;
+		return VideoFrameEncoding::DNxHR;
 	}
 
 	throw std::runtime_error("Failed to translate BMDPixelFormat");
@@ -299,8 +299,8 @@ DisplayModeSharedPtr Translate(BMDDisplayMode displayMode)
 	return std::make_shared<DisplayMode>(
 		it->second.width,
 		it->second.height,
-		it->second.timeScale,
-		it->second.frameDuration);
+		(unsigned int)it->second.timeScale,
+		(unsigned int)it->second.frameDuration);
 }
 
 

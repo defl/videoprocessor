@@ -11,17 +11,22 @@
 
 #include <atlstr.h>
 
-// TODO: Make this a class and make all the below lookups properties
-enum class PixelFormat
+/**
+ * We define this as how the frame data is encoded.
+ * (This is a union between pixelformat and decoder in ffmpeg terms.)
+ */
+enum class VideoFrameEncoding
 {
 	UNKNOWN,
 
 	// UYVY 4:2:2
 	// Four 8-bit unsigned components(CCIR 601) are packed into one 32-bit little-endian word.
+	// TODO: RENAME TO UYUV
 	YUV_8BIT,
 
 	// v210 4:2:2
 	// Twelve 10-bit unsigned components are packed into four 32-bit little-endian words
+	// TODO: RENAME TO v210
 	YUV_10BIT,
 
 	// ARGB (or ARGB32) 4:4:4:4 raw
@@ -62,8 +67,8 @@ enum class PixelFormat
 };
 
 
-// Return the PixelFormat as a human-readable string
-const TCHAR* ToString(const PixelFormat);
+// Return the VideoFrameEncoding as a human-readable string
+const TCHAR* ToString(const VideoFrameEncoding);
 
 
 // Return the the bits per pixel in this format
@@ -71,9 +76,9 @@ const TCHAR* ToString(const PixelFormat);
 //   Specifies the number of bits per pixel (bpp). For uncompressed formats, this value is the average
 //   number of bits per pixel. For compressed formats, this value is the implied bit depth of the uncompressed
 //   image, after the image has been decoded.
-uint32_t PixelFormatBitsPerPixel(PixelFormat pixelFormat);
+uint32_t VideoFrameEncodingBitsPerPixel(VideoFrameEncoding);
 
 
 // Return the the FourCC code for the pixel format
 // More info: https://docs.microsoft.com/en-us/windows/win32/directshow/fourcc-codes
-uint32_t PixelFormatFourCC(PixelFormat pixelFormat);
+uint32_t VideoFrameEncodingFourCC(VideoFrameEncoding);

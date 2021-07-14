@@ -26,7 +26,8 @@ public:
 
 	// Handle video frame
 	// Can only be called after OnVideoState()
-	virtual void FormatVideoFrame(const VideoFrame& inFrame, BYTE* outBuffer) = 0;
+	// Returns true if something was converted, false if not
+	virtual bool FormatVideoFrame(const VideoFrame& inFrame, BYTE* outBuffer) = 0;
 
 	// Get size of frame that will be put in FormatVideoFrame()'s outBuffer, in bytes
 	// Can only be called after OnVideoState()

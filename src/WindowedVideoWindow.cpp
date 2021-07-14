@@ -40,49 +40,60 @@ WindowedVideoWindow::~WindowedVideoWindow()
 }
 
 
+void WindowedVideoWindow::ShowLogo(bool show)
+{
+	m_showLogo = show;
+	Invalidate();
+}
+
+
+
 void WindowedVideoWindow::OnPaint()
 {
-	////
-	//// Figure out usable rectangle and where to draw
-	////
+	if (m_showLogo)
+	{
+		//
+		// Figure out usable rectangle and where to draw
+		//
 
-	//BITMAP bitmap;
-	//if (!::GetObject(m_logoBmp, sizeof(bitmap), &bitmap))
-	//	throw std::runtime_error("Failed to get bitmap header from logo bitmap");
+		BITMAP bitmap;
+		if (!::GetObject(m_logoBmp, sizeof(bitmap), &bitmap))
+			throw std::runtime_error("Failed to get bitmap header from logo bitmap");
 
-	//CRect rect;
-	//GetClientRect(&rect);
+		CRect rect;
+		GetClientRect(&rect);
 
-	//LONG canvasHeight = rect.bottom - rect.top;
-	//LONG canvasWidth = rect.right - rect.left;
+		LONG canvasHeight = rect.bottom - rect.top;
+		LONG canvasWidth = rect.right - rect.left;
 
-	//assert(canvasHeight > bitmap.bmHeight);
-	//assert(canvasWidth > bitmap.bmWidth);
-	//LONG bmpXOffset = (canvasWidth - bitmap.bmWidth) / 2;
-	//LONG bmpYOffset = (canvasHeight - bitmap.bmHeight) / 2;
+		assert(canvasHeight > bitmap.bmHeight);
+		assert(canvasWidth > bitmap.bmWidth);
+		LONG bmpXOffset = (canvasWidth - bitmap.bmWidth) / 2;
+		LONG bmpYOffset = (canvasHeight - bitmap.bmHeight) / 2;
 
-	////
-	//// Draw
-	////
+		//
+		// Draw
+		//
 
-	//PAINTSTRUCT ps;
-	//HDC hdc = ::BeginPaint(GetSafeHwnd(), &ps);
+		PAINTSTRUCT ps;
+		HDC hdc = ::BeginPaint(GetSafeHwnd(), &ps);
 
-	//// Paint background
-	//::FillRect(hdc, &rect, m_brush);
+		// Paint background
+		::FillRect(hdc, &rect, m_brush);
 
-	//// Paint logo
-	//HDC hdcMem = ::CreateCompatibleDC(hdc);
-	//HGDIOBJ oldBitmap = ::SelectObject(hdcMem, m_logoBmp);
-	//::BitBlt(
-	//	hdc, bmpXOffset, bmpYOffset, bitmap.bmWidth, bitmap.bmHeight,
-	//	hdcMem, 0, 0,
-	//	SRCCOPY);
-	//::SelectObject(hdcMem, oldBitmap);
-	//::DeleteDC(hdcMem);
+		// Paint logo
+		HDC hdcMem = ::CreateCompatibleDC(hdc);
+		HGDIOBJ oldBitmap = ::SelectObject(hdcMem, m_logoBmp);
+		::BitBlt(
+			hdc, bmpXOffset, bmpYOffset, bitmap.bmWidth, bitmap.bmHeight,
+			hdcMem, 0, 0,
+			SRCCOPY);
+		::SelectObject(hdcMem, oldBitmap);
+		::DeleteDC(hdcMem);
 
-	//// Done
-	//::EndPaint(GetSafeHwnd(), &ps);
+		// Done
+		::EndPaint(GetSafeHwnd(), &ps);
+	}
 
 	CStatic::OnPaint();
 }

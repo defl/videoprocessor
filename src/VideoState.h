@@ -14,7 +14,7 @@
 #include <EOTF.h>
 #include <ColorSpace.h>
 #include <DisplayMode.h>
-#include <PixelFormat.h>
+#include <VideoFrameEncoding.h>
 #include <HDRData.h>
 
 
@@ -31,7 +31,7 @@ public:
 	bool valid = false;
 
 	DisplayModeSharedPtr displayMode = nullptr;
-	PixelFormat pixelFormat = PixelFormat::UNKNOWN;
+	VideoFrameEncoding videoFrameEncoding = VideoFrameEncoding::UNKNOWN;
 	EOTF eotf = EOTF::UNKNOWN;
 	ColorSpace colorspace = ColorSpace::UNKNOWN;
 	bool invertedVertical = false;

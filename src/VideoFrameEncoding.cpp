@@ -10,90 +10,91 @@
 
 #include <Aviriff.h>
 
-#include "PixelFormat.h"
+#include "VideoFrameEncoding.h"
 
 
-const TCHAR* ToString(const PixelFormat pixelFormat)
+const TCHAR* ToString(const VideoFrameEncoding videoFrameEncoding)
 {
-	switch (pixelFormat)
+	switch (videoFrameEncoding)
 	{
-	case PixelFormat::UNKNOWN:
+	case VideoFrameEncoding::UNKNOWN:
 		return TEXT("UNKNOWN");
 
-	case PixelFormat::YUV_8BIT:
+	case VideoFrameEncoding::YUV_8BIT:
 		return TEXT("YUV 8-bit (UYVY)");
 
-	case PixelFormat::YUV_10BIT:
+	case VideoFrameEncoding::YUV_10BIT:
 		return TEXT("YUV 10-bit (v210)");
 
-	case PixelFormat::ARGB_8BIT:
+	case VideoFrameEncoding::ARGB_8BIT:
 		return TEXT("ARGB 8-bit");
 
-	case PixelFormat::BGRA_8BIT:
+	case VideoFrameEncoding::BGRA_8BIT:
 		return TEXT("BGRA 8-bit");
 
-	case PixelFormat::R210:
+	case VideoFrameEncoding::R210:
 		return TEXT("RGB 10-bit (r210)");
 
-	case PixelFormat::R10b:
+	case VideoFrameEncoding::R10b:
 		return TEXT("RGB Big-Endian 10-bit (R10b)");
 
-	case PixelFormat::R10l:
+	case VideoFrameEncoding::R10l:
 		return TEXT("RGB Little-Endian 10-bit (R10l)");
 
-	case PixelFormat::R12B:
+	case VideoFrameEncoding::R12B:
 		return TEXT("RGB Big-Endian 12-bit (R12B)");
 
-	case PixelFormat::R12L:
+	case VideoFrameEncoding::R12L:
 		return TEXT("RGB Little-Endian 12-bit (R12L)");
 
-	case PixelFormat::H265:
+	case VideoFrameEncoding::H265:
 		return TEXT("H.265 Encoded");
 
-	case PixelFormat::DNxHR:
+	case VideoFrameEncoding::DNxHR:
 		return TEXT("DNxHR Encoded");
 	}
 
-	throw std::runtime_error("UNSPECIFIED pixelMode");
+	throw std::runtime_error("UNSPECIFIED VideoFrameEncoding");
 }
 
 
-uint32_t PixelFormatBitsPerPixel(PixelFormat pixelFormat)
+uint32_t VideoFrameEncodingBitsPerPixel(const VideoFrameEncoding videoFrameEncoding)
 {
-	switch (pixelFormat)
+	switch (videoFrameEncoding)
 	{
-	case PixelFormat::YUV_8BIT:
+	case VideoFrameEncoding::YUV_8BIT:
 		return 16;
 
-	case PixelFormat::YUV_10BIT:
+	case VideoFrameEncoding::YUV_10BIT:
 		return 20;
 
-	case PixelFormat::ARGB_8BIT:
-	case PixelFormat::BGRA_8BIT:
+	case VideoFrameEncoding::ARGB_8BIT:
+	case VideoFrameEncoding::BGRA_8BIT:
 		return 32;
 
-	case PixelFormat::R210:
+	case VideoFrameEncoding::R210:
 		return 30;
 
-	case PixelFormat::R12B:
+	case VideoFrameEncoding::R12B:
 		return 36/8;  // Guess
 	}
 
-	throw std::runtime_error("Don't know how to bits per pixel for given format");
+	throw std::runtime_error("Don't know how to bits per pixel for VideoFrameEncoding");
 }
 
 
-// ffmpeg riff.c is great for this
-uint32_t PixelFormatFourCC(PixelFormat pixelFormat)
+uint32_t VideoFrameEncodingFourCC(const VideoFrameEncoding videoFrameEncoding)
 {
-	switch (pixelFormat)
+	// ffmpeg riff.c is great for this
+
+	switch (videoFrameEncoding)
 	{
-	case PixelFormat::YUV_8BIT:
+	case VideoFrameEncoding::YUV_8BIT:
 		return FCC('UYVY');
 
-	case PixelFormat::YUV_10BIT:
+	case VideoFrameEncoding::YUV_10BIT:
 		return FCC('v210');
 	}
 
-	throw std::runtime_error("Don't know fourCC for given format");
+	throw std::runtime_error("Don't know fourCC for VideoFrameEncoding");
 }

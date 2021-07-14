@@ -15,24 +15,24 @@
 #include "DirectShowTranslations.h"
 
 
-const GUID TranslateToMediaSubType(PixelFormat pixelFormat)
+const GUID TranslateToMediaSubType(VideoFrameEncoding videoFrameEncoding)
 {
-	switch (pixelFormat)
+	switch (videoFrameEncoding)
 	{
-	case PixelFormat::YUV_8BIT:
+	case VideoFrameEncoding::YUV_8BIT:
 		// TODO: Can also be HDYC if color space is rec709, see https://www.fourcc.org/yuv.php
 		return MEDIASUBTYPE_UYVY;
 
-	case PixelFormat::YUV_10BIT:
+	case VideoFrameEncoding::YUV_10BIT:
 		return MEDIASUBTYPE_v210;
 
-	case PixelFormat::R210:
+	case VideoFrameEncoding::R210:
 		return MEDIASUBTYPE_r210;
 
-	case PixelFormat::R10b:
+	case VideoFrameEncoding::R10b:
 		return MEDIASUBTYPE_R10b;
 
-	case PixelFormat::R12B:
+	case VideoFrameEncoding::R12B:
 		return MEDIASUBTYPE_R12B;
 	}
 
@@ -117,19 +117,19 @@ DXVA_VideoTransferFunction TranslateVideoTranferFunction(EOTF eotf, ColorSpace c
 }
 
 
-DWORD TranslatePixelformatToBiCompression(PixelFormat pixelFormat)
+DWORD TranslatePixelformatToBiCompression(VideoFrameEncoding videoFrameEncoding)
 {
-	switch (pixelFormat)
+	switch (videoFrameEncoding)
 	{
-	case PixelFormat::ARGB_8BIT:
-	case PixelFormat::BGRA_8BIT:
-	case PixelFormat::R210:
-	case PixelFormat::R10b:
-	case PixelFormat::R10l:
-	case PixelFormat::R12B:
-	case PixelFormat::R12L:
+	case VideoFrameEncoding::ARGB_8BIT:
+	case VideoFrameEncoding::BGRA_8BIT:
+	case VideoFrameEncoding::R210:
+	case VideoFrameEncoding::R10b:
+	case VideoFrameEncoding::R10l:
+	case VideoFrameEncoding::R12B:
+	case VideoFrameEncoding::R12L:
 		return BI_RGB;
 	}
 
-	return PixelFormatFourCC(pixelFormat);
+	return VideoFrameEncodingFourCC(videoFrameEncoding);
 }
