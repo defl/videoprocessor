@@ -2,7 +2,10 @@ This is a binary build from ffmpeg
 
 License and attribution
 =======================
-Built from ffmpeg https://github.com/defl/FFmpeg (at time of writing contains new r12b decoder)
+Built from ffmpeg fork at https://github.com/defl/FFmpeg
+    This has a r12b decoder plus support for non-threaded v210 decoding, both
+    which are required. (I tried for a month or so to get the changes into ffmpeg
+    but lost interest given the process, method of picking and lack of interest.)
 Built with the gpl-2 license, for license and attribution see:
  - MAINTAINERS
  - CREDIT
@@ -28,14 +31,14 @@ Building ffmpeg libs
     * cd /c/Users/User/workspace/
     * mkdir -p ffmpeg_build_release
     * cd ffmpeg_build_release
-    * ../ffmpeg/configure --toolchain=msvc --disable-shared --enable-static --disable-programs --arch=x86_64 --target-os=win64 --enable-asm --enable-x86asm --disable-avdevice --disable-doc --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --disable-libopus --disable-encoder=libopus --disable-decoder=libopus --disable-encoder=opus --disable-decoder=opus --disable-mediafoundation --enable-gpl --disable-network --prefix=../ffmpeg_build_release --extra-cflags="-MD" --extra-cxxflags="-MD"
+    * ../ffmpeg/configure --toolchain=msvc --disable-shared --enable-static --arch=x86_64 --target-os=win64 --enable-asm --enable-x86asm --disable-avdevice --disable-doc --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --disable-libopus --disable-encoder=libopus --disable-decoder=libopus --disable-encoder=opus --disable-decoder=opus --disable-mediafoundation --enable-gpl --disable-network --prefix=../ffmpeg_build_release --extra-cflags="-MD" --extra-cxxflags="-MD"
     * make -j6
     * make install
 
     * cd /c/Users/User/workspace/
     * mkdir -p ffmpeg_build_debug
     * cd ffmpeg_build_debug
-    * ../ffmpeg/configure --toolchain=msvc --disable-shared --enable-static --disable-programs --arch=x86_64 --target-os=win64 --enable-asm --enable-x86asm --disable-avdevice --disable-doc --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --disable-libopus --disable-encoder=libopus --disable-decoder=libopus --disable-encoder=opus --disable-decoder=opus --disable-mediafoundation --enable-gpl --disable-network --prefix=../ffmpeg_build_debug  --extra-cflags="-MDd" --extra-cxxflags="-MDd" --enable-debug
+    * ../ffmpeg/configure --toolchain=msvc --disable-shared --enable-static --arch=x86_64 --target-os=win64 --enable-asm --enable-x86asm --disable-avdevice --disable-doc --disable-bzlib --disable-libopenjpeg --disable-iconv --disable-zlib --disable-libopus --disable-encoder=libopus --disable-decoder=libopus --disable-encoder=opus --disable-decoder=opus --disable-mediafoundation --enable-gpl --disable-network --prefix=../ffmpeg_build_debug  --extra-cflags="-MDd" --extra-cxxflags="-MDd" --enable-debug
     * make -j6
     * make install
 

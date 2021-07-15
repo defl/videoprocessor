@@ -42,6 +42,9 @@ CFFMpegDecoderVideoFrameFormatter::CFFMpegDecoderVideoFrameFormatter(
 	if (!m_avCodecContext)
 		throw std::runtime_error("Could not allocate video codec context");
 
+	// This is a non-standard ffmpeg extension signalling no use of other threads
+	m_avCodecContext->thread_count = -1;
+
 	if (avcodec_open2(m_avCodecContext, avCodecDecoder, nullptr) < 0)
 		throw std::runtime_error("Could not open codec");
 

@@ -298,6 +298,7 @@ void DirectShowVideoRenderer::GraphBuild()
 	{
 		m_referenceClock = new DirectShowTimingClock(*m_timingClock);
 		m_referenceClock->AddRef();
+
 		if (FAILED(m_mediaFilter->SetSyncSource(m_referenceClock)))
 			throw std::runtime_error("Failed to set sync source to our reference clock");
 
