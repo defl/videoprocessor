@@ -42,6 +42,25 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	ON_WM_CLOSE()
 	ON_WM_TIMER()
 
+	// UI element messages
+	ON_CBN_SELCHANGE(IDC_CAPTURE_DEVICE_COMBO, &CVideoProcessorDlg::OnCaptureDeviceSelected)
+	ON_CBN_SELCHANGE(IDC_CAPTURE_INPUT_COMBO, &CVideoProcessorDlg::OnCaptureInputSelected)
+	ON_BN_CLICKED(IDC_TIMING_CLOCK_FRAME_OFFSET_AUTO_CHECK, &CVideoProcessorDlg::OnBnClickedTimingClockFrameOffsetAutoCheck)
+	ON_CBN_SELCHANGE(IDC_COLORSPACE_CONTAINER_PRESET_COMBO, &CVideoProcessorDlg::OnColorSpaceContainerPresetSelected)
+	ON_CBN_SELCHANGE(IDC_COLORSPACE_VIDEO_PRESET_COMBO, &CVideoProcessorDlg::OnColorSpaceVideoPresetSelected)
+	ON_CBN_SELCHANGE(IDC_RENDERER_COMBO, &CVideoProcessorDlg::OnRendererSelected)
+	ON_BN_CLICKED(IDC_RENDERER_RESTART_BUTTON, &CVideoProcessorDlg::OnBnClickedRendererRestart)
+	ON_CBN_SELCHANGE(IDC_RENDERER_VIDEO_CONVERSION_COMBO, &CVideoProcessorDlg::OnRendererVideoConversionSelected)
+	ON_BN_CLICKED(IDC_RENDERER_VIDEO_FRAME_USE_QUEUE_CHECK, &CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck)
+	ON_BN_CLICKED(IDC_RENDERER_RESET_BUTTON, &CVideoProcessorDlg::OnBnClickedRendererReset)
+	ON_BN_CLICKED(IDC_RENDERER_RESET_AUTO_CHECK, &CVideoProcessorDlg::OnBnClickedRendererResetAutoCheck)
+	ON_CBN_SELCHANGE(IDC_RENDERER_DIRECTSHOW_START_STOP_TIME_METHOD_COMBO, &CVideoProcessorDlg::OnRendererDirectShowStartStopTimeMethodSelected)
+	ON_CBN_SELCHANGE(IDC_RENDERER_DIRECTSHOW_NOMINAL_RANGE_COMBO, &CVideoProcessorDlg::OnRendererDirectShowNominalRangeSelected)
+	ON_CBN_SELCHANGE(IDC_RENDERER_DIRECTSHOW_TRANSFER_FUNCTION_COMBO, &CVideoProcessorDlg::OnRendererDirectShowTransferFunctionSelected)
+	ON_CBN_SELCHANGE(IDC_RENDERER_DIRECTSHOW_TRANSFER_MATRIX_COMBO, &CVideoProcessorDlg::OnRendererDirectShowTransferMatrixSelected)
+	ON_CBN_SELCHANGE(IDC_RENDERER_DIRECTSHOW_PRIMARIES_COMBO, &CVideoProcessorDlg::OnRendererDirectShowPrimariesSelected)
+	ON_BN_CLICKED(IDC_RENDERER_FULL_SCREEN_CHECK, &CVideoProcessorDlg::OnBnClickedRendererFullScreenCheck)
+
 	// Custom messages
 	ON_MESSAGE(WM_MESSAGE_CAPTURE_DEVICE_FOUND, &CVideoProcessorDlg::OnMessageCaptureDeviceFound)
 	ON_MESSAGE(WM_MESSAGE_CAPTURE_DEVICE_LOST, &CVideoProcessorDlg::OnMessageCaptureDeviceLost)
@@ -51,22 +70,6 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	ON_MESSAGE(WM_MESSAGE_DIRECTSHOW_NOTIFICATION, &CVideoProcessorDlg::OnMessageDirectShowNotification)
 	ON_MESSAGE(WM_MESSAGE_RENDERER_STATE_CHANGE, &CVideoProcessorDlg::OnMessageRendererStateChange)
 	ON_MESSAGE(WM_MESSAGE_RENDERER_DETAIL_STRING, &CVideoProcessorDlg::OnMessageRendererDetailString)
-
-	// UI element messages
-	ON_CBN_SELCHANGE(IDC_CAPTURE_DEVICE_COMBO, &CVideoProcessorDlg::OnCaptureDeviceSelected)
-	ON_CBN_SELCHANGE(IDC_CAPTURE_INPUT_COMBO, &CVideoProcessorDlg::OnCaptureInputSelected)
-	ON_CBN_SELCHANGE(IDC_RENDERER_COMBO, &CVideoProcessorDlg::OnRendererSelected)
-	ON_CBN_SELCHANGE(IDC_RENDERER_TIMESTAMP_COMBO, &CVideoProcessorDlg::OnRendererTimestampSelected)
-	ON_CBN_SELCHANGE(IDC_RENDERER_NOMINAL_RANGE_COMBO, &CVideoProcessorDlg::OnRendererNominalRangeSelected)
-	ON_CBN_SELCHANGE(IDC_RENDERER_TRANSFER_FUNCTION_COMBO, &CVideoProcessorDlg::OnRendererTransferFunctionSelected)
-	ON_CBN_SELCHANGE(IDC_RENDERER_TRANSFER_MATRIX_COMBO, &CVideoProcessorDlg::OnRendererTransferMatrixSelected)
-	ON_CBN_SELCHANGE(IDC_RENDERER_PRIMARIES_COMBO, &CVideoProcessorDlg::OnRendererPrimariesSelected)
-	ON_BN_CLICKED(IDC_FULL_SCREEN_BUTTON, &CVideoProcessorDlg::OnBnClickedFullScreenButton)
-	ON_BN_CLICKED(IDC_TIMING_CLOCK_FRAME_OFFSET_AUTO_CHECK, &CVideoProcessorDlg::OnBnClickedTimingClockFrameOffsetAutoCheck)
-	ON_BN_CLICKED(IDC_RENDERER_RESTART_BUTTON, &CVideoProcessorDlg::OnBnClickedRendererRestart)
-	ON_BN_CLICKED(IDC_RENDERER_RESET_BUTTON, &CVideoProcessorDlg::OnBnClickedRendererReset)
-	ON_BN_CLICKED(IDC_RENDERER_RESET_AUTO_CHECK, &CVideoProcessorDlg::OnBnClickedRendererResetAutoCheck)
-	ON_BN_CLICKED(IDC_RENDERER_VIDEO_FRAME_USE_QUEUE_CHECK, &CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck)
 
 	// Command handlers (from accelerator)
 	ON_COMMAND(ID_COMMAND_FULLSCREEN_TOGGLE, &CVideoProcessorDlg::OnCommandFullScreenToggle)
@@ -229,188 +232,29 @@ void CVideoProcessorDlg::OnCaptureInputSelected()
 }
 
 
-void CVideoProcessorDlg::OnRendererSelected()
-{
-	OnBnClickedRendererRestart();
-}
-
-
-void CVideoProcessorDlg::OnRendererTimestampSelected()
-{
-	OnBnClickedRendererRestart();
-}
-
-
-void CVideoProcessorDlg::OnRendererNominalRangeSelected()
-{
-	OnBnClickedRendererRestart();
-}
-
-
-void CVideoProcessorDlg::OnRendererTransferFunctionSelected()
-{
-	OnBnClickedRendererRestart();
-}
-
-
-void CVideoProcessorDlg::OnRendererTransferMatrixSelected()
-{
-	OnBnClickedRendererRestart();
-}
-
-
-void CVideoProcessorDlg::OnRendererPrimariesSelected()
-{
-	OnBnClickedRendererRestart();
-}
-
-
-void CVideoProcessorDlg::OnClose()
-{
-	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnClose()")));
-
-	if (m_wantToTerminate)
-		return;
-
-	// Set intent first, stopping the discoverer will lead to state update calls
-	m_desiredCaptureDevice = nullptr;
-	m_wantToTerminate = true;
-
-	// Stop discovery
-	if (m_blackMagicDeviceDiscoverer)
-	{
-		m_blackMagicDeviceDiscoverer->Stop();
-		m_blackMagicDeviceDiscoverer.Release();
-	}
-
-	UpdateState();
-
-	// Remove all renderers
-	ClearRendererCombo();
-}
-
-
-void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
-{
-	CString cstring;
-
-	if (m_rendererState == RendererState::RENDERSTATE_RENDERING)
-	{
-		cstring.Format(_T("%lu"), m_videoRenderer->GetFrameQueueSize());
-		m_rendererVideoFrameQueueSizeText.SetWindowText(cstring);
-
-		cstring.Format(_T("%.01f"), m_videoRenderer->EntryLatencyMs());
-		m_latencyToVPRendererText.SetWindowText(cstring);
-
-		cstring.Format(_T("%.01f"), m_videoRenderer->ExitLatencyMs());
-		m_latencyToDSRendererText.SetWindowText(cstring);
-
-		cstring.Format(_T("%lu"), m_videoRenderer->DroppedFrameCount());
-		m_rendererDroppedFrameCountText.SetWindowText(cstring);
-	}
-	else
-	{
-		m_rendererVideoFrameQueueSizeText.SetWindowText(_T(""));
-		m_latencyToVPRendererText.SetWindowText(_T(""));
-		m_latencyToDSRendererText.SetWindowText(_T(""));
-		m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
-	}
-
-	if (m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
-	{
-		cstring.Format(_T("%lu"), m_captureDevice->VideoFrameCapturedCount());
-		m_inputVideoFrameCountText.SetWindowText(cstring);
-
-		cstring.Format(_T("%lu"), m_captureDevice->VideoFrameMissedCount());
-		m_inputVideoFrameMissedText.SetWindowText(cstring);
-
-		cstring.Format(_T("%.01f"), m_captureDevice->HardwareLatencyMs());
-		m_latencyCaptureText.SetWindowText(cstring);
-	}
-	else
-	{
-		m_inputVideoFrameCountText.SetWindowText(TEXT(""));
-		m_inputVideoFrameMissedText.SetWindowText(TEXT(""));
-
-		m_latencyCaptureText.SetWindowText(_T(""));
-	}
-
-	// Prevent screensaver, this should be called "periodically" for whatever that means
-	if (m_timerSeconds % 60 == 0)
-	{
-		SetThreadExecutionState(ES_DISPLAY_REQUIRED);
-	}
-
-
-	// Auto adjust
-	if (m_timerSeconds % 5 == 0 &&
-		m_rendererState == RendererState::RENDERSTATE_RENDERING)
-	{
-		assert(m_videoRenderer);
-		assert(m_captureDevice);
-
-		bool queueOk = true;
-
-		// Auto-click reset on renderer if requested
-		const bool rendererResetAuto = m_rendererResetAutoCheck.GetCheck();
-		if(rendererResetAuto)
-		{
-			const bool needsReset = m_videoRenderer->GetFrameQueueSize() >= 3;
-			queueOk = !needsReset;
-
-			if (needsReset)
-			{
-				DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnTimer(): Resetting renderer")));
-				m_videoRenderer->Reset();
-			}
-		}
-
-		// Auto update the clock frame offset to get just over zero
-		// only do this if the queue is ok as it will have a major impact on the offset(or unmanaged)
-		const bool timingClockFrameOffsetAuto = m_timingClockFrameOffsetAutoCheck.GetCheck();
-		if (queueOk && timingClockFrameOffsetAuto)
-		{
-			const double videoFrameLead = -(m_videoRenderer->ExitLatencyMs());
-			const double frameDurationMs = 1000.0 / m_captureDeviceVideoState->displayMode->RefreshRateHz();
-
-			const bool needsAdjusting =
-				videoFrameLead < 0 ||
-				videoFrameLead > (frameDurationMs * 2);
-
-			if (needsAdjusting)
-			{
-				DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnTimer(): Adjusting clock frame offset + reset")));
-
-				const int delta = (int)round(-videoFrameLead);
-				const int newOffset = GetTimingClockFrameOffsetMs() + delta;
-
-				SetTimingClockFrameOffsetMs(newOffset);
-				UpdateTimingClockFrameOffset();
-			}
-		}
-	}
-
-	++m_timerSeconds;
-}
-
-
-void CVideoProcessorDlg::OnBnClickedFullScreenButton()
-{
-	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedFullScreenButton()")));
-
-	assert(!m_rendererfullScreen);  // Can happen in debug mode where the UI remains visible
-	m_rendererfullScreen = true;
-
-	m_wantToRestartRenderer = true;
-	UpdateState();
-}
-
-
 void CVideoProcessorDlg::OnBnClickedTimingClockFrameOffsetAutoCheck()
 {
 	const bool checked = m_timingClockFrameOffsetAutoCheck.GetCheck();
 
 	m_timingClockFrameOffsetEdit.EnableWindow(!checked);
+}
+
+
+void CVideoProcessorDlg::OnColorSpaceContainerPresetSelected()
+{
+	// TODO
+}
+
+
+void CVideoProcessorDlg::OnColorSpaceVideoPresetSelected()
+{
+	// TODO
+}
+
+
+void CVideoProcessorDlg::OnRendererSelected()
+{
+	OnBnClickedRendererRestart();
 }
 
 
@@ -420,6 +264,23 @@ void CVideoProcessorDlg::OnBnClickedRendererRestart()
 
 	if (m_rendererState == RendererState::RENDERSTATE_FAILED)
 		m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
+
+	m_wantToRestartRenderer = true;
+	UpdateState();
+}
+
+
+void CVideoProcessorDlg::OnRendererVideoConversionSelected()
+{
+	// TODO
+}
+
+
+void CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck()
+{
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck()")));
+
+	const bool useQueue = m_rendererVideoFrameUseQeueueCheck.GetCheck();
 
 	m_wantToRestartRenderer = true;
 	UpdateState();
@@ -443,11 +304,42 @@ void CVideoProcessorDlg::OnBnClickedRendererResetAutoCheck()
 }
 
 
-void CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck()
+void CVideoProcessorDlg::OnRendererDirectShowStartStopTimeMethodSelected()
 {
-	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedRendererVideoFrameUseQueueCheck()")));
+	OnBnClickedRendererRestart();
+}
 
-	const bool useQueue = m_rendererVideoFrameUseQeueueCheck.GetCheck();
+
+void CVideoProcessorDlg::OnRendererDirectShowNominalRangeSelected()
+{
+	OnBnClickedRendererRestart();
+}
+
+
+void CVideoProcessorDlg::OnRendererDirectShowTransferFunctionSelected()
+{
+	OnBnClickedRendererRestart();
+}
+
+
+void CVideoProcessorDlg::OnRendererDirectShowTransferMatrixSelected()
+{
+	OnBnClickedRendererRestart();
+}
+
+
+void CVideoProcessorDlg::OnRendererDirectShowPrimariesSelected()
+{
+	OnBnClickedRendererRestart();
+}
+
+
+void CVideoProcessorDlg::OnBnClickedRendererFullScreenCheck()
+{
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedRendererFullScreenCheck()")));
+
+	assert(!m_rendererfullScreen);  // Can happen in debug mode where the UI remains visible
+	m_rendererfullScreen = true;
 
 	m_wantToRestartRenderer = true;
 	UpdateState();
@@ -611,10 +503,33 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 	if (videoState->valid)
 	{
 		m_colorspaceCie1931xy.SetColorSpace(videoState->colorspace);
+
+		m_colorspaceContainerREdit.SetWindowTextW(
+			CieXYToString(
+				ColorSpaceToCie1931RedX(videoState->colorspace),
+				ColorSpaceToCie1931RedY(videoState->colorspace)));
+
+		m_colorspaceContainerGEdit.SetWindowTextW(
+			CieXYToString(
+				ColorSpaceToCie1931GreenX(videoState->colorspace),
+				ColorSpaceToCie1931GreenY(videoState->colorspace)));
+
+		m_colorspaceContainerBEdit.SetWindowTextW(
+			CieXYToString(
+				ColorSpaceToCie1931BlueX(videoState->colorspace),
+				ColorSpaceToCie1931BlueY(videoState->colorspace)));
+
+		//cstring.Format(_T("%.01f"), ColorSpaceToCie1931RedX(videoState->colorspacel);
+		//m_colorspaceContainerWPEdit.SetWindowTextW(_T(""));
 	}
 	else
 	{
 		m_colorspaceCie1931xy.SetColorSpace(ColorSpace::UNKNOWN);
+
+		m_colorspaceContainerREdit.SetWindowTextW(_T(""));
+		m_colorspaceContainerGEdit.SetWindowTextW(_T(""));
+		m_colorspaceContainerBEdit.SetWindowTextW(_T(""));
+		m_colorspaceContainerWPEdit.SetWindowTextW(_T(""));
 	}
 
 	m_colorspaceCie1931xy.SetHDRData(videoState->hdrData);
@@ -624,23 +539,42 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 		const HDRData hdrData = *(videoState->hdrData);
 
 		CString cstring;
-		cstring.Format(
-			_T("%.03f-%.01f"),
-			hdrData.masteringDisplayMinLuminance,
-			hdrData.masteringDisplayMaxLuminance);
-		m_hdrDml.SetWindowText(cstring);
-
 		cstring.Format(_T("%.01f"), hdrData.maxCll);
-		m_hdrMaxCll.SetWindowText(cstring);
+		m_luminanceMaxCll.SetWindowText(cstring);
 
 		cstring.Format(_T("%.01f"), hdrData.maxFall);
-		m_hdrMaxFall.SetWindowText(cstring);
+		m_luminanceMaxFall.SetWindowText(cstring);
+
+		cstring.Format(_T("%.05f"), hdrData.masteringDisplayMinLuminance);
+		m_luminanceMasterMin.SetWindowText(cstring);
+
+		cstring.Format(_T("%.01f"), hdrData.masteringDisplayMaxLuminance);
+		m_luminanceMasterMax.SetWindowText(cstring);
+
+		m_colorspaceVideoREdit.SetWindowTextW(
+			CieXYToString(hdrData.displayPrimaryRedX, hdrData.displayPrimaryRedY));
+
+		m_colorspaceVideoGEdit.SetWindowTextW(
+			CieXYToString(hdrData.displayPrimaryGreenX, hdrData.displayPrimaryGreenY));
+
+		m_colorspaceVideoBEdit.SetWindowTextW(
+			CieXYToString(hdrData.displayPrimaryBlueX, hdrData.displayPrimaryBlueY));
+
+		m_colorspaceVideoWPEdit.SetWindowTextW(
+			CieXYToString(hdrData.whitePointX, hdrData.whitePointX));
 	}
 	else
 	{
-		m_hdrDml.SetWindowText(_T(""));
-		m_hdrMaxCll.SetWindowText(_T(""));
-		m_hdrMaxFall.SetWindowText(_T(""));
+		m_luminanceMaxCll.SetWindowText(_T(""));
+		m_luminanceMaxFall.SetWindowText(_T(""));
+		m_luminanceMasterMin.SetWindowText(_T(""));
+		m_luminanceMasterMax.SetWindowText(_T(""));
+
+		m_colorspaceVideoREdit.SetWindowTextW(_T(""));
+		m_colorspaceVideoGEdit.SetWindowTextW(_T(""));
+		m_colorspaceVideoBEdit.SetWindowTextW(_T(""));
+		m_colorspaceVideoWPEdit.SetWindowTextW(_T(""));
+
 	}
 
 	// If the renderer did not accept the new state we need to restart the renderer
@@ -713,7 +647,7 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 		assert(false);
 	}
 
-	m_rendererFullscreenButton.EnableWindow(enableButtons);
+	m_rendererFullscreenCheck.EnableWindow(enableButtons);
 	m_rendererRestartButton.EnableWindow(enableButtons);
 	m_rendererResetButton.EnableWindow(enableButtons);
 
@@ -1287,9 +1221,10 @@ void CVideoProcessorDlg::CaptureGUIClear()
 	m_colorspaceCie1931xy.SetHDRData(nullptr);
 
 	// HDR group
-	m_hdrDml.SetWindowText(TEXT(""));
-	m_hdrMaxCll.SetWindowText(TEXT(""));
-	m_hdrMaxFall.SetWindowText(TEXT(""));
+	m_luminanceMaxCll.SetWindowText(TEXT(""));
+	m_luminanceMaxFall.SetWindowText(TEXT(""));
+	m_luminanceMasterMin.SetWindowText(TEXT(""));
+	m_luminanceMasterMax.SetWindowText(TEXT(""));
 }
 
 
@@ -1678,6 +1613,7 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_INPUT_BIT_DEPTH_STATIC, m_inputBitDepthText);
 	DDX_Control(pDX, IDC_INPUT_VIDEO_FRAME_COUNT_STATIC, m_inputVideoFrameCountText);
 	DDX_Control(pDX, IDC_INPUT_VIDEO_FRAME_MISSED_STATIC, m_inputVideoFrameMissedText);
+	DDX_Control(pDX, IDC_INPUT_LATENCY_MS_STATIC, m_inputLatencyMsText);
 
 	// Captured video group
 	DDX_Control(pDX, IDC_VIDEO_VALID_STATIC, m_videoValidText);
@@ -1694,35 +1630,58 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	// ColorSpace group
 	DDX_Control(pDX, IDC_CIE1931XY_GRAPH, m_colorspaceCie1931xy);
 
-	//  HDR group
-	DDX_Control(pDX, IDC_HDR_DML_STATIC, m_hdrDml);
-	DDX_Control(pDX, IDC_HDR_MAX_CLL_STATIC, m_hdrMaxCll);
-	DDX_Control(pDX, IDC_HDR_MAX_FALL_STATIC, m_hdrMaxFall);
+	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_PRESET_COMBO, m_colorspaceContainerPresetCompbo);
+	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_R_EDIT, m_colorspaceContainerREdit);
+	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_G_EDIT, m_colorspaceContainerGEdit);
+	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_B_EDIT, m_colorspaceContainerBEdit);
+	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_WP_EDIT, m_colorspaceContainerWPEdit);
+	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_PRESET_COMBO, m_colorspaceVideoPresetCompbo);
+	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_R_EDIT, m_colorspaceVideoREdit);
+	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_G_EDIT, m_colorspaceVideoGEdit);
+	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_B_EDIT, m_colorspaceVideoBEdit);
+	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_WP_EDIT, m_colorspaceVideoWPEdit);
+	DDX_Control(pDX, IDC_COLORSPACE_RESET_BUTTON, m_colorspaceResetButton);
+	DDX_Control(pDX, IDC_COLORSPACE_C_TO_V_BUTTON, m_colorspaceContainerToVideoButton);
 
-	// Latency group
-	DDX_Control(pDX, IDC_LATENCY_CAPTURE_STATIC, m_latencyCaptureText);
-	DDX_Control(pDX, IDC_LATENCY_TO_VP_RENDERER_STATIC, m_latencyToVPRendererText);
-	DDX_Control(pDX, IDC_LATENCY_TO_DS_RENDERER_STATIC, m_latencyToDSRendererText);
+	//  (HDR) luminance group
+	DDX_Control(pDX, IDC_LUMINANCE_MAXCLL_EDIT, m_luminanceMaxCll);
+	DDX_Control(pDX, IDC_LUMINANCE_MAXFALL_EDIT, m_luminanceMaxFall);
+	DDX_Control(pDX, IDC_LUMINANCE_MASTER_MIN_EDIT, m_luminanceMasterMin);
+	DDX_Control(pDX, IDC_LUMINANCE_MASTER_MAX_EDIT, m_luminanceMasterMax);
 
 	// Renderer group
 	DDX_Control(pDX, IDC_RENDERER_COMBO, m_rendererCombo);
 	DDX_Control(pDX, IDC_RENDERER_DETAIL_STRING_STATIC, m_rendererDetailStringStatic);
-	DDX_Control(pDX, IDC_RENDERER_TIMESTAMP_COMBO, m_rendererDirectShowStartStopTimeMethodCombo);
-	DDX_Control(pDX, IDC_RENDERER_NOMINAL_RANGE_COMBO, m_rendererNominalRangeCombo);
-	DDX_Control(pDX, IDC_RENDERER_TRANSFER_FUNCTION_COMBO, m_rendererTransferFunctionCombo);
-	DDX_Control(pDX, IDC_RENDERER_TRANSFER_MATRIX_COMBO, m_rendererTransferMatrixCombo);
-	DDX_Control(pDX, IDC_RENDERER_PRIMARIES_COMBO, m_rendererPrimariesCombo);
-	DDX_Control(pDX, IDC_FULL_SCREEN_BUTTON, m_rendererFullscreenButton);
 	DDX_Control(pDX, IDC_RENDERER_RESTART_BUTTON, m_rendererRestartButton);
-	DDX_Control(pDX, IDC_RENDERER_RESET_BUTTON, m_rendererResetButton);
-	DDX_Control(pDX, IDC_RENDERER_RESET_AUTO_CHECK, m_rendererResetAutoCheck);
 	DDX_Control(pDX, IDC_RENDERER_STATE_STATIC, m_rendererStateText);
+	DDX_Control(pDX, IDC_RENDERER_WINDOWED_VIDEO_WINDOW, m_windowedVideoWindow);
+
+	// Renderer Queue group
 	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_USE_QUEUE_CHECK, m_rendererVideoFrameUseQeueueCheck);
 	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_STATIC, m_rendererVideoFrameQueueSizeText);
 	DDX_Control(pDX, IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_MAX_EDIT, m_rendererVideoFrameQueueSizeMaxEdit);
 	DDX_Control(pDX, IDC_RENDERER_DROPPED_FRAME_COUNT_STATIC, m_rendererDroppedFrameCountText);
-	DDX_Control(pDX, IDC_RENDERER_BOX, m_windowedVideoWindow);
+	DDX_Control(pDX, IDC_RENDERER_RESET_BUTTON, m_rendererResetButton);
+	DDX_Control(pDX, IDC_RENDERER_RESET_AUTO_CHECK, m_rendererResetAutoCheck);
+
+	// Renderer Video conversion group
+	DDX_Control(pDX, IDC_RENDERER_VIDEO_CONVERSION_COMBO, m_rendererVideoConversionCombo);
+
+	// Renderer DirectShow override group
+	DDX_Control(pDX, IDC_RENDERER_DIRECTSHOW_START_STOP_TIME_METHOD_COMBO, m_rendererDirectShowStartStopTimeMethodCombo);
+	DDX_Control(pDX, IDC_RENDERER_DIRECTSHOW_NOMINAL_RANGE_COMBO, m_rendererNominalRangeCombo);
+	DDX_Control(pDX, IDC_RENDERER_DIRECTSHOW_TRANSFER_FUNCTION_COMBO, m_rendererTransferFunctionCombo);
+	DDX_Control(pDX, IDC_RENDERER_DIRECTSHOW_TRANSFER_MATRIX_COMBO, m_rendererTransferMatrixCombo);
+	DDX_Control(pDX, IDC_RENDERER_DIRECTSHOW_PRIMARIES_COMBO, m_rendererPrimariesCombo);
+
+	// Renderer latency (ms) group
+	DDX_Control(pDX, IDC_RENDERER_LATENCY_TO_VP_STATIC, m_rendererLatencyToVPText);
+	DDX_Control(pDX, IDC_RENDERER_LATENCY_TO_DS_STATIC, m_rendererLatencyToDSText);
+
+	// Renderer output group
+	DDX_Control(pDX, IDC_RENDERER_FULL_SCREEN_CHECK, m_rendererFullscreenCheck);
 }
+
 
 
 // Called when the dialog box is initialized
@@ -1889,6 +1848,134 @@ void CVideoProcessorDlg::OnSize(UINT nType, int cx, int cy)
 void CVideoProcessorDlg::OnSetFocus(CWnd* pOldWnd)
 {
 	CDialog::OnSetFocus(pOldWnd);
+}
+
+
+void CVideoProcessorDlg::OnClose()
+{
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnClose()")));
+
+	if (m_wantToTerminate)
+		return;
+
+	// Set intent first, stopping the discoverer will lead to state update calls
+	m_desiredCaptureDevice = nullptr;
+	m_wantToTerminate = true;
+
+	// Stop discovery
+	if (m_blackMagicDeviceDiscoverer)
+	{
+		m_blackMagicDeviceDiscoverer->Stop();
+		m_blackMagicDeviceDiscoverer.Release();
+	}
+
+	UpdateState();
+
+	// Remove all renderers
+	ClearRendererCombo();
+}
+
+
+void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	CString cstring;
+
+	if (m_rendererState == RendererState::RENDERSTATE_RENDERING)
+	{
+		cstring.Format(_T("%lu"), m_videoRenderer->GetFrameQueueSize());
+		m_rendererVideoFrameQueueSizeText.SetWindowText(cstring);
+
+		cstring.Format(_T("%.01f"), m_videoRenderer->EntryLatencyMs());
+		m_rendererLatencyToVPText.SetWindowText(cstring);
+
+		cstring.Format(_T("%.01f"), m_videoRenderer->ExitLatencyMs());
+		m_rendererLatencyToDSText.SetWindowText(cstring);
+
+		cstring.Format(_T("%lu"), m_videoRenderer->DroppedFrameCount());
+		m_rendererDroppedFrameCountText.SetWindowText(cstring);
+	}
+	else
+	{
+		m_rendererVideoFrameQueueSizeText.SetWindowText(_T(""));
+		m_rendererLatencyToVPText.SetWindowText(_T(""));
+		m_rendererLatencyToDSText.SetWindowText(_T(""));
+		m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
+	}
+
+	if (m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
+	{
+		cstring.Format(_T("%lu"), m_captureDevice->VideoFrameCapturedCount());
+		m_inputVideoFrameCountText.SetWindowText(cstring);
+
+		cstring.Format(_T("%lu"), m_captureDevice->VideoFrameMissedCount());
+		m_inputVideoFrameMissedText.SetWindowText(cstring);
+
+		cstring.Format(_T("%.01f"), m_captureDevice->HardwareLatencyMs());
+		m_inputLatencyMsText.SetWindowText(cstring);
+	}
+	else
+	{
+		m_inputVideoFrameCountText.SetWindowText(TEXT(""));
+		m_inputVideoFrameMissedText.SetWindowText(TEXT(""));
+		m_inputLatencyMsText.SetWindowText(_T(""));
+	}
+
+	// Prevent screensaver, this should be called "periodically" for whatever that means
+	if (m_timerSeconds % 60 == 0)
+	{
+		SetThreadExecutionState(ES_DISPLAY_REQUIRED);
+	}
+
+
+	// Auto adjust
+	if (m_timerSeconds % 5 == 0 &&
+		m_rendererState == RendererState::RENDERSTATE_RENDERING)
+	{
+		assert(m_videoRenderer);
+		assert(m_captureDevice);
+
+		bool queueOk = true;
+
+		// Auto-click reset on renderer if requested
+		const bool rendererResetAuto = m_rendererResetAutoCheck.GetCheck();
+		if (rendererResetAuto)
+		{
+			const bool needsReset = m_videoRenderer->GetFrameQueueSize() >= 3;
+			queueOk = !needsReset;
+
+			if (needsReset)
+			{
+				DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnTimer(): Resetting renderer")));
+				m_videoRenderer->Reset();
+			}
+		}
+
+		// Auto update the clock frame offset to get just over zero
+		// only do this if the queue is ok as it will have a major impact on the offset(or unmanaged)
+		const bool timingClockFrameOffsetAuto = m_timingClockFrameOffsetAutoCheck.GetCheck();
+		if (queueOk && timingClockFrameOffsetAuto)
+		{
+			const double videoFrameLead = -(m_videoRenderer->ExitLatencyMs());
+			const double frameDurationMs = 1000.0 / m_captureDeviceVideoState->displayMode->RefreshRateHz();
+
+			const bool needsAdjusting =
+				videoFrameLead < 0 ||
+				videoFrameLead >(frameDurationMs * 2);
+
+			if (needsAdjusting)
+			{
+				DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnTimer(): Adjusting clock frame offset + reset")));
+
+				const int delta = (int)round(-videoFrameLead);
+				const int newOffset = GetTimingClockFrameOffsetMs() + delta;
+
+				SetTimingClockFrameOffsetMs(newOffset);
+				UpdateTimingClockFrameOffset();
+			}
+		}
+	}
+
+	++m_timerSeconds;
 }
 
 

@@ -4,6 +4,7 @@ next (0.4.0)
 - Major overhaul of renderer code
 - pixelformat changed to VideoFrameEncoding as that covers the meaning better
 - Do not show logo in display if renderer is running, show once renderer is done again
+- Fixed all compilation warnings and handling them as error in the compiler now
 
 0.3.2
 - Most throws now lead to error popup

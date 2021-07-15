@@ -9,6 +9,9 @@
 #include <stdafx.h>
 
 #include <winnt.h>
+extern "C" {
+#include <libavutil/log.h>
+}
 
 #include <VideoProcessorDlg.h>
 
@@ -23,8 +26,20 @@ END_MESSAGE_MAP()
 CVideoProcessorApp videoProcessorApp;
 
 
+void av_log_callback(void* ptr, int level, const char* fmt, va_list vargs)
+{
+	vprintf(fmt, vargs);
+}
+
+
 BOOL CVideoProcessorApp::InitInstance()
 {
+	// Setup ffmpeg logging
+	av_log_set_callback(av_log_callback);
+#ifdef _DEBUG
+	av_log_set_level(AV_LOG_TRACE);
+#endif
+
 	CVideoProcessorDlg dlg;
 	m_pMainWnd = &dlg;
 

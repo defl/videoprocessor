@@ -157,51 +157,12 @@ void CCie1931Control::OnPaint(void)
     // Colorspace
     if (m_colorSpace != ColorSpace::UNKNOWN)
     {
-        double redX, redY, greenX, greenY, blueX, blueY;
-
-        switch (m_colorSpace)
-        {
-            // Coordinates from https://en.wikipedia.org/wiki/Rec._2020
-        case ColorSpace::BT_2020:
-            redX = 0.708;
-            redY = 0.292;
-            greenX = 0.17;
-            greenY = 0.797;
-            blueX = 0.131;
-            blueY = 0.046;
-            break;
-
-            // Coordinates from https://en.wikipedia.org/wiki/Rec._709
-        case ColorSpace::REC_709:
-            redX = 0.64;
-            redY = 0.33;
-            greenX = 0.30;
-            greenY = 0.60;
-            blueX = 0.15;
-            blueY = 0.06;
-            break;
-
-            // Coordinates from https://en.wikipedia.org/wiki/Rec._601
-        case ColorSpace::REC_601_525:
-            redX = 0.630;
-            redY = 0.340;
-            greenX = 0.310;
-            greenY = 0.595;
-            blueX = 0.155;
-            blueY = 0.070;
-            break;
-        case ColorSpace::REC_601_625:
-            redX = 0.640;
-            redY = 0.330;
-            greenX = 0.290;
-            greenY = 0.600;
-            blueX = 0.150;
-            blueY = 0.060;
-            break;
-
-        default:
-            throw std::runtime_error("Unknown colorspace");
-        }
+        const double redX = ColorSpaceToCie1931RedX(m_colorSpace);
+        const double redY = ColorSpaceToCie1931RedY(m_colorSpace);
+        const double greenX = ColorSpaceToCie1931GreenX(m_colorSpace);
+        const double greenY = ColorSpaceToCie1931GreenY(m_colorSpace);
+        const double blueX = ColorSpaceToCie1931BlueX(m_colorSpace);
+        const double blueY = ColorSpaceToCie1931BlueY(m_colorSpace);
 
         // Render lines
         hp = ::CreatePen(0, 2, RGB(0, 0, 0));

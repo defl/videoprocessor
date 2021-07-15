@@ -57,18 +57,21 @@ public:
 	// UI-related handlers
 	afx_msg void OnCaptureDeviceSelected();
 	afx_msg void OnCaptureInputSelected();
-	afx_msg void OnRendererSelected();
-	afx_msg void OnRendererTimestampSelected();
-	afx_msg void OnRendererNominalRangeSelected();
-	afx_msg void OnRendererTransferFunctionSelected();
-	afx_msg void OnRendererTransferMatrixSelected();
-	afx_msg void OnRendererPrimariesSelected();
-	afx_msg void OnBnClickedFullScreenButton();
 	afx_msg void OnBnClickedTimingClockFrameOffsetAutoCheck();
+	afx_msg void OnColorSpaceContainerPresetSelected();
+	afx_msg void OnColorSpaceVideoPresetSelected();
+	afx_msg void OnRendererSelected();
 	afx_msg void OnBnClickedRendererRestart();
+	afx_msg void OnRendererVideoConversionSelected();
+	afx_msg void OnBnClickedRendererVideoFrameUseQueueCheck();
 	afx_msg void OnBnClickedRendererReset();
 	afx_msg void OnBnClickedRendererResetAutoCheck();
-	afx_msg void OnBnClickedRendererVideoFrameUseQueueCheck();
+	afx_msg void OnRendererDirectShowStartStopTimeMethodSelected();
+	afx_msg void OnRendererDirectShowNominalRangeSelected();
+	afx_msg void OnRendererDirectShowTransferFunctionSelected();
+	afx_msg void OnRendererDirectShowTransferMatrixSelected();
+	afx_msg void OnRendererDirectShowPrimariesSelected();
+	afx_msg void OnBnClickedRendererFullScreenCheck();
 
 	// Custom message handlers
 	afx_msg LRESULT OnMessageCaptureDeviceFound(WPARAM wParam, LPARAM lParam);
@@ -118,6 +121,7 @@ protected:
 	CStatic m_inputBitDepthText;
 	CStatic m_inputVideoFrameCountText;
 	CStatic m_inputVideoFrameMissedText;
+	CStatic m_inputLatencyMsText;
 
 	// Captured video group
 	CStatic m_videoValidText;
@@ -133,35 +137,56 @@ protected:
 
 	// ColorSpace group
 	CCie1931Control m_colorspaceCie1931xy;
+	CComboBox m_colorspaceContainerPresetCompbo;
+	CEdit m_colorspaceContainerREdit;
+	CEdit m_colorspaceContainerGEdit;
+	CEdit m_colorspaceContainerBEdit;
+	CEdit m_colorspaceContainerWPEdit;
+	CComboBox m_colorspaceVideoPresetCompbo;
+	CEdit m_colorspaceVideoREdit;
+	CEdit m_colorspaceVideoGEdit;
+	CEdit m_colorspaceVideoBEdit;
+	CEdit m_colorspaceVideoWPEdit;
+	CButton m_colorspaceResetButton;
+	CButton m_colorspaceContainerToVideoButton;
 
-	// HDR group
-	CStatic	m_hdrDml;
-	CStatic	m_hdrMaxCll;
-	CStatic	m_hdrMaxFall;
-
-	// Latency group
-	CStatic m_latencyCaptureText;
-	CStatic m_latencyToVPRendererText;
-	CStatic m_latencyToDSRendererText;
+	// (HDR) Lumiance group
+	CEdit m_luminanceMaxCll;
+	CEdit m_luminanceMaxFall;
+	CEdit m_luminanceMasterMin;
+	CEdit m_luminanceMasterMax;
 
 	// Renderer group
 	CComboBox m_rendererCombo;
 	CStatic m_rendererDetailStringStatic;
+	CButton m_rendererRestartButton;
+	CStatic m_rendererStateText;
+	WindowedVideoWindow	m_windowedVideoWindow;
+
+	// Renderer Queue group
+	CButton m_rendererVideoFrameUseQeueueCheck;
+	CStatic m_rendererVideoFrameQueueSizeText;
+	CEdit m_rendererVideoFrameQueueSizeMaxEdit;
+	CStatic m_rendererDroppedFrameCountText;
+	CButton m_rendererResetButton;
+	CButton m_rendererResetAutoCheck;
+
+	// Renderer Video conversion group
+	CComboBox m_rendererVideoConversionCombo;
+
+	// Renderer DirectShow override group
 	CComboBox m_rendererDirectShowStartStopTimeMethodCombo;
 	CComboBox m_rendererNominalRangeCombo;
 	CComboBox m_rendererTransferFunctionCombo;
 	CComboBox m_rendererTransferMatrixCombo;
 	CComboBox m_rendererPrimariesCombo;
-	CButton m_rendererFullscreenButton;
-	CButton m_rendererRestartButton;
-	CButton m_rendererResetButton;
-	CButton m_rendererResetAutoCheck;
-	CStatic m_rendererStateText;
-	CButton m_rendererVideoFrameUseQeueueCheck;
-	CStatic m_rendererVideoFrameQueueSizeText;
-	CEdit m_rendererVideoFrameQueueSizeMaxEdit;
-	CStatic m_rendererDroppedFrameCountText;
-	WindowedVideoWindow	m_windowedVideoWindow;
+
+	// Renderer latency (ms) group
+	CStatic m_rendererLatencyToVPText;
+	CStatic m_rendererLatencyToDSText;
+
+	// Renderer output group
+	CButton m_rendererFullscreenCheck;
 
 	CSize m_minDialogSize;
 	HICON m_hIcon;

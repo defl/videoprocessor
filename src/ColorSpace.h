@@ -22,4 +22,12 @@ enum class ColorSpace
 };
 
 
-const TCHAR* ToString(const ColorSpace colorspace);
+const TCHAR* ToString(const ColorSpace);
+
+// Convert color sapce to Cie1931 coordinates
+double ColorSpaceToCie1931RedX(ColorSpace);
+double ColorSpaceToCie1931RedY(ColorSpace);
+double ColorSpaceToCie1931GreenX(ColorSpace);
+double ColorSpaceToCie1931GreenY(ColorSpace);
+double ColorSpaceToCie1931BlueX(ColorSpace);
+double ColorSpaceToCie1931BlueY(ColorSpace);
