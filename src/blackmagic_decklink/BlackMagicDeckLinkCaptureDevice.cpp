@@ -628,7 +628,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 				}
 
 				// Primaries
-				// TODO: There is a bug in the DeckLink API, the colors are under the wrong names.
+				// TODO: There seems to be a bug in the DeckLink API, the colors are under the wrong names. Filed with BlackMagic under DEV-4671
 				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesBlueX, &doubleValue))
 					doubleValue = 0.0;
 				if (!CieEquals(m_videoHdrData.displayPrimaryRedX, doubleValue))
