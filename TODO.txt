@@ -11,9 +11,7 @@ Roadmap
 - Check all round()'s to see if they're really needed and we can't just floor it
 - GRB make no sense for display
 - Fullscreen button is now checkbox, test and validate expected performance (also from commandline setting)
-- Remove text from CIE1931 diagram
 - Clean up TODO
-- Color latency output
 
 1.0.0: Out of beta
 - No changes expected, re-release of 0.4.0 code

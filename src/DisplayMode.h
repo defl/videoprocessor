@@ -46,7 +46,7 @@ public:
 	// Ticks per second
 	unsigned int TimeScale() const { return m_timeScale; }
 
-	// Ticks per frame
+	// Ticks per frame (expressed in TimeScale())
 	unsigned int FrameDuration() const { return m_frameDuration; }
 
 	// Refresh rate in Hz as double

@@ -1,11 +1,12 @@
 next (0.4.0)
-- Optionally force YCbCr422 (v210) to YCbCr420 (p010) to undo DeckLink conversion so that the renderer can do the upscaling
+- Option to force YCbCr422 (v210) to YCbCr420 (p010) to undo DeckLink conversion so that the renderer can do the upscaling
 - Support for MPC Video Renderer (https://github.com/Aleksoid1978/VideoRenderer)
 - Display modes now stores and uess ticks/duration for video frames
 - Major overhaul of renderer code
 - pixelformat changed to VideoFrameEncoding as that covers the meaning better
 - Do not show logo in display if renderer is running, show once renderer is done again
 - Fixed all compilation warnings and handling them as error in the compiler now
+- Latency numbers are colored to reflect how good they are
 - ffmpeg logging enabled
 - Improved error messages
 

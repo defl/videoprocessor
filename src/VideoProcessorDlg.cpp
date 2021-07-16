@@ -1920,6 +1920,17 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 		cstring.Format(_T("%.01f"), m_videoRenderer->ExitLatencyMs());
 		m_rendererLatencyToDSText.SetWindowText(cstring);
 
+		const double frameMs = 1000.0 / m_captureDeviceVideoState->displayMode->RefreshRateHz();
+
+		if (m_videoRenderer->ExitLatencyMs() < (-3*frameMs) ||
+			m_videoRenderer->ExitLatencyMs() > 10)
+			m_rendererLatencyToDSText.SetTextColor(CColorStatic::RED);
+		else if (m_videoRenderer->ExitLatencyMs() < (-2*frameMs) ||
+			     m_videoRenderer->ExitLatencyMs() > -5)
+			m_rendererLatencyToDSText.SetTextColor(CColorStatic::ORANGE);
+		else
+			m_rendererLatencyToDSText.SetTextColor(CColorStatic::GREEN);
+
 		cstring.Format(_T("%lu"), m_videoRenderer->DroppedFrameCount());
 		m_rendererDroppedFrameCountText.SetWindowText(cstring);
 	}
@@ -1941,6 +1952,13 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 
 		cstring.Format(_T("%.01f"), m_captureDevice->HardwareLatencyMs());
 		m_inputLatencyMsText.SetWindowText(cstring);
+
+		if (m_captureDevice->HardwareLatencyMs() < 10)
+			m_inputLatencyMsText.SetTextColor(CColorStatic::GREEN);
+		else if (m_captureDevice->HardwareLatencyMs() < 15)
+			m_inputLatencyMsText.SetTextColor(CColorStatic::ORANGE);
+		else
+			m_inputLatencyMsText.SetTextColor(CColorStatic::RED);
 	}
 	else
 	{

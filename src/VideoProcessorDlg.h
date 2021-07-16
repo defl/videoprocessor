@@ -16,6 +16,7 @@
 #include <PixelValueRange.h>
 #include <CCie1931Control.h>
 #include <IRenderer.h>
+#include <CColorStatic.h>
 #include <VideoFrame.h>
 #include <FullscreenVideoWindow.h>
 #include <WindowedVideoWindow.h>
@@ -121,7 +122,7 @@ protected:
 	CStatic m_inputBitDepthText;
 	CStatic m_inputVideoFrameCountText;
 	CStatic m_inputVideoFrameMissedText;
-	CStatic m_inputLatencyMsText;
+	CColorStatic m_inputLatencyMsText;
 
 	// Captured video group
 	CStatic m_videoValidText;
@@ -182,8 +183,8 @@ protected:
 	CComboBox m_rendererPrimariesCombo;
 
 	// Renderer latency (ms) group
-	CStatic m_rendererLatencyToVPText;
-	CStatic m_rendererLatencyToDSText;
+	CColorStatic m_rendererLatencyToVPText;
+	CColorStatic m_rendererLatencyToDSText;
 
 	// Renderer output group
 	CButton m_rendererFullscreenCheck;
