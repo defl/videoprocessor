@@ -193,7 +193,7 @@ protected:
 	HICON m_hIcon;
 	HACCEL m_accelerator;
 
-	bool m_rendererfullScreen = false;
+	bool m_rendererFullScreenStart = false;
 	FullscreenVideoWindow* m_fullScreenVideoWindow = nullptr;
 
 	//

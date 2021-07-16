@@ -188,7 +188,7 @@ CVideoProcessorDlg::~CVideoProcessorDlg()
 
 void CVideoProcessorDlg::StartFullScreen()
 {
-	m_rendererfullScreen = true;
+	m_rendererFullScreenStart = true;
 }
 
 
@@ -345,9 +345,6 @@ void CVideoProcessorDlg::OnRendererDirectShowPrimariesSelected()
 void CVideoProcessorDlg::OnBnClickedRendererFullScreenCheck()
 {
 	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedRendererFullScreenCheck()")));
-
-	assert(!m_rendererfullScreen);  // Can happen in debug mode where the UI remains visible
-	m_rendererfullScreen = true;
 
 	m_wantToRestartRenderer = true;
 	UpdateState();
@@ -655,7 +652,6 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 		assert(false);
 	}
 
-	m_rendererFullscreenCheck.EnableWindow(enableButtons);
 	m_rendererRestartButton.EnableWindow(enableButtons);
 	m_rendererResetButton.EnableWindow(enableButtons);
 
@@ -683,7 +679,8 @@ LRESULT CVideoProcessorDlg::OnMessageRendererDetailString(WPARAM wParam, LPARAM 
 
 void CVideoProcessorDlg::OnCommandFullScreenToggle()
 {
-	m_rendererfullScreen = !m_rendererfullScreen;
+	m_rendererFullscreenCheck.SetCheck(
+		m_rendererFullscreenCheck.GetCheck() ? 0 : 1);
 
 	m_wantToRestartRenderer = true;
 	UpdateState();
@@ -693,7 +690,7 @@ void CVideoProcessorDlg::OnCommandFullScreenToggle()
 void CVideoProcessorDlg::OnCommandFullScreenExit()
 {
 	// If fullscreen toggle off, else do nothing
-	if (m_rendererfullScreen)
+	if (m_rendererFullscreenCheck.GetCheck())
 		OnCommandFullScreenToggle();
 }
 
@@ -981,7 +978,7 @@ void CVideoProcessorDlg::UpdateState()
 	if (!m_videoRenderer)
 	{
 		// If we still have a full screen window and don't want to be full screen anymore clean it up
-		if (!m_rendererfullScreen && m_fullScreenVideoWindow)
+		if (!m_rendererFullscreenCheck.GetCheck() && m_fullScreenVideoWindow)
 		{
 			FullScreenVideoWindowDestroy();
 
@@ -1405,7 +1402,7 @@ void CVideoProcessorDlg::RenderStart()
 			delete[] wtext;
 
 			// Ensure we're not full screen anymore and update state
-			m_rendererfullScreen = false;
+			m_rendererFullscreenCheck.SetCheck(FALSE);
 			UpdateState();
 
 			// Give the user a chance to try again
@@ -1493,7 +1490,7 @@ void CVideoProcessorDlg::FullScreenVideoWindowDestroy()
 
 HWND CVideoProcessorDlg::GetRenderWindow()
 {
-	if (m_rendererfullScreen)
+	if (m_rendererFullscreenCheck.GetCheck())
 	{
 		// If we don't have a full screen window yet make one
 		if (!m_fullScreenVideoWindow)
@@ -1790,6 +1787,7 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	m_timingClockFrameOffsetEdit.SetWindowText(TEXT("90"));
 	m_rendererVideoFrameUseQeueueCheck.SetCheck(true);
 	m_rendererResetAutoCheck.SetCheck(true);
+	m_rendererFullscreenCheck.SetCheck(m_rendererFullScreenStart);
 
 	// Start timers
 	SetTimer(TIMER_ID_1SECOND, 1000, nullptr);

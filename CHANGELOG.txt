@@ -7,6 +7,7 @@ next (0.4.0)
 - Do not show logo in display if renderer is running, show once renderer is done again
 - Fixed all compilation warnings and handling them as error in the compiler now
 - Latency numbers are colored to reflect how good they are
+- Fullscreen button is now checkbox
 - ffmpeg logging enabled
 - Improved error messages
 
