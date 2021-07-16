@@ -142,7 +142,6 @@ protected:
 	CEdit m_colorspaceContainerREdit;
 	CEdit m_colorspaceContainerGEdit;
 	CEdit m_colorspaceContainerBEdit;
-	CEdit m_colorspaceContainerWPEdit;
 	CComboBox m_colorspaceVideoPresetCompbo;
 	CEdit m_colorspaceVideoREdit;
 	CEdit m_colorspaceVideoGEdit;

@@ -172,31 +172,6 @@ void CCie1931Control::OnPaint(void)
         ::LineTo(hdc, X_cie_to_pixel(greenX), Y_cie_to_pixel(greenY));
         ::LineTo(hdc, X_cie_to_pixel(blueX), Y_cie_to_pixel(blueY));
         ::LineTo(hdc, X_cie_to_pixel(redX), Y_cie_to_pixel(redY));
-
-        // Render text
-        ::SetBkColor(hdc, RGB(0, 0, 0));
-        ::SetBkMode(hdc, OPAQUE);
-
-        ::SetTextColor(hdc, RGB(255, 0, 0));
-        const CString redString = CieXYToString(redX, redY);
-        ::TextOut(hdc,
-            X_cie_to_pixel(redX) - 50,
-            Y_cie_to_pixel(redY) - 20,
-            redString, redString.GetLength());
-
-        ::SetTextColor(hdc, RGB(0, 255, 0));
-        const CString greenString = CieXYToString(greenX, greenY);
-        ::TextOut(hdc,
-            X_cie_to_pixel(greenX) - 20,
-            Y_cie_to_pixel(greenY) - 20,
-            greenString, greenString.GetLength());
-
-        ::SetTextColor(hdc, RGB(100, 100, 255));
-        const CString blueString = CieXYToString(blueX, blueY);
-        ::TextOut(hdc,
-            X_cie_to_pixel(blueX) - 20,
-            Y_cie_to_pixel(blueY) + 6,
-            blueString, blueString.GetLength());
     }
 
     // HDR data
@@ -220,16 +195,6 @@ void CCie1931Control::OnPaint(void)
             Y_cie_to_pixel(m_hdrData->whitePointY) + 3,
             X_cie_to_pixel(m_hdrData->whitePointX) + 3,
             Y_cie_to_pixel(m_hdrData->whitePointY) - 3);
-
-        // Render text
-        ::SetTextColor(hdc, RGB(0, 0, 0));
-        ::SetBkColor(hdc, RGB(255, 255, 255));
-        ::SetBkMode(hdc, OPAQUE);
-        const CString whitePointString = CieXYToString(m_hdrData->whitePointX, m_hdrData->whitePointY);
-        ::TextOut(hdc,
-            X_cie_to_pixel(m_hdrData->whitePointX),
-            Y_cie_to_pixel(m_hdrData->whitePointY) + 6,
-            whitePointString, whitePointString.GetLength());
     }
 
     ::EndPaint(GetSafeHwnd(), &ps);

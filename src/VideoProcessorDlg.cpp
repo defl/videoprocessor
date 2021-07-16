@@ -523,9 +523,6 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 			CieXYToString(
 				ColorSpaceToCie1931BlueX(videoState->colorspace),
 				ColorSpaceToCie1931BlueY(videoState->colorspace)));
-
-		//cstring.Format(_T("%.01f"), ColorSpaceToCie1931RedX(videoState->colorspacel);
-		//m_colorspaceContainerWPEdit.SetWindowTextW(_T(""));
 	}
 	else
 	{
@@ -534,7 +531,6 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 		m_colorspaceContainerREdit.SetWindowTextW(_T(""));
 		m_colorspaceContainerGEdit.SetWindowTextW(_T(""));
 		m_colorspaceContainerBEdit.SetWindowTextW(_T(""));
-		m_colorspaceContainerWPEdit.SetWindowTextW(_T(""));
 	}
 
 	m_colorspaceCie1931xy.SetHDRData(videoState->hdrData);
@@ -566,7 +562,7 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 			CieXYToString(hdrData.displayPrimaryBlueX, hdrData.displayPrimaryBlueY));
 
 		m_colorspaceVideoWPEdit.SetWindowTextW(
-			CieXYToString(hdrData.whitePointX, hdrData.whitePointX));
+			CieXYToString(hdrData.whitePointX, hdrData.whitePointY));
 	}
 	else
 	{
@@ -1653,7 +1649,6 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_R_EDIT, m_colorspaceContainerREdit);
 	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_G_EDIT, m_colorspaceContainerGEdit);
 	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_B_EDIT, m_colorspaceContainerBEdit);
-	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_WP_EDIT, m_colorspaceContainerWPEdit);
 	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_PRESET_COMBO, m_colorspaceVideoPresetCompbo);
 	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_R_EDIT, m_colorspaceVideoREdit);
 	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_G_EDIT, m_colorspaceVideoGEdit);

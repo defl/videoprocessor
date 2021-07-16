@@ -628,7 +628,8 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 				}
 
 				// Primaries
-				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesRedX, &doubleValue))
+				// TODO: There is a bug in the DeckLink API, the colors are under the wrong names.
+				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesBlueX, &doubleValue))
 					doubleValue = 0.0;
 				if (!CieEquals(m_videoHdrData.displayPrimaryRedX, doubleValue))
 				{
@@ -636,7 +637,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 					videoStateChanged = true;
 				}
 
-				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesRedY, &doubleValue))
+				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesBlueY, &doubleValue))
 					doubleValue = 0.0;
 				if (!CieEquals(m_videoHdrData.displayPrimaryRedY, doubleValue))
 				{
@@ -644,7 +645,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 					videoStateChanged = true;
 				}
 
-				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesGreenX, &doubleValue))
+				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesRedX, &doubleValue))
 					doubleValue = 0.0;
 				if (!CieEquals(m_videoHdrData.displayPrimaryGreenX, doubleValue))
 				{
@@ -652,7 +653,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 					videoStateChanged = true;
 				}
 
-				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesGreenY, &doubleValue))
+				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesRedY, &doubleValue))
 					doubleValue = 0.0;
 				if (!CieEquals(m_videoHdrData.displayPrimaryGreenY, doubleValue))
 				{
@@ -660,7 +661,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 					videoStateChanged = true;
 				}
 
-				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesBlueX, &doubleValue))
+				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesGreenX, &doubleValue))
 					doubleValue = 0.0;
 				if (!CieEquals(m_videoHdrData.displayPrimaryBlueX, doubleValue))
 				{
@@ -668,7 +669,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 					videoStateChanged = true;
 				}
 
-				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesBlueY, &doubleValue))
+				IF_NOT_S_OK(metadataExtensions->GetFloat(bmdDeckLinkFrameMetadataHDRDisplayPrimariesGreenY, &doubleValue))
 					doubleValue = 0.0;
 				if (!CieEquals(m_videoHdrData.displayPrimaryBlueY, doubleValue))
 				{
