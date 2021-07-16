@@ -245,6 +245,7 @@
     <ClInclude Include="RendererId.h" />
     <ClInclude Include="TimingClock.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="VideoConversionOverride.h" />
     <ClInclude Include="WallClock.h" />
     <ClInclude Include="CNoopVideoFrameFormatter.h" />
     <ClInclude Include="ColorSpace.h" />
@@ -310,6 +311,7 @@
     <ClCompile Include="RendererId.cpp" />
     <ClCompile Include="TimingClock.cpp" />
     <ClCompile Include="version.cpp" />
+    <ClCompile Include="VideoConversionOverride.cpp" />
     <ClCompile Include="WallClock.cpp" />
     <ClCompile Include="CNoopVideoFrameFormatter.cpp" />
     <ClCompile Include="ColorSpace.cpp" />

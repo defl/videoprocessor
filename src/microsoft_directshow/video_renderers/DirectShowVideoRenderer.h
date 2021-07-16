@@ -17,6 +17,7 @@
 #include <VideoState.h>
 #include <IVideoFrameFormatter.h>
 #include <ITimingClock.h>
+#include <VideoConversionOverride.h>
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>
 #include <microsoft_directshow/DirectShowTimingClock.h>
 
@@ -37,7 +38,8 @@ public:
 		ITimingClock* timingClock,
 		DirectShowStartStopTimeMethod timestamp,
 		bool useFrameQueue,
-		size_t frameQueueMaxSize);
+		size_t frameQueueMaxSize,
+		VideoConversionOverride videoConversionOverride);
 	virtual ~DirectShowVideoRenderer();
 
 	// IRenderer
@@ -66,6 +68,7 @@ protected:
 	DirectShowStartStopTimeMethod m_timestamp;
 	bool m_useFrameQueue;
 	size_t m_frameQueueMaxSize;
+	VideoConversionOverride m_videoConversionOverride;
 	DXVA_NominalRange m_forceNominalRange = DXVA_NominalRange::DXVA_NominalRange_Unknown;
 	DXVA_VideoTransferFunction m_forceVideoTransferFunction = DXVA_VideoTransferFunction::DXVA_VideoTransFunc_Unknown;
 	DXVA_VideoTransferMatrix m_forceVideoTransferMatrix = DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_Unknown;

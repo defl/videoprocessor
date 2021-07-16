@@ -31,5 +31,5 @@ const TCHAR* ToString(const EOTF eotf)
 		return TEXT("HLG");
 	}
 
-	throw std::runtime_error("UNSPECIFIED EOTF");
+	throw std::runtime_error("EOTF ToString() failed, value not recognized");
 }

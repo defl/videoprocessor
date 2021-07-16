@@ -26,7 +26,8 @@ DirectShowVideoRenderer::DirectShowVideoRenderer(
 	ITimingClock* timingClock,
 	DirectShowStartStopTimeMethod timestamp,
 	bool useFrameQueue,
-	size_t frameQueueMaxSize):
+	size_t frameQueueMaxSize,
+	VideoConversionOverride videoConversionOverride):
 	m_callback(callback),
 	m_videoHwnd(videoHwnd),
 	m_eventHwnd(eventHwnd),
@@ -34,7 +35,8 @@ DirectShowVideoRenderer::DirectShowVideoRenderer(
 	m_timingClock(timingClock),
 	m_timestamp(timestamp),
 	m_useFrameQueue(useFrameQueue),
-	m_frameQueueMaxSize(frameQueueMaxSize)
+	m_frameQueueMaxSize(frameQueueMaxSize),
+	m_videoConversionOverride(videoConversionOverride)
 {
 	if (!videoHwnd)
 		throw std::runtime_error("Invalid videoHwnd");

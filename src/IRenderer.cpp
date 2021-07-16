@@ -37,5 +37,5 @@ const TCHAR* ToString(const RendererState rendererState)
 		return TEXT("Failed");
 	}
 
-	throw std::runtime_error("UNSPECIFIED RendererState");
+	throw std::runtime_error("RendererState ToString() failed, value not recognized");
 }

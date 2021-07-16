@@ -25,5 +25,5 @@ const TCHAR* ToString(const Encoding encoding)
 		return TEXT("RGB 4:4:4");
 	}
 
-	throw std::runtime_error("UNSPECIFIED Encoding");
+	throw std::runtime_error("Encoding ToString() failed, value not recognized");
 }

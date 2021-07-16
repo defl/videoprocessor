@@ -54,7 +54,7 @@ const TCHAR* ToString(const VideoFrameEncoding videoFrameEncoding)
 		return TEXT("DNxHR Encoded");
 	}
 
-	throw std::runtime_error("UNSPECIFIED VideoFrameEncoding");
+	throw std::runtime_error("VideoFrameEncoding ToString() failed, value not recognized");
 }
 
 

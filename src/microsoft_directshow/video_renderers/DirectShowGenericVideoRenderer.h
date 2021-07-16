@@ -32,7 +32,8 @@ public:
 		ITimingClock* timingClock,
 		DirectShowStartStopTimeMethod directShowStartStopTimeMethod,
 		bool useFrameQueue,
-		size_t frameQueueMaxSize);
+		size_t frameQueueMaxSize,
+		VideoConversionOverride videoConversionOverride);
 
 	virtual ~DirectShowGenericVideoRenderer() {}
 

@@ -14,6 +14,7 @@
 
 #include <version.h>
 #include <cie.h>
+#include <VideoConversionOverride.h>
 #include <resource.h>
 #include <VideoProcessorApp.h>
 #include <microsoft_directshow/video_renderers/DirectShowVideoRenderers.h>
@@ -152,6 +153,13 @@ static const std::vector<std::pair<LPCTSTR, DXVA_VideoPrimaries>> DIRECTSHOW_PRI
 };
 
 
+static const std::vector<VideoConversionOverride> RENDERER_VIDEO_CONVERSION =
+{
+	VideoConversionOverride::VIDEOCONVERSION_NONE,
+	VideoConversionOverride::VIDEOCONVERSION_V210_TO_P010
+};
+
+
 //
 // Constructor/destructor
 //
@@ -272,7 +280,7 @@ void CVideoProcessorDlg::OnBnClickedRendererRestart()
 
 void CVideoProcessorDlg::OnRendererVideoConversionSelected()
 {
-	// TODO
+	OnBnClickedRendererRestart();
 }
 
 
@@ -1255,6 +1263,12 @@ void CVideoProcessorDlg::RenderStart()
 	DirectShowStartStopTimeMethod directShowStartStopTimeMethod =
 		(DirectShowStartStopTimeMethod)m_rendererDirectShowStartStopTimeMethodCombo.GetItemData(i);
 
+	// Get forced video conversion
+	i = m_rendererVideoConversionCombo.GetCurSel();
+	assert(i >= 0);
+	VideoConversionOverride videoConversionOverride =
+		(VideoConversionOverride)m_rendererVideoConversionCombo.GetItemData(i);
+
 	// Capture card always provides the clock
 	ITimingClock* timingClock = m_captureDevice->GetTimingClock();
 	if (!timingClock)
@@ -1271,19 +1285,23 @@ void CVideoProcessorDlg::RenderStart()
 	{
 		i = m_rendererNominalRangeCombo.GetCurSel();
 		assert(i >= 0);
-		DXVA_NominalRange forceNominalRange = (DXVA_NominalRange)m_rendererNominalRangeCombo.GetItemData(i);
+		DXVA_NominalRange forceNominalRange =
+			(DXVA_NominalRange)m_rendererNominalRangeCombo.GetItemData(i);
 
 		i = m_rendererTransferFunctionCombo.GetCurSel();
 		assert(i >= 0);
-		DXVA_VideoTransferFunction forceVideoTransferFunction = (DXVA_VideoTransferFunction)m_rendererTransferFunctionCombo.GetItemData(i);
+		DXVA_VideoTransferFunction forceVideoTransferFunction =
+			(DXVA_VideoTransferFunction)m_rendererTransferFunctionCombo.GetItemData(i);
 
 		i = m_rendererTransferMatrixCombo.GetCurSel();
 		assert(i >= 0);
-		DXVA_VideoTransferMatrix forceVideoTransferMatrix = (DXVA_VideoTransferMatrix)m_rendererTransferMatrixCombo.GetItemData(i);
+		DXVA_VideoTransferMatrix forceVideoTransferMatrix =
+			(DXVA_VideoTransferMatrix)m_rendererTransferMatrixCombo.GetItemData(i);
 
 		i = m_rendererPrimariesCombo.GetCurSel();
 		assert(i >= 0);
-		DXVA_VideoPrimaries forceVideoPrimaries = (DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
+		DXVA_VideoPrimaries forceVideoPrimaries =
+			(DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
 
 		m_videoRenderer = new DirectShowGenericHDRVideoRenderer(
 			*rendererClSID,
@@ -1295,6 +1313,7 @@ void CVideoProcessorDlg::RenderStart()
 			directShowStartStopTimeMethod,
 			GetRendererVideoFrameUseQueue(),
 			GetRendererVideoFrameQueueSizeMax(),
+			videoConversionOverride,
 			forceNominalRange,
 			forceVideoTransferFunction,
 			forceVideoTransferMatrix,
@@ -1329,7 +1348,8 @@ void CVideoProcessorDlg::RenderStart()
 					timingClock,
 					directShowStartStopTimeMethod,
 					GetRendererVideoFrameUseQueue(),
-					GetRendererVideoFrameQueueSizeMax());
+					GetRendererVideoFrameQueueSizeMax(),
+					videoConversionOverride);
 			}
 			else if (IsEqualCLSID(*rendererClSID, CLSID_EnhancedVideoRenderer))
 			{
@@ -1341,7 +1361,8 @@ void CVideoProcessorDlg::RenderStart()
 					timingClock,
 					directShowStartStopTimeMethod,
 					GetRendererVideoFrameUseQueue(),
-					GetRendererVideoFrameQueueSizeMax());
+					GetRendererVideoFrameQueueSizeMax(),
+					videoConversionOverride);
 			}
 			else
 				m_videoRenderer = new DirectShowGenericVideoRenderer(
@@ -1353,7 +1374,8 @@ void CVideoProcessorDlg::RenderStart()
 					timingClock,
 					directShowStartStopTimeMethod,
 					GetRendererVideoFrameUseQueue(),
-					GetRendererVideoFrameQueueSizeMax());
+					GetRendererVideoFrameQueueSizeMax(),
+					videoConversionOverride);
 
 			if (!m_videoRenderer)
 				FatalError(TEXT("Failed to build DirectShow Video Renderer"));
@@ -1746,6 +1768,13 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 		m_rendererPrimariesCombo.SetItemData(index, (int)p.second);
 	}
 	m_rendererPrimariesCombo.SetCurSel(0);
+
+	for (const auto& p : RENDERER_VIDEO_CONVERSION)
+	{
+		int index = m_rendererVideoConversionCombo.AddString(ToString(p));
+		m_rendererVideoConversionCombo.SetItemData(index, (int)p);
+	}
+	m_rendererVideoConversionCombo.SetCurSel(0);
 
 	// Start discovery services
 	m_blackMagicDeviceDiscoverer->Start();

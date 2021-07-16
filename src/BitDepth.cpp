@@ -28,5 +28,5 @@ const TCHAR* ToString(const BitDepth bitDepth)
 		return TEXT("12-bit");
 	}
 
-	throw std::runtime_error("Unspecified BitDepth");
+	throw std::runtime_error("BitDepth ToString() failed, value not recognized");
 }

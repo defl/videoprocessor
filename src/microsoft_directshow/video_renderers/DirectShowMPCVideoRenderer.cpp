@@ -22,7 +22,8 @@ DirectShowMPCVideoRenderer::DirectShowMPCVideoRenderer(
 	ITimingClock* timingClock,
 	DirectShowStartStopTimeMethod directShowStartStopTimeMethod,
 	bool useFrameQueue,
-	size_t frameQueueMaxSize):
+	size_t frameQueueMaxSize,
+	VideoConversionOverride videoConversionOverride):
 	DirectShowGenericVideoRenderer(
 		CLSID_MPCVR,
 		callback,
@@ -32,7 +33,8 @@ DirectShowMPCVideoRenderer::DirectShowMPCVideoRenderer(
 		timingClock,
 		directShowStartStopTimeMethod,
 		useFrameQueue,
-		frameQueueMaxSize)
+		frameQueueMaxSize,
+		videoConversionOverride)
 {
 	callback.OnRendererDetailString(TEXT("MPC Video Renderer DirectShow"));
 }

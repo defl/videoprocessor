@@ -25,5 +25,5 @@ const TCHAR* ToString(const PixelValueRange pixelValueRange)
 		return TEXT("16-235");
 	}
 
-	throw std::runtime_error("UNSPECIFIED PixelValueRange");
+	throw std::runtime_error("PixelValueRange ToString() failed, value not recognized");
 }

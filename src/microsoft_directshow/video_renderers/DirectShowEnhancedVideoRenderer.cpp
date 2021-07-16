@@ -20,7 +20,8 @@ DirectShowEnhancedVideoRenderer::DirectShowEnhancedVideoRenderer(
 	ITimingClock* timingClock,
 	DirectShowStartStopTimeMethod timestamp,
 	bool useFrameQueue,
-	size_t frameQueueMaxSize):
+	size_t frameQueueMaxSize,
+	VideoConversionOverride videoConversionOverride):
 	DirectShowGenericVideoRenderer(
 		CLSID_EnhancedVideoRenderer,
 		callback,
@@ -30,7 +31,8 @@ DirectShowEnhancedVideoRenderer::DirectShowEnhancedVideoRenderer(
 		timingClock,
 		timestamp,
 		useFrameQueue,
-		frameQueueMaxSize)
+		frameQueueMaxSize,
+		videoConversionOverride)
 {
 	callback.OnRendererDetailString(TEXT("DirectShow Enhanced Video Renderer"));
 }

@@ -8,22 +8,19 @@
 
 #include <stdafx.h>
 
-#include "InputLocked.h"
+#include "VideoConversionOverride.h"
 
 
-const TCHAR* ToString(const InputLocked inputLocked)
+const TCHAR* ToString(const VideoConversionOverride videoConversionOverride)
 {
-	switch (inputLocked)
+	switch (videoConversionOverride)
 	{
-	case InputLocked::UNKNOWN:
-		return TEXT("UNKNOWN");
+	case VideoConversionOverride::VIDEOCONVERSION_NONE:
+		return TEXT("No override");
 
-	case InputLocked::YES:
-		return TEXT("Yes");
-
-	case InputLocked::NO:
-		return TEXT("No");
+	case VideoConversionOverride::VIDEOCONVERSION_V210_TO_P010:
+		return TEXT("V210 > P010");
 	}
 
-	throw std::runtime_error("InputLocked ToString() failed, value not recognized");
+	throw std::runtime_error("VideoConversionOverride ToString() failed, value not recognized");
 }

@@ -37,5 +37,5 @@ const TCHAR* ToString(const DirectShowStartStopTimeMethod rendererTimestamp)
 		return TEXT("None");
 	}
 
-	throw std::runtime_error("UNSPECIFIED DirectShowStartStopTimeMethod");
+	throw std::runtime_error("DirectShowStartStopTimeMethod ToString() failed, value not recognized");
 }

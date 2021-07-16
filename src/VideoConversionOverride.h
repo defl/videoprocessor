@@ -6,24 +6,23 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see < https://www.gnu.org/licenses/>.
  */
 
-#include <stdafx.h>
-
-#include "InputLocked.h"
+#pragma once
 
 
-const TCHAR* ToString(const InputLocked inputLocked)
+#include <atlstr.h>
+
+
+/**
+ * This is used by renderers to make specific choices
+ */
+enum class VideoConversionOverride
 {
-	switch (inputLocked)
-	{
-	case InputLocked::UNKNOWN:
-		return TEXT("UNKNOWN");
+	// No override, let renderer decide
+	VIDEOCONVERSION_NONE,
 
-	case InputLocked::YES:
-		return TEXT("Yes");
+	// If the video is v210 (YUV422) convert it to p010 (YUV420)
+	VIDEOCONVERSION_V210_TO_P010
+};
 
-	case InputLocked::NO:
-		return TEXT("No");
-	}
 
-	throw std::runtime_error("InputLocked ToString() failed, value not recognized");
-}
+const TCHAR* ToString(const VideoConversionOverride);

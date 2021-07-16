@@ -2,18 +2,18 @@ Roadmap
 =======
 
 0.4.0: Upscaling, added MPCVR renderer, HDR controls
-- Optionally force YCbCr422 to YCbCr420 so that the renderer can do the upscaling
 - Be able to override all HDR data
 - Correct AR ratio for renderers
 - OnPaint pipe through to renderers
 - HDR support for MPCVR?
-- ffmpeg logging
 - Put preferrered renderers on top of list
 - Timing clock as command line argument (value and auto)
 - Check all round()'s to see if they're really needed and we can't just floor it
 - GRB make no sense for display
 - Fullscreen button is now checkbox, test and validate expected performance (also from commandline setting)
+- Remove text from CIE1931 diagram
 - Clean up TODO
+- Color latency output
 
 1.0.0: Out of beta
 - No changes expected, re-release of 0.4.0 code

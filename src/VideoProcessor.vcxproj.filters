@@ -201,6 +201,9 @@
     <ClInclude Include="microsoft_directshow\video_renderers\DirectShowGenericHDRVideoRenderer.h">
       <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
     </ClInclude>
+    <ClInclude Include="VideoConversionOverride.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -337,6 +340,9 @@
     </ClCompile>
     <ClCompile Include="microsoft_directshow\video_renderers\DirectShowGenericHDRVideoRenderer.cpp">
       <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoConversionOverride.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

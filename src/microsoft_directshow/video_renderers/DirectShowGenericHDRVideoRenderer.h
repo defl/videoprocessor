@@ -32,6 +32,7 @@ public:
 		DirectShowStartStopTimeMethod directShowStartStopTimeMethod,
 		bool useFrameQueue,
 		size_t frameQueueMaxSize,
+		VideoConversionOverride videoConversionOverride,
 		DXVA_NominalRange forceNominalRange,
 		DXVA_VideoTransferFunction forceVideoTransferFunction,
 		DXVA_VideoTransferMatrix forceVideoTransferMatrix,

@@ -31,7 +31,7 @@ const TCHAR* ToString(const ColorSpace colorspace)
 		return TEXT("BT.2020");
 	}
 
-	throw std::runtime_error("Unspecified ColorSpace");
+	throw std::runtime_error("ColorSpace ToString() failed, value not recognized");
 }
 
 

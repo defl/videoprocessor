@@ -25,7 +25,8 @@ DirectShowGenericVideoRenderer::DirectShowGenericVideoRenderer(
 	ITimingClock* timingClock,
 	DirectShowStartStopTimeMethod timestamp,
 	bool useFrameQueue,
-	size_t frameQueueMaxSize):
+	size_t frameQueueMaxSize,
+	VideoConversionOverride videoConversionOverride):
 	DirectShowVideoRenderer(
 		callback,
 		videoHwnd,
@@ -34,7 +35,8 @@ DirectShowGenericVideoRenderer::DirectShowGenericVideoRenderer(
 		timingClock,
 		timestamp,
 		useFrameQueue,
-		frameQueueMaxSize),
+		frameQueueMaxSize,
+		videoConversionOverride),
 	m_rendererCLSID(rendererCLSID)
 {
 	callback.OnRendererDetailString(TEXT("DirectShow generic renderer"));
@@ -63,9 +65,27 @@ void DirectShowGenericVideoRenderer::MediaTypeGenerate()
 	GUID mediaSubType;
 	int bitCount;
 
-	mediaSubType = TranslateToMediaSubType(m_videoState->videoFrameEncoding);
-	bitCount = VideoFrameEncodingBitsPerPixel(m_videoState->videoFrameEncoding);
-	m_videoFramFormatter = new CNoopVideoFrameFormatter();
+	// v210 (YUV422) to p010 (YUV420)
+	// This is lossy, only use to revert decklink upscaling
+	if (m_videoState->videoFrameEncoding == VideoFrameEncoding::YUV_10BIT &&
+		m_videoConversionOverride == VideoConversionOverride::VIDEOCONVERSION_V210_TO_P010)
+	{
+		mediaSubType = MEDIASUBTYPE_P010;
+		bitCount = 10;
+
+		m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
+			AV_CODEC_ID_V210,
+			AV_PIX_FMT_P010);
+	}
+
+	// Default conversions
+	else
+	{
+		mediaSubType = TranslateToMediaSubType(m_videoState->videoFrameEncoding);
+		bitCount = VideoFrameEncodingBitsPerPixel(m_videoState->videoFrameEncoding);;
+
+		m_videoFramFormatter = new CNoopVideoFrameFormatter();
+	}
 
 	m_videoFramFormatter->OnVideoState(m_videoState);
 
