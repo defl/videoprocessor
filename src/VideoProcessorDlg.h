@@ -53,7 +53,9 @@ public:
 
 	// Option handlers
 	void StartFullScreen();
-	void DefaultRendererName(const CString& rendererName);
+	void DefaultRendererName(const CString&);
+	void StartFrameOffsetAuto();
+	void StartFrameOffset(const CString&);
 
 	// UI-related handlers
 	afx_msg void OnCaptureDeviceSelected();
@@ -193,7 +195,6 @@ protected:
 	HICON m_hIcon;
 	HACCEL m_accelerator;
 
-	bool m_rendererFullScreenStart = false;
 	FullscreenVideoWindow* m_fullScreenVideoWindow = nullptr;
 
 	//
@@ -210,7 +211,13 @@ protected:
 
 	VideoStateComPtr m_builtVideoState = nullptr;  // This is what we make of it
 
+	// Startup options
+	bool m_rendererFullScreenStart = false;
 	CString m_defaultRendererName;
+	bool m_frameOffsetAutoStart = false;
+	CString m_defaultFrameOffset = TEXT("90");
+
+
 	IRenderer* m_videoRenderer = nullptr;
 	RendererState m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
 

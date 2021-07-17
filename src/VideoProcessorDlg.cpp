@@ -247,6 +247,18 @@ void CVideoProcessorDlg::DefaultRendererName(const CString& rendererName)
 }
 
 
+void CVideoProcessorDlg::StartFrameOffsetAuto()
+{
+	m_frameOffsetAutoStart = true;
+}
+
+
+void CVideoProcessorDlg::StartFrameOffset(const CString& frameOffset)
+{
+	m_defaultFrameOffset = frameOffset;
+}
+
+
 //
 // UI-related handlers
 //
@@ -1973,10 +1985,13 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	RenderGUIClear();
 
 	m_rendererVideoFrameQueueSizeMaxEdit.SetWindowText(TEXT("32"));
-	m_timingClockFrameOffsetEdit.SetWindowText(TEXT("90"));
+	m_timingClockFrameOffsetEdit.SetWindowText(m_defaultFrameOffset);
 	m_rendererVideoFrameUseQeueueCheck.SetCheck(true);
 	m_rendererResetAutoCheck.SetCheck(true);
 	m_rendererFullscreenCheck.SetCheck(m_rendererFullScreenStart);
+
+	m_timingClockFrameOffsetAutoCheck.SetCheck(m_frameOffsetAutoStart);
+	OnBnClickedTimingClockFrameOffsetAutoCheck();
 
 	// Start timers
 	SetTimer(TIMER_ID_1SECOND, 1000, nullptr);

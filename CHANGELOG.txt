@@ -3,6 +3,7 @@ next (0.4.0)
 - Support for MPC Video Renderer (https://github.com/Aleksoid1978/VideoRenderer)
 - You can now override all HDR data such as colorspaces and luminance values
 - Display modes now stores and uess ticks/duration for video frames
+- New command line option /frame_offset. Values can be "auto" to enable auto tuning or an integer which is set in the frame offset field.
 - Major overhaul of renderer code
 - pixelformat changed to VideoFrameEncoding as that covers the meaning better
 - Do not show logo in display if renderer is running, show once renderer is done again

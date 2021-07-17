@@ -5,7 +5,6 @@ Roadmap
 - Correct AR ratio for renderers
 - HDR support for MPCVR?
 - Put preferrered renderers on top of list
-- Timing clock as command line argument (value and auto)
 - Clean up TODO
 
 1.0.0: Out of beta

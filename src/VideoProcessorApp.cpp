@@ -61,11 +61,28 @@ BOOL CVideoProcessorApp::InitInstance()
 		{
 			// /fullscreen
 			if (wcscmp(pArgs[i], L"/fullscreen") == 0)
+			{
 				dlg.StartFullScreen();
+			}
 
 			// /renderer "name"
 			if (wcscmp(pArgs[i], L"/renderer") == 0 && (i + 1) < iNumOfArgs)
+			{
 				dlg.DefaultRendererName(pArgs[i + 1]);
+			}
+
+			// /frame_offset [-value|"auto"]
+			if (wcscmp(pArgs[i], L"/frame_offset") == 0 && (i + 1) < iNumOfArgs)
+			{
+				if (wcscmp(pArgs[i + 1], L"auto") == 0)
+				{
+					dlg.StartFrameOffsetAuto();
+				}
+				else
+				{
+					dlg.StartFrameOffset(pArgs[i + 1]);
+				}
+			}
 		}
 
 		// Set set ourselves to high prio.
