@@ -11,6 +11,27 @@
 #include "VideoState.h"
 
 
+VideoState::VideoState(const VideoState& other)
+{
+	valid = other.valid;
+	displayMode = other.displayMode;
+	videoFrameEncoding = other.videoFrameEncoding;
+	eotf = other.eotf;
+	colorspace = other.colorspace;
+	invertedVertical = other.invertedVertical;
+
+	// Deepcopy
+	if (other.hdrData)
+	{
+		hdrData = std::make_shared<HDRData>(*other.hdrData);
+	}
+	else
+	{
+		hdrData = nullptr;
+	}
+}
+
+
 HRESULT	VideoState::QueryInterface(REFIID iid, LPVOID* ppv)
 {
 	if (!ppv)

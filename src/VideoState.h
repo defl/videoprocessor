@@ -26,6 +26,7 @@ class VideoState:
 {
 public:
 	VideoState() {}
+	VideoState(const VideoState&);
 
 	// True if valid, else do not interpret other fields
 	bool valid = false;

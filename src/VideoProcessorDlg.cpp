@@ -48,7 +48,8 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_CAPTURE_INPUT_COMBO, &CVideoProcessorDlg::OnCaptureInputSelected)
 	ON_BN_CLICKED(IDC_TIMING_CLOCK_FRAME_OFFSET_AUTO_CHECK, &CVideoProcessorDlg::OnBnClickedTimingClockFrameOffsetAutoCheck)
 	ON_CBN_SELCHANGE(IDC_COLORSPACE_CONTAINER_PRESET_COMBO, &CVideoProcessorDlg::OnColorSpaceContainerPresetSelected)
-	ON_CBN_SELCHANGE(IDC_COLORSPACE_VIDEO_PRESET_COMBO, &CVideoProcessorDlg::OnColorSpaceVideoPresetSelected)
+	ON_CBN_SELCHANGE(IDC_HDR_COLORSPACE_COMBO, &CVideoProcessorDlg::OnHdrColorSpaceSelected)
+	ON_CBN_SELCHANGE(IDC_HDR_LUMINANCE_COMBO, &CVideoProcessorDlg::OnHdrLuminanceSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_COMBO, &CVideoProcessorDlg::OnRendererSelected)
 	ON_BN_CLICKED(IDC_RENDERER_RESTART_BUTTON, &CVideoProcessorDlg::OnBnClickedRendererRestart)
 	ON_CBN_SELCHANGE(IDC_RENDERER_VIDEO_CONVERSION_COMBO, &CVideoProcessorDlg::OnRendererVideoConversionSelected)
@@ -78,6 +79,53 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	ON_COMMAND(ID_COMMAND_RENDERER_RESET, &CVideoProcessorDlg::OnCommandRendererReset)
 
 END_MESSAGE_MAP()
+
+
+static const std::vector<std::pair<LPCTSTR, ColorSpace>> COLOLORSPACE_CONTAINER_OPTIONS =
+{
+	std::make_pair(TEXT("Follow input"),              ColorSpace::UNKNOWN),
+	std::make_pair(TEXT("Force BT.2020"),             ColorSpace::BT_2020),
+	std::make_pair(TEXT("Force P3-D65 (Display)"),    ColorSpace::P3_D65),
+	std::make_pair(TEXT("Force P3-DCI (Theater)"),    ColorSpace::P3_DCI),
+	std::make_pair(TEXT("Force P3-D60 (ACES)"),       ColorSpace::P3_D60),
+	std::make_pair(TEXT("Force REC.709"),             ColorSpace::REC_709),
+	std::make_pair(TEXT("Force REC.601 (NTSC)"),      ColorSpace::REC_601_525),
+	std::make_pair(TEXT("Force REC.601 (PAL/SECAM)"), ColorSpace::REC_601_625)
+};
+
+
+enum class HdrColorspaceOptions
+{
+	HDR_COLORSPACE_FOLLOW_INPUT,
+	HDR_COLORSPACE_FOLLOW_CONTAINER,
+	HDR_COLORSPACE_BT2020,
+	HDR_COLORSPACE_P3,
+	HDR_COLORSPACE_REC709
+	// TODO: Add DIY
+};
+
+
+static const std::vector<std::pair<LPCTSTR, HdrColorspaceOptions>> HDR_COLORSPACE_OPTIONS =
+{
+	std::make_pair(TEXT("Follow input"), HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT),
+	std::make_pair(TEXT("Follow container"), HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_CONTAINER),
+	std::make_pair(TEXT("Force BT.2020"), HdrColorspaceOptions::HDR_COLORSPACE_BT2020),
+	std::make_pair(TEXT("Force P3"), HdrColorspaceOptions::HDR_COLORSPACE_P3),
+	std::make_pair(TEXT("Force REC709"), HdrColorspaceOptions::HDR_COLORSPACE_REC709)
+};
+
+
+enum class HdrLuminanceOptions
+{
+	HDR_LUMINANCE_FOLLOW,
+	// TODO: Add DIY
+};
+
+
+static const std::vector<std::pair<LPCTSTR, HdrLuminanceOptions>> HDR_LUMINANCE_OPTIONS =
+{
+	std::make_pair(TEXT("Follow input"), HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW)
+};
 
 
 static const std::vector<DirectShowStartStopTimeMethod> RENDERER_DIRECTSHOW_START_STOP_TIME_OPTIONS =
@@ -250,13 +298,40 @@ void CVideoProcessorDlg::OnBnClickedTimingClockFrameOffsetAutoCheck()
 
 void CVideoProcessorDlg::OnColorSpaceContainerPresetSelected()
 {
-	// TODO
+	const bool rendererAcceptedState = BuildPushVideoState();
+
+	// If the renderer did not accept the new state we need to restart the renderer
+	if (!rendererAcceptedState)
+	{
+		m_wantToRestartRenderer = true;
+		UpdateState();
+	}
 }
 
 
-void CVideoProcessorDlg::OnColorSpaceVideoPresetSelected()
+void CVideoProcessorDlg::OnHdrColorSpaceSelected()
 {
-	// TODO
+	const bool rendererAcceptedState = BuildPushVideoState();
+
+	// If the renderer did not accept the new state we need to restart the renderer
+	if (!rendererAcceptedState)
+	{
+		m_wantToRestartRenderer = true;
+		UpdateState();
+	}
+}
+
+
+void CVideoProcessorDlg::OnHdrLuminanceSelected()
+{
+	const bool rendererAcceptedState = BuildPushVideoState();
+
+	// If the renderer did not accept the new state we need to restart the renderer
+	if (!rendererAcceptedState)
+	{
+		m_wantToRestartRenderer = true;
+		UpdateState();
+	}
 }
 
 
@@ -481,102 +556,12 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 		TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(): Valid=%d"),
 		videoState->valid));
 
-	const bool rendererAcceptedState = (bool)lParam;
-
-	m_captureDeviceVideoState = videoState;
-
 	assert(videoState);
 	assert(m_captureDevice);
 
-	if (videoState->valid)
-	{
-		m_videoValidText.SetWindowText(_T("Yes"));
-		m_videoDisplayModeText.SetWindowText(videoState->displayMode->ToString());
-		m_videoPixelFormatText.SetWindowText(ToString(videoState->videoFrameEncoding));
-		m_videoEotfText.SetWindowText(ToString(videoState->eotf));
-		m_videoColorSpaceText.SetWindowText(ToString(videoState->colorspace));
-	}
-	else
-	{
-		m_videoValidText.SetWindowText(_T("No"));
-		m_videoDisplayModeText.SetWindowText(_T(""));
-		m_videoPixelFormatText.SetWindowText(_T(""));
-		m_videoEotfText.SetWindowText(_T(""));
-		m_videoColorSpaceText.SetWindowText(_T(""));
-	}
+	m_captureDeviceVideoState = videoState;
 
-	if (videoState->valid)
-	{
-		m_colorspaceCie1931xy.SetColorSpace(videoState->colorspace);
-
-		m_colorspaceContainerREdit.SetWindowTextW(
-			CieXYToString(
-				ColorSpaceToCie1931RedX(videoState->colorspace),
-				ColorSpaceToCie1931RedY(videoState->colorspace)));
-
-		m_colorspaceContainerGEdit.SetWindowTextW(
-			CieXYToString(
-				ColorSpaceToCie1931GreenX(videoState->colorspace),
-				ColorSpaceToCie1931GreenY(videoState->colorspace)));
-
-		m_colorspaceContainerBEdit.SetWindowTextW(
-			CieXYToString(
-				ColorSpaceToCie1931BlueX(videoState->colorspace),
-				ColorSpaceToCie1931BlueY(videoState->colorspace)));
-	}
-	else
-	{
-		m_colorspaceCie1931xy.SetColorSpace(ColorSpace::UNKNOWN);
-
-		m_colorspaceContainerREdit.SetWindowTextW(_T(""));
-		m_colorspaceContainerGEdit.SetWindowTextW(_T(""));
-		m_colorspaceContainerBEdit.SetWindowTextW(_T(""));
-	}
-
-	m_colorspaceCie1931xy.SetHDRData(videoState->hdrData);
-
-	if (videoState->valid && videoState->hdrData)
-	{
-		const HDRData hdrData = *(videoState->hdrData);
-
-		CString cstring;
-		cstring.Format(_T("%.01f"), hdrData.maxCll);
-		m_luminanceMaxCll.SetWindowText(cstring);
-
-		cstring.Format(_T("%.01f"), hdrData.maxFall);
-		m_luminanceMaxFall.SetWindowText(cstring);
-
-		cstring.Format(_T("%.05f"), hdrData.masteringDisplayMinLuminance);
-		m_luminanceMasterMin.SetWindowText(cstring);
-
-		cstring.Format(_T("%.01f"), hdrData.masteringDisplayMaxLuminance);
-		m_luminanceMasterMax.SetWindowText(cstring);
-
-		m_colorspaceVideoREdit.SetWindowTextW(
-			CieXYToString(hdrData.displayPrimaryRedX, hdrData.displayPrimaryRedY));
-
-		m_colorspaceVideoGEdit.SetWindowTextW(
-			CieXYToString(hdrData.displayPrimaryGreenX, hdrData.displayPrimaryGreenY));
-
-		m_colorspaceVideoBEdit.SetWindowTextW(
-			CieXYToString(hdrData.displayPrimaryBlueX, hdrData.displayPrimaryBlueY));
-
-		m_colorspaceVideoWPEdit.SetWindowTextW(
-			CieXYToString(hdrData.whitePointX, hdrData.whitePointY));
-	}
-	else
-	{
-		m_luminanceMaxCll.SetWindowText(_T(""));
-		m_luminanceMaxFall.SetWindowText(_T(""));
-		m_luminanceMasterMin.SetWindowText(_T(""));
-		m_luminanceMasterMax.SetWindowText(_T(""));
-
-		m_colorspaceVideoREdit.SetWindowTextW(_T(""));
-		m_colorspaceVideoGEdit.SetWindowTextW(_T(""));
-		m_colorspaceVideoBEdit.SetWindowTextW(_T(""));
-		m_colorspaceVideoWPEdit.SetWindowTextW(_T(""));
-
-	}
+	const bool rendererAcceptedState = BuildPushVideoState();
 
 	// If the renderer did not accept the new state we need to restart the renderer
 	if (!rendererAcceptedState)
@@ -766,24 +751,11 @@ void CVideoProcessorDlg::OnCaptureDeviceVideoStateChange(VideoStateComPtr videoS
 	// WARNING: Most likely to be called from some internal capture card thread!
 
 	assert(videoState);
-	bool rendererAcceptedState = true;  // If no renderer it'll have no problems with the new state
-
-	// This is an atomic bool which is set by the main thread and used in context of the
-	// capture thread which will deliver frames.
-	if (m_deliverCaptureDataToRenderer.load(std::memory_order_acquire))
-	{
-		assert(m_captureDevice);
-		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);
-		assert(m_videoRenderer);
-		assert(m_rendererState == RendererState::RENDERSTATE_RENDERING);
-
-		rendererAcceptedState = m_videoRenderer->OnVideoState(videoState);
-	}
 
 	PostMessage(
 		WM_MESSAGE_CAPTURE_DEVICE_VIDEO_STATE_CHANGE,
 		(WPARAM)videoState.Detach(),
-		rendererAcceptedState);
+		0);
 }
 
 
@@ -1206,6 +1178,7 @@ void CVideoProcessorDlg::CaptureGUIClear()
 	m_inputBitDepthText.SetWindowText(TEXT(""));
 	m_inputVideoFrameCountText.SetWindowText(TEXT(""));
 	m_inputVideoFrameMissedText.SetWindowText(TEXT(""));
+	m_inputLatencyMsText.SetWindowText(TEXT(""));
 
 	// Captured video group
 	m_videoValidText.SetWindowText(TEXT(""));
@@ -1217,15 +1190,21 @@ void CVideoProcessorDlg::CaptureGUIClear()
 	// Timing clock
 	m_timingClockDescriptionText.SetWindowText(TEXT(""));
 
-	// ColorSpace group
+	// HDR colorSpace group
+	m_hdrColorspaceREdit.SetWindowText(TEXT(""));
+	m_hdrColorspaceGEdit.SetWindowText(TEXT(""));
+	m_hdrColorspaceBEdit.SetWindowText(TEXT(""));
+	m_hdrColorspaceWPEdit.SetWindowText(TEXT(""));
+
+	// HDR Lumiance group
+	m_hdrLuminanceMaxCll.SetWindowText(TEXT(""));
+	m_hdrLuminanceMaxFall.SetWindowText(TEXT(""));
+	m_hdrLuminanceMasterMin.SetWindowText(TEXT(""));
+	m_hdrLuminanceMasterMax.SetWindowText(TEXT(""));
+
+	// CIE1931 graph
 	m_colorspaceCie1931xy.SetColorSpace(ColorSpace::UNKNOWN);
 	m_colorspaceCie1931xy.SetHDRData(nullptr);
-
-	// HDR group
-	m_luminanceMaxCll.SetWindowText(TEXT(""));
-	m_luminanceMaxFall.SetWindowText(TEXT(""));
-	m_luminanceMasterMin.SetWindowText(TEXT(""));
-	m_luminanceMasterMax.SetWindowText(TEXT(""));
 }
 
 
@@ -1313,7 +1292,7 @@ void CVideoProcessorDlg::RenderStart()
 			forceVideoPrimaries);
 
 		if (m_captureDeviceVideoState)
-			m_videoRenderer->OnVideoState(m_captureDeviceVideoState);
+			m_videoRenderer->OnVideoState(m_builtVideoState);
 
 		m_videoRenderer->Build();
 		m_videoRenderer->Start();
@@ -1374,7 +1353,7 @@ void CVideoProcessorDlg::RenderStart()
 				FatalError(TEXT("Failed to build DirectShow Video Renderer"));
 
 			if (m_captureDeviceVideoState)
-				m_videoRenderer->OnVideoState(m_captureDeviceVideoState);
+				m_videoRenderer->OnVideoState(m_builtVideoState);
 
 			m_videoRenderer->Build();
 			m_videoRenderer->Start();
@@ -1454,9 +1433,16 @@ void CVideoProcessorDlg::RenderRemove()
 
 void CVideoProcessorDlg::RenderGUIClear()
 {
+	// Renderer group
 	m_rendererDetailStringStatic.SetWindowText(TEXT(""));
+
+	// Renderer Queue group
 	m_rendererVideoFrameQueueSizeText.SetWindowText(TEXT(""));
 	m_rendererDroppedFrameCountText.SetWindowText(TEXT(""));
+
+	// Renderer latency (ms) group
+	m_rendererLatencyToVPText.SetWindowText(TEXT(""));
+	m_rendererLatencyToDSText.SetWindowText(TEXT(""));
 
 	m_windowedVideoWindow.ShowLogo(true);
 }
@@ -1593,6 +1579,172 @@ void CVideoProcessorDlg::ClearRendererCombo()
 }
 
 
+bool CVideoProcessorDlg::BuildPushVideoState()
+{
+	VideoStateComPtr videoState = new VideoState(*m_captureDeviceVideoState);
+	if (!videoState)
+		throw std::runtime_error("Failed to alloc VideoStateComPtr");
+
+	//
+	// Alterations
+	//
+
+	// Change container colorspace
+	int i = m_colorspaceContainerPresetCombo.GetCurSel();
+	ColorSpace colorSpace = (ColorSpace)m_colorspaceContainerPresetCombo.GetItemData(i);
+	if (colorSpace != ColorSpace::UNKNOWN)
+		videoState->colorspace = colorSpace;
+
+	if (videoState->hdrData)
+	{
+		// Change HDR primaries if available and requested
+		{
+			ColorSpace newColorSpace = ColorSpace::UNKNOWN;
+
+			i = m_hdrColorspaceCombo.GetCurSel();
+			switch ((HdrColorspaceOptions)m_hdrColorspaceCombo.GetItemData(i))
+			{
+				// No need to do anything
+			case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT:
+				break;
+
+				// Translate container's colorspace to XY coordinates
+			case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_CONTAINER:
+				newColorSpace = videoState->colorspace;
+				break;
+
+			case HdrColorspaceOptions::HDR_COLORSPACE_BT2020:
+				newColorSpace = ColorSpace::BT_2020;
+				break;
+
+			case HdrColorspaceOptions::HDR_COLORSPACE_P3:
+				newColorSpace = ColorSpace::P3_D65;  // They're all the same from the XY perspective
+				break;
+
+			case HdrColorspaceOptions::HDR_COLORSPACE_REC709:
+				newColorSpace = ColorSpace::REC_709;
+				break;
+
+			default:
+				throw std::runtime_error("Unknown HdrColorspaceOptions");
+			}
+
+			if (newColorSpace != ColorSpace::UNKNOWN)
+			{
+				videoState->hdrData->displayPrimaryRedX = ColorSpaceToCie1931RedX(newColorSpace);
+				videoState->hdrData->displayPrimaryRedY = ColorSpaceToCie1931RedY(newColorSpace);
+				videoState->hdrData->displayPrimaryGreenX = ColorSpaceToCie1931GreenX(newColorSpace);
+				videoState->hdrData->displayPrimaryGreenY = ColorSpaceToCie1931GreenY(newColorSpace);
+				videoState->hdrData->displayPrimaryBlueX = ColorSpaceToCie1931BlueX(newColorSpace);
+				videoState->hdrData->displayPrimaryBlueY = ColorSpaceToCie1931BlueY(newColorSpace);
+			}
+		}
+
+		// Change HDR lumiance if available and requested
+		i = m_hdrLuminanceCombo.GetCurSel();
+		switch ((HdrLuminanceOptions)m_hdrLuminanceCombo.GetItemData(i))
+		{
+			// No need to do anything
+			case HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW:
+				break;
+
+			default:
+				throw std::runtime_error("Unknown HdrLuminanceOptions");
+		}
+	}
+
+	m_builtVideoState = videoState;
+
+	//
+	// GUI
+	//
+
+	if (videoState->valid)
+	{
+		m_videoValidText.SetWindowText(_T("Yes"));
+		m_videoDisplayModeText.SetWindowText(videoState->displayMode->ToString());
+		m_videoPixelFormatText.SetWindowText(ToString(videoState->videoFrameEncoding));
+		m_videoEotfText.SetWindowText(ToString(videoState->eotf));
+		m_videoColorSpaceText.SetWindowText(ToString(videoState->colorspace));
+	}
+	else
+	{
+		m_videoValidText.SetWindowText(_T("No"));
+		m_videoDisplayModeText.SetWindowText(_T(""));
+		m_videoPixelFormatText.SetWindowText(_T(""));
+		m_videoEotfText.SetWindowText(_T(""));
+		m_videoColorSpaceText.SetWindowText(_T(""));
+	}
+
+	if (videoState->valid)
+	{
+		m_colorspaceCie1931xy.SetColorSpace(videoState->colorspace);
+	}
+	else
+	{
+		m_colorspaceCie1931xy.SetColorSpace(ColorSpace::UNKNOWN);
+	}
+
+	m_colorspaceCie1931xy.SetHDRData(videoState->hdrData);
+
+	if (videoState->valid && videoState->hdrData)
+	{
+		const HDRData hdrData = *(videoState->hdrData);
+
+		CString cstring;
+		cstring.Format(_T("%.01f"), hdrData.maxCll);
+		m_hdrLuminanceMaxCll.SetWindowText(cstring);
+
+		cstring.Format(_T("%.01f"), hdrData.maxFall);
+		m_hdrLuminanceMaxFall.SetWindowText(cstring);
+
+		cstring.Format(_T("%.05f"), hdrData.masteringDisplayMinLuminance);
+		m_hdrLuminanceMasterMin.SetWindowText(cstring);
+
+		cstring.Format(_T("%.01f"), hdrData.masteringDisplayMaxLuminance);
+		m_hdrLuminanceMasterMax.SetWindowText(cstring);
+
+		m_hdrColorspaceREdit.SetWindowTextW(
+			CieXYToString(hdrData.displayPrimaryRedX, hdrData.displayPrimaryRedY));
+
+		m_hdrColorspaceGEdit.SetWindowTextW(
+			CieXYToString(hdrData.displayPrimaryGreenX, hdrData.displayPrimaryGreenY));
+
+		m_hdrColorspaceBEdit.SetWindowTextW(
+			CieXYToString(hdrData.displayPrimaryBlueX, hdrData.displayPrimaryBlueY));
+
+		m_hdrColorspaceWPEdit.SetWindowTextW(
+			CieXYToString(hdrData.whitePointX, hdrData.whitePointY));
+	}
+	else
+	{
+		m_hdrLuminanceMaxCll.SetWindowText(_T(""));
+		m_hdrLuminanceMaxFall.SetWindowText(_T(""));
+		m_hdrLuminanceMasterMin.SetWindowText(_T(""));
+		m_hdrLuminanceMasterMax.SetWindowText(_T(""));
+
+		m_hdrColorspaceREdit.SetWindowTextW(_T(""));
+		m_hdrColorspaceGEdit.SetWindowTextW(_T(""));
+		m_hdrColorspaceBEdit.SetWindowTextW(_T(""));
+		m_hdrColorspaceWPEdit.SetWindowTextW(_T(""));
+	}
+
+	//
+	// Push
+	//
+
+	// Push to renderer if that's running, if the renderer does not accept the update, return false
+	// such that the caller can take action
+	bool rendererAcceptedState = true;
+	if (m_deliverCaptureDataToRenderer.load(std::memory_order_acquire))
+	{
+		return m_videoRenderer->OnVideoState(m_builtVideoState);
+	}
+
+	return true;
+}
+
+
 void CVideoProcessorDlg::_FatalError(int line, const std::string& functionName, const CString& error)
 {
 	CString s;
@@ -1642,26 +1794,25 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_TIMING_CLOCK_FRAME_OFFSET_EDIT, m_timingClockFrameOffsetEdit);
 	DDX_Control(pDX, IDC_TIMING_CLOCK_FRAME_OFFSET_AUTO_CHECK, m_timingClockFrameOffsetAutoCheck);
 
-	// ColorSpace group
+	// colorSpace group
+	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_PRESET_COMBO, m_colorspaceContainerPresetCombo);
+
+	// HDR colorSpace group
+	DDX_Control(pDX, IDC_HDR_COLORSPACE_R_EDIT, m_hdrColorspaceREdit);
+	DDX_Control(pDX, IDC_HDR_COLORSPACE_G_EDIT, m_hdrColorspaceGEdit);
+	DDX_Control(pDX, IDC_HDR_COLORSPACE_B_EDIT, m_hdrColorspaceBEdit);
+	DDX_Control(pDX, IDC_HDR_COLORSPACE_WP_EDIT, m_hdrColorspaceWPEdit);
+	DDX_Control(pDX, IDC_HDR_COLORSPACE_COMBO, m_hdrColorspaceCombo);
+
+	// HDR luminance group
+	DDX_Control(pDX, IDC_HDR_LUMINANCE_MAXCLL_EDIT, m_hdrLuminanceMaxCll);
+	DDX_Control(pDX, IDC_HDR_LUMINANCE_MAXFALL_EDIT, m_hdrLuminanceMaxFall);
+	DDX_Control(pDX, IDC_HDR_LUMINANCE_MASTER_MIN_EDIT, m_hdrLuminanceMasterMin);
+	DDX_Control(pDX, IDC_HDR_LUMINANCE_MASTER_MAX_EDIT, m_hdrLuminanceMasterMax);
+	DDX_Control(pDX, IDC_HDR_LUMINANCE_COMBO, m_hdrLuminanceCombo);
+
+	// CIE1931 graph
 	DDX_Control(pDX, IDC_CIE1931XY_GRAPH, m_colorspaceCie1931xy);
-
-	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_PRESET_COMBO, m_colorspaceContainerPresetCompbo);
-	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_R_EDIT, m_colorspaceContainerREdit);
-	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_G_EDIT, m_colorspaceContainerGEdit);
-	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_B_EDIT, m_colorspaceContainerBEdit);
-	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_PRESET_COMBO, m_colorspaceVideoPresetCompbo);
-	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_R_EDIT, m_colorspaceVideoREdit);
-	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_G_EDIT, m_colorspaceVideoGEdit);
-	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_B_EDIT, m_colorspaceVideoBEdit);
-	DDX_Control(pDX, IDC_COLORSPACE_VIDEO_WP_EDIT, m_colorspaceVideoWPEdit);
-	DDX_Control(pDX, IDC_COLORSPACE_RESET_BUTTON, m_colorspaceResetButton);
-	DDX_Control(pDX, IDC_COLORSPACE_C_TO_V_BUTTON, m_colorspaceContainerToVideoButton);
-
-	//  (HDR) luminance group
-	DDX_Control(pDX, IDC_LUMINANCE_MAXCLL_EDIT, m_luminanceMaxCll);
-	DDX_Control(pDX, IDC_LUMINANCE_MAXFALL_EDIT, m_luminanceMaxFall);
-	DDX_Control(pDX, IDC_LUMINANCE_MASTER_MIN_EDIT, m_luminanceMasterMin);
-	DDX_Control(pDX, IDC_LUMINANCE_MASTER_MAX_EDIT, m_luminanceMasterMax);
 
 	// Renderer group
 	DDX_Control(pDX, IDC_RENDERER_COMBO, m_rendererCombo);
@@ -1725,7 +1876,31 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	// Get all renderers
 	RebuildRendererCombo();
 
+	//
 	// Fill renderer selection boxes
+	//
+
+	for (auto p : COLOLORSPACE_CONTAINER_OPTIONS)
+	{
+		int index = m_colorspaceContainerPresetCombo.AddString(p.first);
+		m_colorspaceContainerPresetCombo.SetItemData(index, (int)p.second);
+	}
+	m_colorspaceContainerPresetCombo.SetCurSel(0);
+
+	for (auto p : HDR_COLORSPACE_OPTIONS)
+	{
+		int index = m_hdrColorspaceCombo.AddString(p.first);
+		m_hdrColorspaceCombo.SetItemData(index, (int)p.second);
+	}
+	m_hdrColorspaceCombo.SetCurSel(0);
+
+	for (auto p : HDR_LUMINANCE_OPTIONS)
+	{
+		int index = m_hdrLuminanceCombo.AddString(p.first);
+		m_hdrLuminanceCombo.SetItemData(index, (int)p.second);
+	}
+	m_hdrLuminanceCombo.SetCurSel(0);
+
 	for (auto p : RENDERER_DIRECTSHOW_START_STOP_TIME_OPTIONS)
 	{
 		int index = m_rendererDirectShowStartStopTimeMethodCombo.AddString(ToString(p));
@@ -1853,6 +2028,9 @@ void CVideoProcessorDlg::OnPaint()
 	}
 	else
 	{
+		if (m_videoRenderer)
+			m_videoRenderer->OnPaint();
+
 		CDialog::OnPaint();
 	}
 }

@@ -60,7 +60,8 @@ public:
 	afx_msg void OnCaptureInputSelected();
 	afx_msg void OnBnClickedTimingClockFrameOffsetAutoCheck();
 	afx_msg void OnColorSpaceContainerPresetSelected();
-	afx_msg void OnColorSpaceVideoPresetSelected();
+	afx_msg void OnHdrColorSpaceSelected();
+	afx_msg void OnHdrLuminanceSelected();
 	afx_msg void OnRendererSelected();
 	afx_msg void OnBnClickedRendererRestart();
 	afx_msg void OnRendererVideoConversionSelected();
@@ -136,25 +137,25 @@ protected:
 	CEdit m_timingClockFrameOffsetEdit;
 	CButton m_timingClockFrameOffsetAutoCheck;
 
-	// ColorSpace group
-	CCie1931Control m_colorspaceCie1931xy;
-	CComboBox m_colorspaceContainerPresetCompbo;
-	CEdit m_colorspaceContainerREdit;
-	CEdit m_colorspaceContainerGEdit;
-	CEdit m_colorspaceContainerBEdit;
-	CComboBox m_colorspaceVideoPresetCompbo;
-	CEdit m_colorspaceVideoREdit;
-	CEdit m_colorspaceVideoGEdit;
-	CEdit m_colorspaceVideoBEdit;
-	CEdit m_colorspaceVideoWPEdit;
-	CButton m_colorspaceResetButton;
-	CButton m_colorspaceContainerToVideoButton;
+	// Colorspace group
+	CComboBox m_colorspaceContainerPresetCombo;  // TODO: Not the best name
 
-	// (HDR) Lumiance group
-	CEdit m_luminanceMaxCll;
-	CEdit m_luminanceMaxFall;
-	CEdit m_luminanceMasterMin;
-	CEdit m_luminanceMasterMax;
+	// HDR colorSpace group
+	CEdit m_hdrColorspaceREdit;
+	CEdit m_hdrColorspaceGEdit;
+	CEdit m_hdrColorspaceBEdit;
+	CEdit m_hdrColorspaceWPEdit;
+	CComboBox m_hdrColorspaceCombo;
+
+	// HDR Lumiance group
+	CEdit m_hdrLuminanceMaxCll;
+	CEdit m_hdrLuminanceMaxFall;
+	CEdit m_hdrLuminanceMasterMin;
+	CEdit m_hdrLuminanceMasterMax;
+	CComboBox m_hdrLuminanceCombo;
+
+	// CIE1931 graph
+	CCie1931Control m_colorspaceCie1931xy;
 
 	// Renderer group
 	CComboBox m_rendererCombo;
@@ -205,7 +206,9 @@ protected:
 	CComPtr<ACaptureDevice>	m_captureDevice;
 	CaptureInputId m_currentCaptureInputId = INVALID_CAPTURE_INPUT_ID;
 	CaptureDeviceState m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN;
-	VideoStateComPtr m_captureDeviceVideoState = nullptr;
+	VideoStateComPtr m_captureDeviceVideoState = nullptr;  // This is what we get from the capture card
+
+	VideoStateComPtr m_builtVideoState = nullptr;  // This is what we make of it
 
 	CString m_defaultRendererName;
 	IRenderer* m_videoRenderer = nullptr;
@@ -248,7 +251,8 @@ protected:
 	void RebuildRendererCombo();
 	void ClearRendererCombo();
 
-	// Call and die. There is a define to help with getting more info
+	bool BuildPushVideoState();
+
 #define FatalError(error) (_FatalError(__LINE__, __FUNCTION__, error))
 	void _FatalError(int line, const std::string& functionName, const CString& error);
 

@@ -18,6 +18,9 @@ enum class ColorSpace
 	REC_601_525,  // These 2 have slightly different primaries, last number is amount of lines
 	REC_601_625,  // 625 = PAL/SECAM, 525 = NTSC SMPTE C
 	REC_709,
+	P3_D65,
+	P3_DCI,
+	P3_D60,
 	BT_2020
 };
 

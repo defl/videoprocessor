@@ -15,6 +15,26 @@
 #include <cie.h>
 
 
+HDRData::HDRData(const HDRData& other)
+{
+	displayPrimaryRedX = other.displayPrimaryRedX;
+	displayPrimaryRedY = other.displayPrimaryRedY;
+	displayPrimaryGreenX = other.displayPrimaryGreenX;
+	displayPrimaryGreenY = other.displayPrimaryGreenY;
+	displayPrimaryBlueX = other.displayPrimaryBlueX;
+	displayPrimaryBlueY = other.displayPrimaryBlueY;
+
+	whitePointX = other.whitePointX;
+	whitePointY = other.whitePointY;
+
+	masteringDisplayMaxLuminance = other.masteringDisplayMaxLuminance;
+	masteringDisplayMinLuminance = other.masteringDisplayMinLuminance;
+
+	maxCll = other.maxCll;
+	maxFall = other.maxFall;
+}
+
+
 bool HDRData::operator == (const HDRData& other) const
 {
 	return

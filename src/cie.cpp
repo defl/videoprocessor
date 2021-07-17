@@ -60,27 +60,21 @@ CString CieXYToString(double x, double y)
 		return TEXT("D.P3 R");
 	if (CieEquals(0.265, x) && CieEquals(0.690, y))
 		return TEXT("D.P3 G");
-	//if (CieEquals(0.150, x) && CieEquals(0.060, y))
-	//	return TEXT("D.P3 B");
-
+	// blue is a shared one
 
 	// Rec 709
 	// https://en.wikipedia.org/wiki/Rec._709
-	//if (CieEquals(0.640, x) && CieEquals(0.330, y))
-	//	return TEXT("R.709 R");
+	// Red is a shared one
 	if (CieEquals(0.300, x) && CieEquals(0.600, y))
 		return TEXT("R.709 G");
-	//if (CieEquals(0.150, x) && CieEquals(0.060, y))
-	//	return TEXT("R.709 B");
+	// blue is a shared one
 
 	// Rec 601
 	// https://en.wikipedia.org/wiki/Rec._601
-	//if (CieEquals(0.640, x) && CieEquals(0.330, y))
-	//	return TEXT("R.601-625 R");
+	// Red is a shared one
 	if (CieEquals(0.290, x) && CieEquals(0.600, y))
 		return TEXT("R.601-625 G");
-	//if (CieEquals(0.150, x) && CieEquals(0.060, y))
-	//	return TEXT("R.601-625 B");
+	// blue is a shared one
 
 	if (CieEquals(0.630, x) && CieEquals(0.340, y))
 		return TEXT("R.601-525 R");

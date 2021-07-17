@@ -17,6 +17,9 @@ class HDRData
 {
 public:
 
+	HDRData() {}
+	HDRData(const HDRData&);
+
 	double displayPrimaryRedX = 0;
 	double displayPrimaryRedY = 0;
 	double displayPrimaryGreenX = 0;
