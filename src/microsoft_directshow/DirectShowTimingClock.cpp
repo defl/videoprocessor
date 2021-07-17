@@ -31,7 +31,7 @@ DirectShowTimingClock::~DirectShowTimingClock()
 
 REFERENCE_TIME DirectShowTimingClock::GetPrivateTime()
 {
-	const REFERENCE_TIME rt = (REFERENCE_TIME)round(m_timingClock.TimingClockNow() / m_ticksPer100ns);
+	const REFERENCE_TIME rt = (REFERENCE_TIME)(m_timingClock.TimingClockNow() / m_ticksPer100ns);
 	assert(rt > 0);
 
 	return rt;

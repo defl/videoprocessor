@@ -526,7 +526,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 			assert(m_previousTimingClockFrameTime < timingClockFrameTime);
 
 			const double frameDiffTicks = (double)(timingClockFrameTime - m_previousTimingClockFrameTime);
-			const int frames = (int)round(frameDiffTicks / m_ticksPerFrame);
+			const int frames = (int)(frameDiffTicks / m_ticksPerFrame);
 			assert(frames >= 0);
 
 			m_capturedVideoFrameCount += frames;

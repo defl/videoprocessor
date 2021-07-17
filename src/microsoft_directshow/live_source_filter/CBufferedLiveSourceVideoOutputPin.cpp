@@ -217,7 +217,7 @@ DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 				if (!m_videoFrameQueue.empty())
 				{
 					m_nextVideoFrameStartTime =
-						(REFERENCE_TIME)round(
+						(REFERENCE_TIME)(
 						m_videoFrameQueue.front().GetTimingTimestamp() *
 						(10000000.0 / m_timingClock->TimingClockTicksPerSecond()));
 				}

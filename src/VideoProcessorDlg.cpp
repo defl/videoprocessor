@@ -118,13 +118,14 @@ static const std::vector<std::pair<LPCTSTR, HdrColorspaceOptions>> HDR_COLORSPAC
 enum class HdrLuminanceOptions
 {
 	HDR_LUMINANCE_FOLLOW,
-	// TODO: Add DIY
+	HDR_LUMINANCE_USER
 };
 
 
 static const std::vector<std::pair<LPCTSTR, HdrLuminanceOptions>> HDR_LUMINANCE_OPTIONS =
 {
-	std::make_pair(TEXT("Follow input"), HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW)
+	std::make_pair(TEXT("Follow input"), HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW),
+	std::make_pair(TEXT("user"), HdrLuminanceOptions::HDR_LUMINANCE_USER)
 };
 
 
@@ -298,40 +299,27 @@ void CVideoProcessorDlg::OnBnClickedTimingClockFrameOffsetAutoCheck()
 
 void CVideoProcessorDlg::OnColorSpaceContainerPresetSelected()
 {
-	const bool rendererAcceptedState = BuildPushVideoState();
-
-	// If the renderer did not accept the new state we need to restart the renderer
-	if (!rendererAcceptedState)
-	{
-		m_wantToRestartRenderer = true;
-		UpdateState();
-	}
+	BuildPushRestartVideoState();
 }
 
 
 void CVideoProcessorDlg::OnHdrColorSpaceSelected()
 {
-	const bool rendererAcceptedState = BuildPushVideoState();
-
-	// If the renderer did not accept the new state we need to restart the renderer
-	if (!rendererAcceptedState)
-	{
-		m_wantToRestartRenderer = true;
-		UpdateState();
-	}
+	BuildPushRestartVideoState();
 }
 
 
 void CVideoProcessorDlg::OnHdrLuminanceSelected()
 {
-	const bool rendererAcceptedState = BuildPushVideoState();
+	const int i = m_hdrLuminanceCombo.GetCurSel();
+	const bool enableEdit = ((HdrLuminanceOptions)m_hdrLuminanceCombo.GetItemData(i) == HdrLuminanceOptions::HDR_LUMINANCE_USER);
 
-	// If the renderer did not accept the new state we need to restart the renderer
-	if (!rendererAcceptedState)
-	{
-		m_wantToRestartRenderer = true;
-		UpdateState();
-	}
+	m_hdrLuminanceMaxCll.EnableWindow(enableEdit);
+	m_hdrLuminanceMaxFall.EnableWindow(enableEdit);
+	m_hdrLuminanceMasterMin.EnableWindow(enableEdit);
+	m_hdrLuminanceMasterMax.EnableWindow(enableEdit);
+
+	BuildPushRestartVideoState();
 }
 
 
@@ -1504,6 +1492,14 @@ bool CVideoProcessorDlg::GetRendererVideoFrameUseQueue()
 }
 
 
+double CVideoProcessorDlg::GetWindowTextAsDouble(CEdit& edit)
+{
+	CString text;
+	edit.GetWindowText(text);
+	return _wtof(text);
+}
+
+
 int CVideoProcessorDlg::GetTimingClockFrameOffsetMs()
 {
 	CString text;
@@ -1648,6 +1644,14 @@ bool CVideoProcessorDlg::BuildPushVideoState()
 			case HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW:
 				break;
 
+			// Take what the user has inputted
+			case HdrLuminanceOptions::HDR_LUMINANCE_USER:
+				videoState->hdrData->maxCll = GetWindowTextAsDouble(m_hdrLuminanceMaxCll);
+				videoState->hdrData->maxFall = GetWindowTextAsDouble(m_hdrLuminanceMaxFall);
+				videoState->hdrData->masteringDisplayMinLuminance = GetWindowTextAsDouble(m_hdrLuminanceMasterMin);
+				videoState->hdrData->masteringDisplayMaxLuminance = GetWindowTextAsDouble(m_hdrLuminanceMasterMax);
+				break;
+
 			default:
 				throw std::runtime_error("Unknown HdrLuminanceOptions");
 		}
@@ -1742,6 +1746,21 @@ bool CVideoProcessorDlg::BuildPushVideoState()
 	}
 
 	return true;
+}
+
+
+void CVideoProcessorDlg::BuildPushRestartVideoState()
+{
+	if (!m_captureDeviceVideoState)
+		return;
+
+	const bool rendererAcceptedState = BuildPushVideoState();
+
+	if (!rendererAcceptedState)
+	{
+		m_wantToRestartRenderer = true;
+		UpdateState();
+	}
 }
 
 
@@ -1996,6 +2015,13 @@ void CVideoProcessorDlg::OnOK()
 			{
 				m_videoRenderer->SetFrameQueueMaxSize(GetRendererVideoFrameQueueSizeMax());
 			}
+			break;
+
+		case IDC_HDR_LUMINANCE_MAXCLL_EDIT:
+		case IDC_HDR_LUMINANCE_MAXFALL_EDIT:
+		case IDC_HDR_LUMINANCE_MASTER_MIN_EDIT:
+		case IDC_HDR_LUMINANCE_MASTER_MAX_EDIT:
+			BuildPushRestartVideoState();
 			break;
 
 		default:

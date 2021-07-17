@@ -385,7 +385,7 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 
 		// Get frame timestamp as reference time
 		timeStart =
-			(REFERENCE_TIME)round(
+			(REFERENCE_TIME)(
 				videoFrame.GetTimingTimestamp() *
 				(10000000.0 / m_timingClock->TimingClockTicksPerSecond()));
 

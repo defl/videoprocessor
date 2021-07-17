@@ -245,6 +245,7 @@ protected:
 	HWND GetRenderWindow();
 	size_t GetRendererVideoFrameQueueSizeMax();
 	bool GetRendererVideoFrameUseQueue();
+	double GetWindowTextAsDouble(CEdit&);
 	int GetTimingClockFrameOffsetMs();
 	void SetTimingClockFrameOffsetMs(int timingClockFrameOffsetMs);
 	void UpdateTimingClockFrameOffset();
@@ -252,6 +253,7 @@ protected:
 	void ClearRendererCombo();
 
 	bool BuildPushVideoState();
+	void BuildPushRestartVideoState();
 
 #define FatalError(error) (_FatalError(__LINE__, __FUNCTION__, error))
 	void _FatalError(int line, const std::string& functionName, const CString& error);
