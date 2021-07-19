@@ -393,6 +393,13 @@ typedef interface IDeckLinkDX9ScreenPreviewHelper IDeckLinkDX9ScreenPreviewHelpe
 #endif 	/* __IDeckLinkDX9ScreenPreviewHelper_FWD_DEFINED__ */
 
 
+#ifndef __IDeckLinkWPFDX9ScreenPreviewHelper_FWD_DEFINED__
+#define __IDeckLinkWPFDX9ScreenPreviewHelper_FWD_DEFINED__
+typedef interface IDeckLinkWPFDX9ScreenPreviewHelper IDeckLinkWPFDX9ScreenPreviewHelper;
+
+#endif 	/* __IDeckLinkWPFDX9ScreenPreviewHelper_FWD_DEFINED__ */
+
+
 #ifndef __IDeckLinkNotificationCallback_FWD_DEFINED__
 #define __IDeckLinkNotificationCallback_FWD_DEFINED__
 typedef interface IDeckLinkNotificationCallback IDeckLinkNotificationCallback;
@@ -513,6 +520,18 @@ typedef struct CDeckLinkGLScreenPreviewHelper CDeckLinkGLScreenPreviewHelper;
 #endif 	/* __CDeckLinkGLScreenPreviewHelper_FWD_DEFINED__ */
 
 
+#ifndef __CDeckLinkGL3ScreenPreviewHelper_FWD_DEFINED__
+#define __CDeckLinkGL3ScreenPreviewHelper_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class CDeckLinkGL3ScreenPreviewHelper CDeckLinkGL3ScreenPreviewHelper;
+#else
+typedef struct CDeckLinkGL3ScreenPreviewHelper CDeckLinkGL3ScreenPreviewHelper;
+#endif /* __cplusplus */
+
+#endif 	/* __CDeckLinkGL3ScreenPreviewHelper_FWD_DEFINED__ */
+
+
 #ifndef __CDeckLinkDX9ScreenPreviewHelper_FWD_DEFINED__
 #define __CDeckLinkDX9ScreenPreviewHelper_FWD_DEFINED__
 
@@ -523,6 +542,18 @@ typedef struct CDeckLinkDX9ScreenPreviewHelper CDeckLinkDX9ScreenPreviewHelper;
 #endif /* __cplusplus */
 
 #endif 	/* __CDeckLinkDX9ScreenPreviewHelper_FWD_DEFINED__ */
+
+
+#ifndef __CDeckLinkWPFDX9ScreenPreviewHelper_FWD_DEFINED__
+#define __CDeckLinkWPFDX9ScreenPreviewHelper_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class CDeckLinkWPFDX9ScreenPreviewHelper CDeckLinkWPFDX9ScreenPreviewHelper;
+#else
+typedef struct CDeckLinkWPFDX9ScreenPreviewHelper CDeckLinkWPFDX9ScreenPreviewHelper;
+#endif /* __cplusplus */
+
+#endif 	/* __CDeckLinkWPFDX9ScreenPreviewHelper_FWD_DEFINED__ */
 
 
 #ifndef __CDeckLinkVideoConversion_FWD_DEFINED__
@@ -1632,6 +1663,7 @@ enum _BMDOutputFrameCompletionResult
 typedef /* [v1_enum] */ 
 enum _BMDReferenceStatus
     {
+        bmdReferenceUnlocked	= 0,
         bmdReferenceNotSupportedByHardware	= ( 1 << 0 ) ,
         bmdReferenceLocked	= ( 1 << 1 ) 
     } 	BMDReferenceStatus;
@@ -1994,6 +2026,7 @@ enum _BMDNotifications
         bmdPreferencesChanged	= 0x70726566,
         bmdStatusChanged	= 0x73746174
     } 	BMDNotifications;
+
 
 
 
@@ -8749,6 +8782,134 @@ EXTERN_C const IID IID_IDeckLinkDX9ScreenPreviewHelper;
 #endif 	/* __IDeckLinkDX9ScreenPreviewHelper_INTERFACE_DEFINED__ */
 
 
+#ifndef __IDeckLinkWPFDX9ScreenPreviewHelper_INTERFACE_DEFINED__
+#define __IDeckLinkWPFDX9ScreenPreviewHelper_INTERFACE_DEFINED__
+
+/* interface IDeckLinkWPFDX9ScreenPreviewHelper */
+/* [helpstring][local][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IDeckLinkWPFDX9ScreenPreviewHelper;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("AD8EC84A-7DDE-11E9-8F9E-2A86E4085A59")
+    IDeckLinkWPFDX9ScreenPreviewHelper : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE Initialize( void) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE Render( void) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE SetSurfaceSize( 
+            /* [in] */ unsigned int width,
+            /* [in] */ unsigned int height) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE SetFrame( 
+            /* [in] */ IDeckLinkVideoFrame *theFrame) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE Set3DPreviewFormat( 
+            /* [in] */ BMD3DPreviewFormat previewFormat) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE GetBackBuffer( 
+            /* [out] */ void **backBuffer) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IDeckLinkWPFDX9ScreenPreviewHelperVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IDeckLinkWPFDX9ScreenPreviewHelper * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IDeckLinkWPFDX9ScreenPreviewHelper * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IDeckLinkWPFDX9ScreenPreviewHelper * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *Initialize )( 
+            IDeckLinkWPFDX9ScreenPreviewHelper * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *Render )( 
+            IDeckLinkWPFDX9ScreenPreviewHelper * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *SetSurfaceSize )( 
+            IDeckLinkWPFDX9ScreenPreviewHelper * This,
+            /* [in] */ unsigned int width,
+            /* [in] */ unsigned int height);
+        
+        HRESULT ( STDMETHODCALLTYPE *SetFrame )( 
+            IDeckLinkWPFDX9ScreenPreviewHelper * This,
+            /* [in] */ IDeckLinkVideoFrame *theFrame);
+        
+        HRESULT ( STDMETHODCALLTYPE *Set3DPreviewFormat )( 
+            IDeckLinkWPFDX9ScreenPreviewHelper * This,
+            /* [in] */ BMD3DPreviewFormat previewFormat);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetBackBuffer )( 
+            IDeckLinkWPFDX9ScreenPreviewHelper * This,
+            /* [out] */ void **backBuffer);
+        
+        END_INTERFACE
+    } IDeckLinkWPFDX9ScreenPreviewHelperVtbl;
+
+    interface IDeckLinkWPFDX9ScreenPreviewHelper
+    {
+        CONST_VTBL struct IDeckLinkWPFDX9ScreenPreviewHelperVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IDeckLinkWPFDX9ScreenPreviewHelper_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IDeckLinkWPFDX9ScreenPreviewHelper_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IDeckLinkWPFDX9ScreenPreviewHelper_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IDeckLinkWPFDX9ScreenPreviewHelper_Initialize(This)	\
+    ( (This)->lpVtbl -> Initialize(This) ) 
+
+#define IDeckLinkWPFDX9ScreenPreviewHelper_Render(This)	\
+    ( (This)->lpVtbl -> Render(This) ) 
+
+#define IDeckLinkWPFDX9ScreenPreviewHelper_SetSurfaceSize(This,width,height)	\
+    ( (This)->lpVtbl -> SetSurfaceSize(This,width,height) ) 
+
+#define IDeckLinkWPFDX9ScreenPreviewHelper_SetFrame(This,theFrame)	\
+    ( (This)->lpVtbl -> SetFrame(This,theFrame) ) 
+
+#define IDeckLinkWPFDX9ScreenPreviewHelper_Set3DPreviewFormat(This,previewFormat)	\
+    ( (This)->lpVtbl -> Set3DPreviewFormat(This,previewFormat) ) 
+
+#define IDeckLinkWPFDX9ScreenPreviewHelper_GetBackBuffer(This,backBuffer)	\
+    ( (This)->lpVtbl -> GetBackBuffer(This,backBuffer) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IDeckLinkWPFDX9ScreenPreviewHelper_INTERFACE_DEFINED__ */
+
+
 #ifndef __IDeckLinkNotificationCallback_INTERFACE_DEFINED__
 #define __IDeckLinkNotificationCallback_INTERFACE_DEFINED__
 
@@ -9961,12 +10122,28 @@ class DECLSPEC_UUID("F63E77C7-B655-4A4A-9AD0-3CA85D394343")
 CDeckLinkGLScreenPreviewHelper;
 #endif
 
+EXTERN_C const CLSID CLSID_CDeckLinkGL3ScreenPreviewHelper;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("00696A71-EBC7-491F-AC02-18D3393F33F0")
+CDeckLinkGL3ScreenPreviewHelper;
+#endif
+
 EXTERN_C const CLSID CLSID_CDeckLinkDX9ScreenPreviewHelper;
 
 #ifdef __cplusplus
 
 class DECLSPEC_UUID("CC010023-E01D-4525-9D59-80C8AB3DC7A0")
 CDeckLinkDX9ScreenPreviewHelper;
+#endif
+
+EXTERN_C const CLSID CLSID_CDeckLinkWPFDX9ScreenPreviewHelper;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("EF2A8478-7DDF-11E9-8F9E-2A86E4085A59")
+CDeckLinkWPFDX9ScreenPreviewHelper;
 #endif
 
 EXTERN_C const CLSID CLSID_CDeckLinkVideoConversion;
