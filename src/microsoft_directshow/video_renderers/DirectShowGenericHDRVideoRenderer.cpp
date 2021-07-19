@@ -12,6 +12,7 @@
 
 #include <guid.h>
 #include <CNoopVideoFrameFormatter.h>
+#include <CV210toP010VideoFrameFormatter.h>
 #include <microsoft_directshow/DirectShowTranslations.h>
 #include <ffmpeg/CFFMpegDecoderVideoFrameFormatter.h>
 
@@ -104,15 +105,12 @@ void DirectShowGenericHDRVideoRenderer::MediaTypeGenerate()
 
 	// v210 (YUV422) to p010 (YUV420)
 	// This is lossy, only use to revert decklink upscaling
-	if (m_videoState->videoFrameEncoding == VideoFrameEncoding::YUV_10BIT &&
+	if (m_videoState->videoFrameEncoding == VideoFrameEncoding::V210 &&
 		m_videoConversionOverride == VideoConversionOverride::VIDEOCONVERSION_V210_TO_P010)
 	{
 		mediaSubType = MEDIASUBTYPE_P010;
 		bitCount = 10;
-
-		m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
-			AV_CODEC_ID_V210,
-			AV_PIX_FMT_P010);
+		m_videoFramFormatter = new CV210toP010VideoFrameFormatter();
 	}
 
 	// Default conversions
@@ -123,7 +121,7 @@ void DirectShowGenericHDRVideoRenderer::MediaTypeGenerate()
 			// r210 to RGB48
 		case VideoFrameEncoding::R210:
 
-			mediaSubType = MEDIASUBTYPE_RGB48LE;
+			mediaSubType = MEDIASUBTYPE_RGB0;
 			bitCount = 48;
 			heightMultiplier = -1;
 
@@ -135,7 +133,7 @@ void DirectShowGenericHDRVideoRenderer::MediaTypeGenerate()
 			// RGB 12-bit to RGB48
 		case VideoFrameEncoding::R12B:
 
-			mediaSubType = MEDIASUBTYPE_RGB48LE;
+			mediaSubType = MEDIASUBTYPE_RGB0;
 			bitCount = 48;
 			heightMultiplier = -1;
 

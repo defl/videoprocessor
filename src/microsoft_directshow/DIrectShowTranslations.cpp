@@ -23,7 +23,7 @@ const GUID TranslateToMediaSubType(VideoFrameEncoding videoFrameEncoding)
 		// TODO: Can also be HDYC if color space is rec709, see https://www.fourcc.org/yuv.php
 		return MEDIASUBTYPE_UYVY;
 
-	case VideoFrameEncoding::YUV_10BIT:
+	case VideoFrameEncoding::V210:
 		return MEDIASUBTYPE_v210;
 
 	case VideoFrameEncoding::R210:

@@ -17,7 +17,7 @@
  * https://github.com/Aleksoid1978/VideoRenderer/
  */
 class DirectShowMPCVideoRenderer:
-	public DirectShowGenericVideoRenderer
+	public DirectShowVideoRenderer
 {
 public:
 
@@ -30,11 +30,16 @@ public:
 		DirectShowStartStopTimeMethod directShowStartStopTimeMethod,
 		bool useFrameQueue,
 		size_t frameQueueMaxSize,
-		VideoConversionOverride videoConversionOverride);
+		VideoConversionOverride videoConversionOverride,
+		DXVA_NominalRange forceNominalRange,
+		DXVA_VideoTransferFunction forceVideoTransferFunction,
+		DXVA_VideoTransferMatrix forceVideoTransferMatrix,
+		DXVA_VideoPrimaries forceVideoPrimaries);
 
 	virtual ~DirectShowMPCVideoRenderer() {}
 
 	// IRenderer
+	bool OnVideoState(VideoStateComPtr&) override;
 	void OnSize() override;
 	void OnPaint() override;
 
@@ -42,9 +47,17 @@ protected:
 
 	// DirectShowVideoRenderer
 	void WindowSetup() override;
+	void RendererBuild() override;
+	void MediaTypeGenerate() override;
+	void RendererConnect() override;
+	void LiveSourceBuildAndConnect() override;
 
 private:
 
-	// TODO: Use
-	IBasicVideo* m_basicVideo = nullptr;
+	const DXVA_NominalRange m_forceNominalRange;
+	const DXVA_VideoTransferFunction m_forceVideoTransferFunction;
+	const DXVA_VideoTransferMatrix m_forceVideoTransferMatrix;
+	const DXVA_VideoPrimaries m_forceVideoPrimaries;
+
+	IBasicVideo* m_basicVideo = nullptr;  // TODO: Use
 };

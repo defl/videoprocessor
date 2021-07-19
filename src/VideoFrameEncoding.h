@@ -27,7 +27,7 @@ enum class VideoFrameEncoding
 	// v210 4:2:2
 	// Twelve 10-bit unsigned components are packed into four 32-bit little-endian words
 	// TODO: RENAME TO v210
-	YUV_10BIT,
+	V210,
 
 	// ARGB (or ARGB32) 4:4:4:4 raw
 	// Four 8-bit unsigned components are packed into one 32-bit little-endian word. Alpha channel is valid.

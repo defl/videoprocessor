@@ -3,8 +3,6 @@ Roadmap
 
 0.4.0: Upscaling, added MPCVR renderer, HDR controls
 - Correct AR ratio for renderers
-- HDR support for MPCVR?
-- Put preferrered renderers on top of list
 - Clean up TODO
 
 1.0.0: Out of beta

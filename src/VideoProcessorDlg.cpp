@@ -1229,17 +1229,36 @@ void CVideoProcessorDlg::RenderStart()
 
 	GUID* rendererClSID = (GUID*)m_rendererCombo.GetItemData(i);
 
-	// Get directshow start-stop method
+	// Get user-selectable options
 	i = m_rendererDirectShowStartStopTimeMethodCombo.GetCurSel();
 	assert(i >= 0);
 	DirectShowStartStopTimeMethod directShowStartStopTimeMethod =
 		(DirectShowStartStopTimeMethod)m_rendererDirectShowStartStopTimeMethodCombo.GetItemData(i);
 
-	// Get forced video conversion
 	i = m_rendererVideoConversionCombo.GetCurSel();
 	assert(i >= 0);
 	VideoConversionOverride videoConversionOverride =
 		(VideoConversionOverride)m_rendererVideoConversionCombo.GetItemData(i);
+
+	i = m_rendererNominalRangeCombo.GetCurSel();
+	assert(i >= 0);
+	DXVA_NominalRange forceNominalRange =
+		(DXVA_NominalRange)m_rendererNominalRangeCombo.GetItemData(i);
+
+	i = m_rendererTransferFunctionCombo.GetCurSel();
+	assert(i >= 0);
+	DXVA_VideoTransferFunction forceVideoTransferFunction =
+		(DXVA_VideoTransferFunction)m_rendererTransferFunctionCombo.GetItemData(i);
+
+	i = m_rendererTransferMatrixCombo.GetCurSel();
+	assert(i >= 0);
+	DXVA_VideoTransferMatrix forceVideoTransferMatrix =
+		(DXVA_VideoTransferMatrix)m_rendererTransferMatrixCombo.GetItemData(i);
+
+	i = m_rendererPrimariesCombo.GetCurSel();
+	assert(i >= 0);
+	DXVA_VideoPrimaries forceVideoPrimaries =
+		(DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
 
 	// Capture card always provides the clock
 	ITimingClock* timingClock = m_captureDevice->GetTimingClock();
@@ -1255,26 +1274,6 @@ void CVideoProcessorDlg::RenderStart()
 
 	try
 	{
-		i = m_rendererNominalRangeCombo.GetCurSel();
-		assert(i >= 0);
-		DXVA_NominalRange forceNominalRange =
-			(DXVA_NominalRange)m_rendererNominalRangeCombo.GetItemData(i);
-
-		i = m_rendererTransferFunctionCombo.GetCurSel();
-		assert(i >= 0);
-		DXVA_VideoTransferFunction forceVideoTransferFunction =
-			(DXVA_VideoTransferFunction)m_rendererTransferFunctionCombo.GetItemData(i);
-
-		i = m_rendererTransferMatrixCombo.GetCurSel();
-		assert(i >= 0);
-		DXVA_VideoTransferMatrix forceVideoTransferMatrix =
-			(DXVA_VideoTransferMatrix)m_rendererTransferMatrixCombo.GetItemData(i);
-
-		i = m_rendererPrimariesCombo.GetCurSel();
-		assert(i >= 0);
-		DXVA_VideoPrimaries forceVideoPrimaries =
-			(DXVA_VideoPrimaries)m_rendererPrimariesCombo.GetItemData(i);
-
 		m_videoRenderer = new DirectShowGenericHDRVideoRenderer(
 			*rendererClSID,
 			*this,
@@ -1321,7 +1320,11 @@ void CVideoProcessorDlg::RenderStart()
 					directShowStartStopTimeMethod,
 					GetRendererVideoFrameUseQueue(),
 					GetRendererVideoFrameQueueSizeMax(),
-					videoConversionOverride);
+					videoConversionOverride,
+					forceNominalRange,
+					forceVideoTransferFunction,
+					forceVideoTransferMatrix,
+					forceVideoPrimaries);
 			}
 			else if (IsEqualCLSID(*rendererClSID, CLSID_EnhancedVideoRenderer))
 			{

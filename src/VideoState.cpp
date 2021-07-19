@@ -77,7 +77,7 @@ uint32_t VideoState::BytesPerRow() const
 	case VideoFrameEncoding::YUV_8BIT:
 		return displayMode->FrameWidth() * 16 / 8;
 
-	case VideoFrameEncoding::YUV_10BIT:
+	case VideoFrameEncoding::V210:
 		return ((displayMode->FrameWidth() + 47) / 48) * 128;
 
 	case VideoFrameEncoding::ARGB_8BIT:

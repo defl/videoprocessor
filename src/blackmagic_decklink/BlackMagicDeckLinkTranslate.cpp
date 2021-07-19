@@ -201,7 +201,7 @@ VideoFrameEncoding Translate(BMDPixelFormat bmdPixelFormat)
 		return VideoFrameEncoding::YUV_8BIT;
 
 	case bmdFormat10BitYUV:
-		return VideoFrameEncoding::YUV_10BIT;
+		return VideoFrameEncoding::V210;
 
 	case bmdFormat8BitARGB:
 		return VideoFrameEncoding::ARGB_8BIT;

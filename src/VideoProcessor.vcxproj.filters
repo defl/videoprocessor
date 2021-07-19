@@ -207,6 +207,9 @@
     <ClInclude Include="CColorStatic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CV210toP010VideoFrameFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -348,6 +351,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CColorStatic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CV210toP010VideoFrameFormatter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

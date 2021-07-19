@@ -23,7 +23,7 @@ const TCHAR* ToString(const VideoFrameEncoding videoFrameEncoding)
 	case VideoFrameEncoding::YUV_8BIT:
 		return TEXT("YUV 8-bit (UYVY)");
 
-	case VideoFrameEncoding::YUV_10BIT:
+	case VideoFrameEncoding::V210:
 		return TEXT("YUV 10-bit (v210)");
 
 	case VideoFrameEncoding::ARGB_8BIT:
@@ -65,7 +65,7 @@ uint32_t VideoFrameEncodingBitsPerPixel(const VideoFrameEncoding videoFrameEncod
 	case VideoFrameEncoding::YUV_8BIT:
 		return 16;
 
-	case VideoFrameEncoding::YUV_10BIT:
+	case VideoFrameEncoding::V210:
 		return 20;
 
 	case VideoFrameEncoding::ARGB_8BIT:
@@ -92,7 +92,7 @@ uint32_t VideoFrameEncodingFourCC(const VideoFrameEncoding videoFrameEncoding)
 	case VideoFrameEncoding::YUV_8BIT:
 		return FCC('UYVY');
 
-	case VideoFrameEncoding::YUV_10BIT:
+	case VideoFrameEncoding::V210:
 		return FCC('v210');
 	}
 
