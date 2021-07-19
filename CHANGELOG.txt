@@ -1,3 +1,7 @@
+1.0.1
+- Updated to BlackMagic SDK 12.4
+- Fix for Blackmagic Rec601 486 line error popup
+
 1.0.0
 - No changes
 
