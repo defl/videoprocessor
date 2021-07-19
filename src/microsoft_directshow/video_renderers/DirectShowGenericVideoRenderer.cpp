@@ -9,6 +9,7 @@
 #include "stdafx.h"
 
 #include <CNoopVideoFrameFormatter.h>
+#include <CV210toP010VideoFrameFormatter.h>
 #include <microsoft_directshow/DirectShowTranslations.h>
 #include <ffmpeg/CFFMpegDecoderVideoFrameFormatter.h>
 
@@ -67,15 +68,12 @@ void DirectShowGenericVideoRenderer::MediaTypeGenerate()
 
 	// v210 (YUV422) to p010 (YUV420)
 	// This is lossy, only use to revert decklink upscaling
-	if (m_videoState->videoFrameEncoding == VideoFrameEncoding::YUV_10BIT &&
+	if (m_videoState->videoFrameEncoding == VideoFrameEncoding::V210 &&
 		m_videoConversionOverride == VideoConversionOverride::VIDEOCONVERSION_V210_TO_P010)
 	{
 		mediaSubType = MEDIASUBTYPE_P010;
 		bitCount = 10;
-
-		m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
-			AV_CODEC_ID_V210,
-			AV_PIX_FMT_P010);
+		m_videoFramFormatter = new CV210toP010VideoFrameFormatter();
 	}
 
 	// Default conversions

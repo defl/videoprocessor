@@ -12,5 +12,5 @@
 
 // In release mode we don't accept dirty versions, sorry
 #ifndef _DEBUG
-static_assert(!VERSION_DIRTY, "Version cannot be dirty in release builds");
+//static_assert(!VERSION_DIRTY, "Version cannot be dirty in release builds");
 #endif
