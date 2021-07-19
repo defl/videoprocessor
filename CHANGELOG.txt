@@ -1,6 +1,7 @@
 0.4.0-beta2
 - HDR support for MPC Video Renderer (only for non-rgb formats, rest not yet supported by renderer)
 - Fast v210 to p010 encoder which makes rendering times acceptable
+- Fix for bad missed frame count and drops
 
 0.4.0-beta1
 - Option to force YCbCr422 (v210) to YCbCr420 (p010) to undo DeckLink conversion so that the renderer can do the upscaling
