@@ -29,6 +29,7 @@ public:
     const static COLORREF GREEN  = RGB(0, 140, 63);
     const static COLORREF ORANGE = RGB(255, 174, 0);
     const static COLORREF RED    = RGB(255, 0, 0);
+    const static COLORREF WINDOWS_APP_BACKGROUND = RGB(240, 240, 240);
 
     void SetTextColor(COLORREF);
 

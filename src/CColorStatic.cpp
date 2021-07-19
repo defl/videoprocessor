@@ -30,5 +30,5 @@ HBRUSH CColorStatic::CtlColor(CDC* pDC, UINT nCtlColor)
 {
     pDC->SetTextColor(m_textColor);
 
-    return (HBRUSH)CreateSolidBrush(WHITE);
+    return (HBRUSH)CreateSolidBrush(WINDOWS_APP_BACKGROUND);
 }
