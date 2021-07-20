@@ -101,17 +101,16 @@ enum class HdrColorspaceOptions
 	HDR_COLORSPACE_BT2020,
 	HDR_COLORSPACE_P3,
 	HDR_COLORSPACE_REC709
-	// TODO: Add DIY
 };
 
 
 static const std::vector<std::pair<LPCTSTR, HdrColorspaceOptions>> HDR_COLORSPACE_OPTIONS =
 {
-	std::make_pair(TEXT("Follow input"), HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT),
+	std::make_pair(TEXT("Follow input"),     HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT),
 	std::make_pair(TEXT("Follow container"), HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_CONTAINER),
-	std::make_pair(TEXT("Force BT.2020"), HdrColorspaceOptions::HDR_COLORSPACE_BT2020),
-	std::make_pair(TEXT("Force P3"), HdrColorspaceOptions::HDR_COLORSPACE_P3),
-	std::make_pair(TEXT("Force REC709"), HdrColorspaceOptions::HDR_COLORSPACE_REC709)
+	std::make_pair(TEXT("Force BT.2020"),    HdrColorspaceOptions::HDR_COLORSPACE_BT2020),
+	std::make_pair(TEXT("Force P3"),         HdrColorspaceOptions::HDR_COLORSPACE_P3),
+	std::make_pair(TEXT("Force REC709"),     HdrColorspaceOptions::HDR_COLORSPACE_REC709)
 };
 
 
@@ -1601,8 +1600,8 @@ bool CVideoProcessorDlg::BuildPushVideoState()
 	//
 
 	// Change container colorspace
-	int i = m_colorspaceContainerPresetCombo.GetCurSel();
-	ColorSpace colorSpace = (ColorSpace)m_colorspaceContainerPresetCombo.GetItemData(i);
+	int i = m_colorspaceContainerCombo.GetCurSel();
+	ColorSpace colorSpace = (ColorSpace)m_colorspaceContainerCombo.GetItemData(i);
 	if (colorSpace != ColorSpace::UNKNOWN)
 		videoState->colorspace = colorSpace;
 
@@ -1829,7 +1828,7 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_TIMING_CLOCK_FRAME_OFFSET_AUTO_CHECK, m_timingClockFrameOffsetAutoCheck);
 
 	// colorSpace group
-	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_PRESET_COMBO, m_colorspaceContainerPresetCombo);
+	DDX_Control(pDX, IDC_COLORSPACE_CONTAINER_COMBO, m_colorspaceContainerCombo);
 
 	// HDR colorSpace group
 	DDX_Control(pDX, IDC_HDR_COLORSPACE_R_EDIT, m_hdrColorspaceREdit);
@@ -1916,10 +1915,10 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 
 	for (auto p : COLOLORSPACE_CONTAINER_OPTIONS)
 	{
-		int index = m_colorspaceContainerPresetCombo.AddString(p.first);
-		m_colorspaceContainerPresetCombo.SetItemData(index, (int)p.second);
+		int index = m_colorspaceContainerCombo.AddString(p.first);
+		m_colorspaceContainerCombo.SetItemData(index, (int)p.second);
 	}
-	m_colorspaceContainerPresetCombo.SetCurSel(0);
+	m_colorspaceContainerCombo.SetCurSel(0);
 
 	for (auto p : HDR_COLORSPACE_OPTIONS)
 	{

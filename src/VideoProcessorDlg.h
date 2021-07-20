@@ -140,7 +140,7 @@ protected:
 	CButton m_timingClockFrameOffsetAutoCheck;
 
 	// Colorspace group
-	CComboBox m_colorspaceContainerPresetCombo;  // TODO: Not the best name
+	CComboBox m_colorspaceContainerCombo;
 
 	// HDR colorSpace group
 	CEdit m_hdrColorspaceREdit;
