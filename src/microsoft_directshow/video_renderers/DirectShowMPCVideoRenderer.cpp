@@ -56,7 +56,7 @@ DirectShowMPCVideoRenderer::DirectShowMPCVideoRenderer(
 
 
 //
-// IRenderer
+// IVideoRenderer
 //
 
 
@@ -153,7 +153,6 @@ void DirectShowMPCVideoRenderer::MediaTypeGenerate()
 
 	// v210 (YUV422) to p010 (YUV420)
 	// This is lossy, only use to revert decklink upscaling
-	// TODO test with P016 for better memory-alignment
 	if (m_videoState->videoFrameEncoding == VideoFrameEncoding::V210 &&
 		m_videoConversionOverride == VideoConversionOverride::VIDEOCONVERSION_V210_TO_P010)
 	{

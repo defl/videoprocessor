@@ -40,7 +40,7 @@ public:
 
 	virtual ~DirectShowGenericHDRVideoRenderer() {}
 
-	// IRenderer
+	// IVideoRenderer
 	bool OnVideoState(VideoStateComPtr&) override;
 	void OnPaint() override { /* not implemented */ }
 

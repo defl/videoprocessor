@@ -218,7 +218,7 @@ protected:
 	CString m_defaultFrameOffset = TEXT("90");
 
 
-	IRenderer* m_videoRenderer = nullptr;
+	IVideoRenderer* m_videoRenderer = nullptr;
 	RendererState m_rendererState = RendererState::RENDERSTATE_UNKNOWN;
 
 	std::atomic_bool m_deliverCaptureDataToRenderer = false;

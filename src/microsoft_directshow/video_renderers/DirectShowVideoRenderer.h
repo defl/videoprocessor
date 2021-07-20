@@ -26,7 +26,7 @@
  * Abstract DirectShow video renderer
  */
 class DirectShowVideoRenderer:
-	public IRenderer
+	public IVideoRenderer
 {
 public:
 
@@ -42,7 +42,7 @@ public:
 		VideoConversionOverride videoConversionOverride);
 	virtual ~DirectShowVideoRenderer();
 
-	// IRenderer
+	// IVideoRenderer
 	bool OnVideoState(VideoStateComPtr&) override;
 	void OnVideoFrame(VideoFrame& videoFrame) override;
 	HRESULT OnWindowsEvent(LONG_PTR param1, LONG_PTR param2) override;

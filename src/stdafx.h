@@ -40,8 +40,5 @@
 
 
 // Helper macros for HRESULT functions
-// TODO: Improve naming CHECK is for return and IF is pure if, also IF_S_OK etc look a lot like FAILED()
-#define CHECK_HR(exp) { if (FAILED(hr = (exp))) return hr; }
-#define CHECK_S_OK(exp) { if(exp != S_OK) return E_FAIL ;}
 #define IF_NOT_S_OK(exp) if((exp) != S_OK)
 #define IF_S_OK(exp) if((exp) == S_OK)

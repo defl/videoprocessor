@@ -124,8 +124,8 @@ STDMETHODIMP CLiveSource::OnVideoFrame(VideoFrame& videoFrame)
 
 STDMETHODIMP CLiveSource::SetFrameQueueMaxSize(size_t frameQueueMaxSize)
 {
-	if (frameQueueMaxSize < 1)
-		throw std::runtime_error("Queue must be >= 1");
+	if (frameQueueMaxSize < 0)
+		throw std::runtime_error("Queue must be >= 0");
 
 	m_videoOutputPin->SetFrameQueueMaxSize(frameQueueMaxSize);
 	return S_OK;

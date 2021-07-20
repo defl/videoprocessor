@@ -19,9 +19,11 @@ const GUID TranslateToMediaSubType(VideoFrameEncoding videoFrameEncoding)
 {
 	switch (videoFrameEncoding)
 	{
-	case VideoFrameEncoding::YUV_8BIT:
-		// TODO: Can also be HDYC if color space is rec709, see https://www.fourcc.org/yuv.php
+	case VideoFrameEncoding::UYVY:
 		return MEDIASUBTYPE_UYVY;
+
+	case VideoFrameEncoding::HDYC:
+		return MEDIASUBTYPE_HDYC;
 
 	case VideoFrameEncoding::V210:
 		return MEDIASUBTYPE_v210;

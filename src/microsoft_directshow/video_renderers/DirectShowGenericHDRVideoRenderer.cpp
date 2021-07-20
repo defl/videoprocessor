@@ -55,7 +55,7 @@ DirectShowGenericHDRVideoRenderer::DirectShowGenericHDRVideoRenderer(
 
 
 //
-// IRenderer
+// IVideoRenderer
 //
 
 bool DirectShowGenericHDRVideoRenderer::OnVideoState(VideoStateComPtr& videoState)

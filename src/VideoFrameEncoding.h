@@ -19,14 +19,13 @@ enum class VideoFrameEncoding
 {
 	UNKNOWN,
 
-	// UYVY 4:2:2
-	// Four 8-bit unsigned components(CCIR 601) are packed into one 32-bit little-endian word.
-	// TODO: RENAME TO UYUV
-	YUV_8BIT,
+	// UYVY & HDYC 4:2:2
+	// There are 2 similar types with the main difference being which color space they're used in
+	UYVY,  // BT470 SD video color space
+	HDYC,  // BT.709
 
 	// v210 4:2:2
 	// Twelve 10-bit unsigned components are packed into four 32-bit little-endian words
-	// TODO: RENAME TO v210
 	V210,
 
 	// ARGB (or ARGB32) 4:4:4:4 raw
@@ -39,27 +38,22 @@ enum class VideoFrameEncoding
 
 	// r210: 4:4:4 raw
 	// Three 10-bit unsigned components are packed into one 32-bit big-endian word.
-	// TODO: This is not really a pixel format but an encoding format, maybe rename this class?
 	R210,
 
 	// R10b: 4:4:4 raw
 	// Three 10-bit unsigned components are packed into one 32-bit big-endian word.
-	// TODO: This is not really a pixel format but an encoding format, maybe rename this class?
 	R10b,
 
 	// R10l: 4:4:4 raw
 	// Three 10-bit unsigned components are packed into one 32-bit little-endian word.
-	// TODO: This is not really a pixel format but an encoding format, maybe rename this class?
 	R10l,
 
 	// R12B: Big-endian RGB 12-bit per component with full range (0-4095). Packed as 12-bit per component.
 	// (SMPTE 268M Digital Moving-Picture Exchange version 1, Annex C, Method C4 packing.)
-	// TODO: This is not really a pixel format but an encoding format, maybe rename this class?
 	R12B,
 
 	// R12L: Little-endian RGB 12-bit per component with full range (0-4095). Packed as 12-bit per component.
 	// (SMPTE 268M Digital Moving-Picture Exchange version 1, Annex C, Method C4 packing.)
-	// TODO: This is not really a pixel format but an encoding format, maybe rename this class?
 	R12L,
 
 	H265,

@@ -193,12 +193,13 @@ BitDepth TranslateBithDepth(BMDDetectedVideoInputFormatFlags detectedVideoInputF
 }
 
 
-VideoFrameEncoding Translate(BMDPixelFormat bmdPixelFormat)
+VideoFrameEncoding Translate(BMDPixelFormat bmdPixelFormat, ColorSpace colorSpace)
 {
 	switch (bmdPixelFormat)
 	{
 	case bmdFormat8BitYUV:
-		return VideoFrameEncoding::YUV_8BIT;
+		// Note this can also be HDYC depending on colorspace (REC709), not implemented
+		return VideoFrameEncoding::UYVY;
 
 	case bmdFormat10BitYUV:
 		return VideoFrameEncoding::V210;

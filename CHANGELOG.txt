@@ -1,5 +1,9 @@
+next (0.4.0: Upscaling, added MPCVR renderer, HDR controls)
+
 0.4.0-beta3
 - Added V210 to P210 converter for general MPCVR YUV422 duty
+- Frame queue size can now be chanced on the fly without restarting renderers
+- Lots of small TODOs solved
 
 0.4.0-beta2
 - HDR support for MPC Video Renderer (only for non-rgb formats, rest not yet supported by renderer)

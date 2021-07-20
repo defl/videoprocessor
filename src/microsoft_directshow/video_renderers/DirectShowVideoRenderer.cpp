@@ -197,7 +197,7 @@ void DirectShowVideoRenderer::OnSize()
 
 void DirectShowVideoRenderer::SetFrameQueueMaxSize(size_t frameMaxQueueSize)
 {
-	// TODO
+	m_liveSource->SetFrameQueueMaxSize(frameMaxQueueSize);
 }
 
 

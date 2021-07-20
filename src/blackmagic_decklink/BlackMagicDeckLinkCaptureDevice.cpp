@@ -499,7 +499,6 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 	IDeckLinkAudioInputPacket* audioPacket)
 {
 	// WARNING: Called from some internal capture card thread!
-	// TODO: Process audioPacket
 
 	// Dot not process if we're not capturing anymore
 	if (!m_outputCaptureData.load(std::memory_order_acquire))
@@ -536,7 +535,6 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 		m_previousTimingClockFrameTime = timingClockFrameTime;
 
 		// Every every so often get the hardware latency.
-		// TODO: Change to framerate?
 		if(m_capturedVideoFrameCount % 20 == 0)
 		{
 			timingclocktime_t timingClockNow = TimingClockNow();
@@ -567,7 +565,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 
 			VideoState vs;
 			vs.displayMode = dp;
-			vs.videoFrameEncoding = Translate(m_bmdPixelFormat);
+			vs.videoFrameEncoding = Translate(m_bmdPixelFormat, vs.colorspace);
 			assert(vs.BytesPerRow() == videoFrame->GetRowBytes());
 		}
 #endif // _DEBUG
@@ -917,13 +915,13 @@ void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
 		assert(m_videoColorSpace != BMD_EOTF_INVALID);
 
 		videoState->valid = true;
-		videoState->videoFrameEncoding = Translate(m_bmdPixelFormat);
 		videoState->displayMode = Translate(m_bmdDisplayMode);
 		videoState->eotf = TranslateEOTF(m_videoEotf);
 		videoState->colorspace = Translate(
 			(BMDColorspace)m_videoColorSpace,
 			videoState->displayMode->FrameHeight());
 		videoState->invertedVertical = m_videoInvertedVertical;
+		videoState->videoFrameEncoding = Translate(m_bmdPixelFormat, videoState->colorspace);
 
 		// Build a fresh copy of the HDR data if valid
 		if (hasValidHdrData)

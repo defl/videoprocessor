@@ -1,13 +1,9 @@
 Roadmap
 =======
 
-0.4.0: Upscaling, added MPCVR renderer, HDR controls
-- Correct AR ratio for renderers
-- MPCVR convert all to non-rgb
-- Clean up TODO
-
 1.0.0: Out of beta
-- No changes expected, re-release of 0.4.0 code
+- Put all formatters together under a nice API and refactor the usage a bit
+- Make generic SDR and HDR directshow filters
 
 1.1.0: Constant time delay
 - Determine baseline latency with external meter
@@ -42,4 +38,3 @@ Stuff & ideas to do for later:
 - If the CAM thread throws that's never shown, make errors visible
 - Replace GDI drawing with MFC
 - Make a CIE1931 diagram with the pixels painted into it once a sec or so to see if the video actually getting near it's stated performance (https://www.drastic.tv/productsmenu-56/test-and-measurement/4kscope)
-- Add support for interlaced formats (cannot test)

@@ -37,7 +37,7 @@ public:
 
 	virtual ~DirectShowGenericVideoRenderer() {}
 
-	// IRenderer
+	// IVideoRenderer
 	void OnPaint() override { /* not implemented */ }
 
 protected:

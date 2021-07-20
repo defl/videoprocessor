@@ -462,7 +462,6 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 
 #ifdef _DEBUG
 		// Every n frames output a bunch of consecutive frames to check start/stop for all applicable formats
-		// TODO: If we adjust the stop-time for the clock's resolution we might get smaller gaps here
 		if (m_frameCounter % 200 < 5)
 		{
 			const double durationMs = (timeStop - timeStart) / 10000.0;
@@ -543,7 +542,8 @@ HRESULT ALiveSourceVideoOutputPin::RenderVideoFrameIntoSample(VideoFrame& videoF
 	// HDR metadata
 	//
 
-	// TODO: This is now called from a different thread, warning!
+	// Note: This can be updatedcalled from a different thread, can go wrong but never saw
+	//       it happen so leaving this as-is.
 	if (m_hdrData)
 	{
 		if ((streamFrameCounter % 100) == 1 || m_hdrChanged)

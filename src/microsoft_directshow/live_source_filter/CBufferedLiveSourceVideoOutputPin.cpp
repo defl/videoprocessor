@@ -120,8 +120,7 @@ HRESULT CBufferedLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 		// If full throw away oldest to make space
 		if (m_videoFrameQueue.size() >= m_frameQueueMaxSize)
 		{
-			VideoFrame popFrame = m_videoFrameQueue.front();
-			popFrame.SourceBufferRelease();
+			m_videoFrameQueue.front().SourceBufferRelease();
 			m_videoFrameQueue.pop_front();
 			++m_droppedFrameCount;
 		}
@@ -137,16 +136,21 @@ HRESULT CBufferedLiveSourceVideoOutputPin::OnVideoFrame(VideoFrame& videoFrame)
 
 void CBufferedLiveSourceVideoOutputPin::SetFrameQueueMaxSize(size_t frameQueueMaxSize)
 {
-	if (frameQueueMaxSize == 0)
+	if (frameQueueMaxSize <= 0)
 		throw std::runtime_error("Frame queue size must be > 0");
 
 	{
 		CAutoLock lock(&m_filterCritSec);
 
-		if (m_frameQueueMaxSize != 0)
-			throw std::runtime_error("Frame queue size can be set only once");
-
 		m_frameQueueMaxSize = frameQueueMaxSize;
+
+		// If full throw away oldest to make space if needed
+		while (m_videoFrameQueue.size() >= m_frameQueueMaxSize)
+		{
+			m_videoFrameQueue.front().SourceBufferRelease();
+			m_videoFrameQueue.pop_front();
+			++m_droppedFrameCount;
+		}
 	}
 }
 

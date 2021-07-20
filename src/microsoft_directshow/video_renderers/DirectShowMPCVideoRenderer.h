@@ -38,7 +38,7 @@ public:
 
 	virtual ~DirectShowMPCVideoRenderer() {}
 
-	// IRenderer
+	// IVideoRenderer
 	bool OnVideoState(VideoStateComPtr&) override;
 	void OnSize() override;
 	void OnPaint() override;
@@ -58,6 +58,4 @@ private:
 	const DXVA_VideoTransferFunction m_forceVideoTransferFunction;
 	const DXVA_VideoTransferMatrix m_forceVideoTransferMatrix;
 	const DXVA_VideoPrimaries m_forceVideoPrimaries;
-
-	IBasicVideo* m_basicVideo = nullptr;  // TODO: Use
 };

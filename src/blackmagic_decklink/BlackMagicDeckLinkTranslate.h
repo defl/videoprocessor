@@ -23,7 +23,7 @@ Encoding TranslateEncoding(BMDDetectedVideoInputFormatFlags detectedVideoInputFo
 
 BitDepth TranslateBithDepth(BMDDetectedVideoInputFormatFlags detectedVideoInputFormatFlagsValue);
 
-VideoFrameEncoding Translate(BMDPixelFormat);
+VideoFrameEncoding Translate(BMDPixelFormat, ColorSpace);
 
 EOTF TranslateEOTF(LONGLONG electroOpticalTransferFuncValue);
 

@@ -112,7 +112,7 @@ void DirectShowGenericVideoRenderer::MediaTypeGenerate()
 	pvi->bmiHeader.biBitCount = bitCount;
 	pvi->bmiHeader.biCompression = m_pmt.subtype.Data1;
 	pvi->bmiHeader.biWidth = m_videoState->displayMode->FrameWidth();
-	pvi->bmiHeader.biHeight = ((long)m_videoState->displayMode->FrameHeight());  // TODO: We're not handling inverse here
+	pvi->bmiHeader.biHeight = ((long)m_videoState->displayMode->FrameHeight());  // We're not handling inverse here, still seems to "just work"
 	pvi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	pvi->bmiHeader.biPlanes = 1;
 	pvi->bmiHeader.biClrImportant = 0;

@@ -47,14 +47,13 @@ struct IRendererCallback
 
 
 /**
- * TODO: Rename to IVideoRenderer
- * Renderer interface
+ * Video renderer interface
  */
-class IRenderer
+class IVideoRenderer
 {
 public:
 
-	virtual ~IRenderer() {}
+	virtual ~IVideoRenderer() {}
 
 	//
 	// Runtime

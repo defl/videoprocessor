@@ -11,7 +11,6 @@
 #include "version.h"
 
 // In release mode we don't accept dirty versions, sorry
-// TODO: This check does not work well with PGO builds, improve
 #ifndef _DEBUG
-//static_assert(!VERSION_DIRTY, "Version cannot be dirty in release builds");
+static_assert(!VERSION_DIRTY, "Version cannot be dirty in release builds");
 #endif
