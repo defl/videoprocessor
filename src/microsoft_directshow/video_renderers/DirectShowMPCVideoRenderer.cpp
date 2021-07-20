@@ -15,7 +15,7 @@
 #include <guid.h>
 #include <CNoopVideoFrameFormatter.h>
 #include <CV210toP010VideoFrameFormatter.h>
-
+#include <CV210toP210VideoFrameFormatter.h>
 #include <microsoft_directshow/DirectShowTranslations.h>
 #include <ffmpeg/CFFMpegDecoderVideoFrameFormatter.h>
 
@@ -160,13 +160,6 @@ void DirectShowMPCVideoRenderer::MediaTypeGenerate()
 		mediaSubType = MEDIASUBTYPE_P010;
 		bitCount = 10;
 		m_videoFramFormatter = new CV210toP010VideoFrameFormatter();
-
-		//mediaSubType = MEDIASUBTYPE_P010;
-		//bitCount = 10;
-
-		//m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
-		//	AV_CODEC_ID_V210,
-		//	AV_PIX_FMT_P010);
 	}
 
 	// Default conversions
@@ -177,13 +170,9 @@ void DirectShowMPCVideoRenderer::MediaTypeGenerate()
 			// v210 to p210
 		case VideoFrameEncoding::V210:
 
-			mediaSubType = MEDIASUBTYPE_RGB0;
-			bitCount = 48;
-			heightMultiplier = -1;
-
-			m_videoFramFormatter = new CFFMpegDecoderVideoFrameFormatter(
-				AV_CODEC_ID_V210,
-				AV_PIX_FMT_RGB48LE);
+			mediaSubType = MEDIASUBTYPE_P210;
+			bitCount = 10;
+			m_videoFramFormatter = new CV210toP210VideoFrameFormatter();
 			break;
 
 			// r210 to RGB48

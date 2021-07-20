@@ -638,6 +638,7 @@
     <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.h" />
     <ClInclude Include="CColorStatic.h" />
     <ClInclude Include="CV210toP010VideoFrameFormatter.h" />
+    <ClInclude Include="CV210toP210VideoFrameFormatter.h" />
     <ClInclude Include="HDRData.h" />
     <ClInclude Include="ITimingClock.h" />
     <ClInclude Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.h" />
@@ -707,6 +708,7 @@
     <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.cpp" />
     <ClCompile Include="CColorStatic.cpp" />
     <ClCompile Include="CV210toP010VideoFrameFormatter.cpp" />
+    <ClCompile Include="CV210toP210VideoFrameFormatter.cpp" />
     <ClCompile Include="IRenderer.cpp" />
     <ClCompile Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.cpp" />
     <ClCompile Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.cpp" />

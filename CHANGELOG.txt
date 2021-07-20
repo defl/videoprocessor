@@ -1,7 +1,11 @@
+0.4.0-beta3
+- Added V210 to P210 converter for general MPCVR YUV422 duty
+
 0.4.0-beta2
 - HDR support for MPC Video Renderer (only for non-rgb formats, rest not yet supported by renderer)
 - Fast v210 to p010 encoder which makes rendering times acceptable
 - Fix for bad missed frame count and drops
+- known issue: using r210 input with MPCVR is slow as it performs poorly and does not enable HDR, use the v210 to p010 conversion for testing
 
 0.4.0-beta1
 - Option to force YCbCr422 (v210) to YCbCr420 (p010) to undo DeckLink conversion so that the renderer can do the upscaling
