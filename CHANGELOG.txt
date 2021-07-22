@@ -1,4 +1,8 @@
-next (0.4.0: Upscaling, added MPCVR renderer, HDR controls)
+0.4.1
+- Fix for interlaced sources
+
+0.4.0: Upscaling, added MPCVR renderer, HDR controls
+- re-release of beta3
 
 0.4.0-beta3
 - Added V210 to P210 converter for general MPCVR YUV422 duty

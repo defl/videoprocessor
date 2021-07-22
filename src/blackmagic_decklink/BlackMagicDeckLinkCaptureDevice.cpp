@@ -535,6 +535,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 		m_previousTimingClockFrameTime = timingClockFrameTime;
 
 		// Every every so often get the hardware latency.
+		// TODO: Change to framerate rather than fixed number of frames
 		if(m_capturedVideoFrameCount % 20 == 0)
 		{
 			timingclocktime_t timingClockNow = TimingClockNow();

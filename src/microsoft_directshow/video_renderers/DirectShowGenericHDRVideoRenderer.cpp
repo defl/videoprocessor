@@ -212,6 +212,9 @@ void DirectShowGenericHDRVideoRenderer::MediaTypeGenerate()
 	pvi2->dwControlFlags += AMCONTROL_USED;
 	pvi2->dwControlFlags += AMCONTROL_COLORINFO_PRESENT;
 
+	if (m_videoState->displayMode->IsInterlaced())
+		pvi2->dwInterlaceFlags = AMINTERLACE_IsInterlaced | AMINTERLACE_DisplayModeBobOrWeave;
+
 	m_pmt.lSampleSize = DIBSIZE(pvi2->bmiHeader);
 }
 

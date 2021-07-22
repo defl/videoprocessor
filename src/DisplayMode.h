@@ -34,6 +34,7 @@ public:
 	DisplayMode(
 		unsigned int frameWidth,
 		unsigned int frameHeight,
+		bool interlaced,  // Two field per frame expected
 		unsigned int timeScale,
 		unsigned int frameDuration);
 
@@ -48,6 +49,10 @@ public:
 
 	// Ticks per frame (expressed in TimeScale())
 	unsigned int FrameDuration() const { return m_frameDuration; }
+
+	// Frame contains interlaced data
+	bool IsInterlaced() const { return m_interlaced; }
+
 
 	// Refresh rate in Hz as double
 	double RefreshRateHz() const;
@@ -65,6 +70,7 @@ private:
 
 	const unsigned int m_frameWidth;
 	const unsigned int m_frameHeight;
+	const bool m_interlaced;
 	const unsigned int m_timeScale;
 	const unsigned int m_frameDuration;
 };

@@ -13,6 +13,7 @@
 
 
 // (Color space) encoding of the signal
+// TODO: Rename me to something more understandable and fix line above here so give more details
 enum class Encoding
 {
 	UNKNOWN,

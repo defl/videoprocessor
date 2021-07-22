@@ -14,10 +14,12 @@
 DisplayMode::DisplayMode(
 	unsigned int frameWidth,
 	unsigned int frameHeight,
+	bool interlaced,
 	unsigned int timeScale,
 	unsigned int frameDuration):
 	m_frameWidth(frameWidth),
 	m_frameHeight(frameHeight),
+	m_interlaced(interlaced),
 	m_timeScale(timeScale),
 	m_frameDuration(frameDuration)
 {
@@ -54,6 +56,11 @@ CString DisplayMode::ToString() const
 	// Resolutiion
 	s.AppendFormat(_T("%ix%i"), m_frameWidth, m_frameHeight);
 
+	if (m_interlaced)
+		s += TEXT("I ");  // Interlaced
+	else
+		s += TEXT("P ");  // Progressive
+
 	// Mode name if well-known
 	// https://en.wikipedia.org/wiki/List_of_common_resolutions
 	if (m_frameWidth == 1280 && m_frameHeight == 720)
@@ -84,7 +91,8 @@ bool DisplayMode::operator == (const DisplayMode& other) const
 		FrameWidth() == other.FrameWidth() &&
 		FrameHeight() == other.FrameHeight() &&
 		TimeScale() == other.TimeScale() &&
-		FrameDuration() == other.FrameDuration();
+		FrameDuration() == other.FrameDuration() &&
+		IsInterlaced() == other.IsInterlaced();
 }
 
 

@@ -294,12 +294,14 @@ DisplayModeSharedPtr Translate(BMDDisplayMode displayMode)
 	if(it == BD_DISPLAY_MODE_DATA.end())
 		throw std::runtime_error("Unknown BMDDisplayMode");
 
-	if (it->second.fieldsPerFrame != 1)
-		throw std::runtime_error("Interlaced format, not supported");
+	assert(
+		it->second.fieldsPerFrame == 1 ||
+		it->second.fieldsPerFrame == 2);
 
 	return std::make_shared<DisplayMode>(
 		it->second.width,
 		it->second.height,
+		(it->second.fieldsPerFrame == 2),  // Interlaced?
 		(unsigned int)it->second.timeScale,
 		(unsigned int)it->second.frameDuration);
 }
