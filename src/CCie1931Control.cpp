@@ -8,6 +8,8 @@
 
 #include <stdafx.h>
 
+#include <cmath>
+
 #include <resource.h>
 #include <cie.h>
 
