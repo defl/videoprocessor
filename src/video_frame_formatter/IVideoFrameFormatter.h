@@ -21,6 +21,8 @@ class IVideoFrameFormatter
 {
 public:
 
+	virtual ~IVideoFrameFormatter() {}
+
 	// New video state, must be called before FormatVideoFrame()
 	virtual void OnVideoState(VideoStateComPtr& videoState) = 0;
 

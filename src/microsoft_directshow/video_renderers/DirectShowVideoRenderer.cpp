@@ -181,6 +181,9 @@ void DirectShowVideoRenderer::Reset()
 
 void DirectShowVideoRenderer::OnSize()
 {
+	if (!m_videoWindow)
+		return;
+
 	// Get window size
 	RECT rectWindow;
 	if (!GetWindowRect(m_videoHwnd, &rectWindow))

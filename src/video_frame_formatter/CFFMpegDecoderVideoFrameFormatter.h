@@ -32,7 +32,7 @@ public:
 	CFFMpegDecoderVideoFrameFormatter(
 		AVCodecID inputCodecId,
 		AVPixelFormat targetPixelFormat);
-	~CFFMpegDecoderVideoFrameFormatter();
+	virtual ~CFFMpegDecoderVideoFrameFormatter();
 
 	// IVideoFrameFormatter
 	void OnVideoState(VideoStateComPtr& videoState) override;

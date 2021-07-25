@@ -21,6 +21,8 @@ class CV210toP010VideoFrameFormatter:
 {
 public:
 
+	virtual ~CV210toP010VideoFrameFormatter() {}
+
 	// IVideoFrameFormatter
 	void OnVideoState(VideoStateComPtr& videoState) override;
 	bool FormatVideoFrame(const VideoFrame& inFrame, BYTE* outBuffer) override;

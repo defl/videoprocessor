@@ -20,6 +20,8 @@ class CNoopVideoFrameFormatter:
 {
 public:
 
+	virtual ~CNoopVideoFrameFormatter() {}
+
 	// IVideoFrameFormatter
 	void OnVideoState(VideoStateComPtr& videoState) override;
 	bool FormatVideoFrame(const VideoFrame& inFrame, BYTE* outBuffer) override;
