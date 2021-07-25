@@ -15,7 +15,7 @@
 #include <IRenderer.h>
 #include <PixelValueRange.h>
 #include <VideoState.h>
-#include <IVideoFrameFormatter.h>
+#include <video_frame_formatter/IVideoFrameFormatter.h>
 #include <ITimingClock.h>
 #include <VideoConversionOverride.h>
 #include <microsoft_directshow/live_source_filter/CLiveSource.h>

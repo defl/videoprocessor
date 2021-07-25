@@ -2,8 +2,11 @@ Roadmap
 =======
 
 1.0.0: Out of beta
-- internal: Put formatters under a nice abstration
+- bug: white screen crash at end of play
+- see if we can do frame formatting before queueing (own thread?)
 - internal: Make generic SDR and HDR directshow filter abstrations
+- fixme: 480p60/576p50 signals crash VP -> unsupported range probably, decklink throws but that's not shown, need better mechanism for this
+- clean up TODOs
 
 1.1.0: Constant time delay
 - Determine baseline latency with external meter
@@ -38,3 +41,4 @@ Stuff & ideas to do for later:
 - If the CAM thread throws that's never shown, make errors visible
 - Replace GDI drawing with MFC
 - Make a CIE1931 diagram with the pixels painted into it once a sec or so to see if the video actually getting near it's stated performance (https://www.drastic.tv/productsmenu-56/test-and-measurement/4kscope)
+- If a source is SDR change the EDID to be 1080 (as this is likely a native 1080 source), if it's HDR allow everything including to 4k. Switchable behaviour. DeckLink can't do this but an HDFury might be able to. Investigate.

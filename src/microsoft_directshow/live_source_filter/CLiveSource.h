@@ -12,7 +12,7 @@
 #include <streams.h>
 
 #include <VideoState.h>
-#include <IVideoFrameFormatter.h>
+#include <video_frame_formatter/IVideoFrameFormatter.h>
 #include <microsoft_directshow/DirectShowRendererStartStopTimeMethod.h>
 
 #include "ILiveSource.h"

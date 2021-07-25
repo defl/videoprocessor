@@ -9,14 +9,13 @@
 #pragma once
 
 
-#include <IVideoFrameFormatter.h>
+#include <video_frame_formatter/IVideoFrameFormatter.h>
 
 
  /**
-  * Video frame formatter which reads V210 and write to P210
-  * (packed to planar conversion)
+  * Video frame formatter which simply does a direct copy
   */
-class CV210toP210VideoFrameFormatter:
+class CNoopVideoFrameFormatter:
 	public IVideoFrameFormatter
 {
 public:
@@ -27,6 +26,5 @@ public:
 	LONG GetOutFrameSize() const override;
 
 private:
-	uint32_t m_height = 0;
-	uint32_t m_width = 0;
+	int m_bytesPerVideoFrame = 0;
 };

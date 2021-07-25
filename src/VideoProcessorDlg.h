@@ -30,9 +30,10 @@
 #define WM_MESSAGE_CAPTURE_DEVICE_STATE_CHANGE	        (WM_APP + 3)
 #define WM_MESSAGE_CAPTURE_DEVICE_VIDEO_STATE_CHANGE	(WM_APP + 4)
 #define WM_MESSAGE_CAPTURE_DEVICE_CARD_STATE_CHANGE		(WM_APP + 5)
-#define WM_MESSAGE_DIRECTSHOW_NOTIFICATION              (WM_APP + 6)
-#define WM_MESSAGE_RENDERER_STATE_CHANGE                (WM_APP + 7)
-#define WM_MESSAGE_RENDERER_DETAIL_STRING               (WM_APP + 8)
+#define WM_MESSAGE_CAPTURE_DEVICE_ERROR					(WM_APP + 6)
+#define WM_MESSAGE_DIRECTSHOW_NOTIFICATION              (WM_APP + 7)
+#define WM_MESSAGE_RENDERER_STATE_CHANGE                (WM_APP + 8)
+#define WM_MESSAGE_RENDERER_DETAIL_STRING               (WM_APP + 9)
 
 
 /**
@@ -60,8 +61,9 @@ public:
 	// UI-related handlers
 	afx_msg void OnCaptureDeviceSelected();
 	afx_msg void OnCaptureInputSelected();
+	afx_msg void OnBnClickedCaptureRestart();
 	afx_msg void OnBnClickedTimingClockFrameOffsetAutoCheck();
-	afx_msg void OnColorSpaceContainerPresetSelected();
+	afx_msg void OnColorSpaceContainerSelected();
 	afx_msg void OnHdrColorSpaceSelected();
 	afx_msg void OnHdrLuminanceSelected();
 	afx_msg void OnRendererSelected();
@@ -83,6 +85,7 @@ public:
 	afx_msg LRESULT OnMessageCaptureDeviceStateChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnMessageCaptureDeviceCardStateChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnMessageCaptureDeviceVideoStateChange(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnMessageCaptureDeviceError(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnMessageDirectShowNotification(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnMessageRendererStateChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnMessageRendererDetailString(WPARAM wParam, LPARAM lParam);
@@ -101,6 +104,7 @@ public:
 	void OnCaptureDeviceCardStateChange(CaptureDeviceCardStateComPtr cardState) override;
 	void OnCaptureDeviceVideoStateChange(VideoStateComPtr videoState) override;
 	void OnCaptureDeviceVideoFrame(VideoFrame& videoFrame) override;
+	void OnCaptureDeviceError(const CString& error) override;
 
 	// IRendererCallback
 	void OnRendererState(RendererState rendererState) override;
@@ -116,6 +120,7 @@ protected:
 	CComboBox m_captureDeviceCombo;
 	CComboBox m_captureInputCombo;
 	CStatic m_captureDeviceStateText;
+	CButton m_captureDeviceRestartButton;
 	CListBox m_captureDeviceOtherList;
 
 	// Input group

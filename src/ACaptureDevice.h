@@ -87,7 +87,8 @@ enum CaptureDeviceState
 	// by clients when they are expecting a callback for example
 	CAPTUREDEVICESTATE_UNKNOWN,
 	CAPTUREDEVICESTATE_STARTING,
-	CAPTUREDEVICESTATE_STOPPING
+	CAPTUREDEVICESTATE_STOPPING,
+	CAPTUREDEVICESTATE_FAILED
 };
 
 
@@ -103,21 +104,24 @@ public:
 
 	// Capture card state
 	// WARNING: Often, but not always, called from some internal capture card thread!
-	virtual void OnCaptureDeviceState(CaptureDeviceState state) = 0;
+	virtual void OnCaptureDeviceState(CaptureDeviceState) = 0;
 
 	// Capture device is signalling that the card state changed. This does not need to impact video.
 	// WARNING: Most likely to be called from some internal capture card thread!
-	virtual void OnCaptureDeviceCardStateChange(CaptureDeviceCardStateComPtr cardState) = 0;
+	virtual void OnCaptureDeviceCardStateChange(CaptureDeviceCardStateComPtr) = 0;
 
 	// Capture device is signalling that the available video state changed
 	// WARNING: Most likely to be called from some internal capture card thread!
-	virtual void OnCaptureDeviceVideoStateChange(VideoStateComPtr videoState) = 0;
+	virtual void OnCaptureDeviceVideoStateChange(VideoStateComPtr) = 0;
 
 	// Frame has arrived
 	// This is guaranteed to be called after OnCaptureDeviceVideoStateChange() so that the renderer
 	// will know what to do with the data.
 	// WARNING: Most likely to be called from some internal capture card thread!
 	virtual void OnCaptureDeviceVideoFrame(VideoFrame&) = 0;
+
+	// Error occurred, the capture will be stopped
+	virtual void OnCaptureDeviceError(const CString&) = 0;
 };
 
 

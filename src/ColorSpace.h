@@ -34,3 +34,5 @@ double ColorSpaceToCie1931GreenX(ColorSpace);
 double ColorSpaceToCie1931GreenY(ColorSpace);
 double ColorSpaceToCie1931BlueX(ColorSpace);
 double ColorSpaceToCie1931BlueY(ColorSpace);
+double ColorSpaceToCie1931WpX(ColorSpace);
+double ColorSpaceToCie1931WpY(ColorSpace);

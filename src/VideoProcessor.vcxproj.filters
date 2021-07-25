@@ -16,12 +16,6 @@
     <Filter Include="Project files">
       <UniqueIdentifier>{6fb71771-7d4f-4744-988f-f4dd47fe7176}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\ffmpeg">
-      <UniqueIdentifier>{b93e7145-46a8-417b-8857-53dd88c0bfa1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\ffmpeg">
-      <UniqueIdentifier>{baa50189-d57c-402f-a878-3519da21e837}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\blackmagic_decklink">
       <UniqueIdentifier>{82f518ac-3c6c-40bc-8322-80199b2cb3a7}</UniqueIdentifier>
     </Filter>
@@ -48,6 +42,12 @@
     </Filter>
     <Filter Include="Header Files\microsoft_directshow\video_renderers">
       <UniqueIdentifier>{3fc1f7df-efb9-4f93-8f3f-ce0359ebd440}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\video_frame_formatter">
+      <UniqueIdentifier>{3ffdafb4-a6a4-40f8-8ff0-beee4d20838c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\video_frame_formatter">
+      <UniqueIdentifier>{045bae8b-1378-484a-aac6-86fc16b37d95}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -120,12 +120,6 @@
     <ClInclude Include="DisplayMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IVideoFrameFormatter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ffmpeg\CFFMpegDecoderVideoFrameFormatter.h">
-      <Filter>Header Files\ffmpeg</Filter>
-    </ClInclude>
     <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.h">
       <Filter>Header Files\blackmagic_decklink</Filter>
     </ClInclude>
@@ -143,9 +137,6 @@
     </ClInclude>
     <ClInclude Include="microsoft_directshow\live_source_filter\ILiveSource.h">
       <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
-    </ClInclude>
-    <ClInclude Include="CNoopVideoFrameFormatter.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WallClock.h">
       <Filter>Header Files</Filter>
@@ -207,10 +198,22 @@
     <ClInclude Include="CColorStatic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CV210toP010VideoFrameFormatter.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="video_frame_formatter\CV210toP210VideoFrameFormatter.h">
+      <Filter>Header Files\video_frame_formatter</Filter>
     </ClInclude>
-    <ClInclude Include="CV210toP210VideoFrameFormatter.h">
+    <ClInclude Include="video_frame_formatter\CV210toP010VideoFrameFormatter.h">
+      <Filter>Header Files\video_frame_formatter</Filter>
+    </ClInclude>
+    <ClInclude Include="video_frame_formatter\IVideoFrameFormatter.h">
+      <Filter>Header Files\video_frame_formatter</Filter>
+    </ClInclude>
+    <ClInclude Include="video_frame_formatter\CNoopVideoFrameFormatter.h">
+      <Filter>Header Files\video_frame_formatter</Filter>
+    </ClInclude>
+    <ClInclude Include="video_frame_formatter\CFFMpegDecoderVideoFrameFormatter.h">
+      <Filter>Header Files\video_frame_formatter</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -278,9 +281,6 @@
     <ClCompile Include="FullscreenVideoWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ffmpeg\CFFMpegDecoderVideoFrameFormatter.cpp">
-      <Filter>Source Files\ffmpeg</Filter>
-    </ClCompile>
     <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.cpp">
       <Filter>Source Files\blackmagic_decklink</Filter>
     </ClCompile>
@@ -295,9 +295,6 @@
     </ClCompile>
     <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSource.cpp">
       <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
-    </ClCompile>
-    <ClCompile Include="CNoopVideoFrameFormatter.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WallClock.cpp">
       <Filter>Source Files</Filter>
@@ -356,10 +353,19 @@
     <ClCompile Include="CColorStatic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CV210toP010VideoFrameFormatter.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="video_frame_formatter\CV210toP210VideoFrameFormatter.cpp">
+      <Filter>Source Files\video_frame_formatter</Filter>
     </ClCompile>
-    <ClCompile Include="CV210toP210VideoFrameFormatter.cpp">
+    <ClCompile Include="video_frame_formatter\CV210toP010VideoFrameFormatter.cpp">
+      <Filter>Source Files\video_frame_formatter</Filter>
+    </ClCompile>
+    <ClCompile Include="video_frame_formatter\CNoopVideoFrameFormatter.cpp">
+      <Filter>Source Files\video_frame_formatter</Filter>
+    </ClCompile>
+    <ClCompile Include="video_frame_formatter\CFFMpegDecoderVideoFrameFormatter.cpp">
+      <Filter>Source Files\video_frame_formatter</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

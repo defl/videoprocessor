@@ -13,11 +13,12 @@
 
 #include <FilterInterfaces.h>
 #include <guid.h>
-#include <CNoopVideoFrameFormatter.h>
-#include <CV210toP010VideoFrameFormatter.h>
-#include <CV210toP210VideoFrameFormatter.h>
+#include <video_frame_formatter/CNoopVideoFrameFormatter.h>
+#include <video_frame_formatter/CV210toP010VideoFrameFormatter.h>
+#include <video_frame_formatter/CV210toP210VideoFrameFormatter.h>
+#include <video_frame_formatter/CFFMpegDecoderVideoFrameFormatter.h>
 #include <microsoft_directshow/DirectShowTranslations.h>
-#include <ffmpeg/CFFMpegDecoderVideoFrameFormatter.h>
+
 
 #include "DirectShowMPCVideoRenderer.h"
 
@@ -201,7 +202,7 @@ void DirectShowMPCVideoRenderer::MediaTypeGenerate()
 			// No conversion needed
 		default:
 			mediaSubType = TranslateToMediaSubType(m_videoState->videoFrameEncoding);
-			bitCount = VideoFrameEncodingBitsPerPixel(m_videoState->videoFrameEncoding);;
+			bitCount = VideoFrameEncodingBitsPerPixel(m_videoState->videoFrameEncoding);
 
 			m_videoFramFormatter = new CNoopVideoFrameFormatter();
 		}

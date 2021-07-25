@@ -1,3 +1,9 @@
+next
+- experimental support for handling HDFury LLDV
+- added handlers for displaying capture device errors to the user
+- internal: Put formatters together
+- Added button to restart capture device
+
 0.4.1
 - Fix for interlaced sources
 

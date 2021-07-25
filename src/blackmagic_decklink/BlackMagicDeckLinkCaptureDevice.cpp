@@ -12,9 +12,11 @@
 #pragma warning(disable : 26812)  // class enum over class in BM API
 
 #include <set>
+#include <math.h>
 
 #include <blackmagic_decklink/BlackMagicDeckLinkTranslate.h>
 #include <cie.h>
+#include <StringUtils.h>
 #include <WallClock.h>
 
 #include "BlackMagicDeckLinkCaptureDevice.h"
@@ -219,6 +221,23 @@ void BlackMagicDeckLinkCaptureDevice::StartCapture()
 	displayMode.Release();
 
 	//
+	// Reset stats
+	//
+
+	m_capturedVideoFrameCount = 0;
+	m_missedVideoFrameCount = 0;
+
+
+	//
+	// Push current known state, it might be in the
+	// right state already so that there never will be
+	// a change.
+	//
+
+	SendCardStateCallback();
+
+
+	//
 	// Start the capture
 	//
 
@@ -339,7 +358,11 @@ void BlackMagicDeckLinkCaptureDevice::SetFrameOffsetMs(int frameOffsetMs)
 timingclocktime_t BlackMagicDeckLinkCaptureDevice::TimingClockNow()
 {
 	assert(m_deckLinkInput);
-	assert(m_state == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING);  // Might be too strict
+
+	assert(m_outputCaptureData.load(std::memory_order_acquire));
+	assert(
+		m_state == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING ||
+		m_state == CaptureDeviceState::CAPTUREDEVICESTATE_READY );  // TODO: We will also get called if we're ready not sure if we want to be more strict on this and not allow it + tighten up state machine
 
 	BMDTimeValue currentTimeTicks;
 	IF_NOT_S_OK(m_deckLinkInput->GetHardwareReferenceClock(
@@ -424,11 +447,22 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 			bmdPixelFormat = bmdFormat8BitYUV;
 		else if (detectedSignalFlags & bmdDetectedVideoInput10BitDepth)
 			bmdPixelFormat = bmdFormat10BitYUV;
+		else if (detectedSignalFlags & bmdDetectedVideoInput12BitDepth)
+		{
+			Error(TEXT("DeckLink does not support YCbCr422 12bit input"));
+			return E_FAIL;
+		}
 		else
-			throw std::runtime_error("Unknown pixel format for YCbCr422");
+		{
+			Error(TEXT("Unknown bit depth for YCbCr422"));
+			return E_FAIL;
+		}
 	}
 	else
-		throw std::runtime_error("Unknown video input");
+	{
+		Error(TEXT("Failed to determine input (not RGB or YCbCr422)"));
+		return E_FAIL;
+	}
 
 	//
 	// Things changed and we will stop current capture and restart.
@@ -451,8 +485,8 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 		m_ticksPerFrame = (timingclocktime_t)round((1.0 / FPS(m_bmdDisplayMode)) * TimingClockTicksPerSecond());
 
 		// Inform callback handlers that stream will be invalid before re-starting
-		// Must be locked!
-		SendVideoStateCallback();
+		if (!SendVideoStateCallback())
+			return E_FAIL;
 
 		//
 		// Restart stream with new input mode
@@ -461,7 +495,9 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 		{
 			m_deckLinkInput.Release();
 			m_deckLinkInput = nullptr;
-			throw std::runtime_error("Failed to stop streams");
+
+			Error(TEXT("Failed to stop streams"));
+			return E_FAIL;
 		}
 
 		// Set the video input mode
@@ -474,7 +510,9 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 
 			m_deckLinkInput.Release();
 			m_deckLinkInput = nullptr;
-			throw std::runtime_error("Failed to set video input");
+
+			Error(TEXT("Failed to set video input"));
+			return E_FAIL;
 		}
 
 		// Start the capture
@@ -484,7 +522,9 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFormatChang
 
 			m_deckLinkInput.Release();
 			m_deckLinkInput = nullptr;
-			throw std::runtime_error("Failed to start stream");
+
+			Error(TEXT("Failed to start stream"));
+			return E_FAIL;
 		}
 
 		DbgLog((LOG_TRACE, 1, TEXT("BlackMagicDeckLinkCaptureDevice::VideoInputFormatChanged(): restart success")));
@@ -504,8 +544,9 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 	if (!m_outputCaptureData.load(std::memory_order_acquire))
 		return S_OK;
 
+	// TODO: This smells like a poor state machine, how can we be here if m_outputCaptureData is false?
 	if (m_bmdDisplayMode == BMD_DISPLAY_MODE_INVALID)
-		return -1;
+		return S_OK;
 
 	bool videoStateChanged = false;
 
@@ -517,7 +558,10 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 
 		// Get timestamp
 		IF_NOT_S_OK(videoFrame->GetHardwareReferenceTimestamp(TimingClockTicksPerSecond(), &timingClockFrameTime, nullptr))
-			throw std::runtime_error("Could not get the video frame hardware timestamp");
+		{
+			Error(TEXT("Failed to get video frame hardware timestamp"));
+			return E_FAIL;
+		}
 
 		// Figure out how many frames fit in the interval
 		if (m_previousTimingClockFrameTime != TIMING_CLOCK_TIME_INVALID)
@@ -529,7 +573,7 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 			assert(frames >= 0);
 
 			m_capturedVideoFrameCount += frames;
-			m_missedVideoFrameCount += (frames - 1);
+			m_missedVideoFrameCount += std::max((frames - 1), 0);
 		}
 
 		m_previousTimingClockFrameTime = timingClockFrameTime;
@@ -739,7 +783,10 @@ HRESULT STDMETHODCALLTYPE BlackMagicDeckLinkCaptureDevice::VideoInputFrameArrive
 		}
 
 		if (videoStateChanged)
-			SendVideoStateCallback();
+		{
+			if (!SendVideoStateCallback())
+				return E_FAIL;
+		}
 
 		void* data;
 		if (FAILED(videoFrame->GetBytes(&data)))
@@ -874,7 +921,7 @@ void BlackMagicDeckLinkCaptureDevice::ResetVideoState()
 }
 
 
-void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
+bool BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
 {
 	// WARNING: Called from some internal capture card thread!
 
@@ -896,43 +943,57 @@ void BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
 	// Build and send reply
 	//
 
-	VideoStateComPtr videoState = new VideoState();
-	if (!videoState)
-		throw std::runtime_error("Failed to alloc VideoStateComPtr");
-
-	// Not valid, don't send
-	if (!hasValidVideoState)
+	try
 	{
-		videoState->valid = false;
-	}
-	// Valid state, send
-	else
-	{
-		assert(m_videoFrameSeen);
-		assert(m_videoHasInputSource);
-		assert(m_bmdPixelFormat != BMD_PIXEL_FORMAT_INVALID);
-		assert(m_bmdDisplayMode != BMD_DISPLAY_MODE_INVALID);
-		assert(m_videoEotf != BMD_EOTF_INVALID);
-		assert(m_videoColorSpace != BMD_EOTF_INVALID);
 
-		videoState->valid = true;
-		videoState->displayMode = Translate(m_bmdDisplayMode);
-		videoState->eotf = TranslateEOTF(m_videoEotf);
-		videoState->colorspace = Translate(
-			(BMDColorspace)m_videoColorSpace,
-			videoState->displayMode->FrameHeight());
-		videoState->invertedVertical = m_videoInvertedVertical;
-		videoState->videoFrameEncoding = Translate(m_bmdPixelFormat, videoState->colorspace);
+		VideoStateComPtr videoState = new VideoState();
+		if (!videoState)
+			throw std::runtime_error("Failed to alloc VideoStateComPtr");
 
-		// Build a fresh copy of the HDR data if valid
-		if (hasValidHdrData)
+		// Not valid, don't send
+		if (!hasValidVideoState)
 		{
-			videoState->hdrData = std::make_shared<HDRData>();
-			*(videoState->hdrData) = m_videoHdrData;
+			videoState->valid = false;
 		}
+		// Valid state, send
+		else
+		{
+			assert(m_videoFrameSeen);
+			assert(m_videoHasInputSource);
+			assert(m_bmdPixelFormat != BMD_PIXEL_FORMAT_INVALID);
+			assert(m_bmdDisplayMode != BMD_DISPLAY_MODE_INVALID);
+			assert(m_videoEotf != BMD_EOTF_INVALID);
+			assert(m_videoColorSpace != BMD_EOTF_INVALID);
+
+			videoState->valid = true;
+			videoState->displayMode = Translate(m_bmdDisplayMode);
+			videoState->eotf = TranslateEOTF(m_videoEotf);
+			videoState->colorspace = Translate(
+				(BMDColorspace)m_videoColorSpace,
+				videoState->displayMode->FrameHeight());
+			videoState->invertedVertical = m_videoInvertedVertical;
+			videoState->videoFrameEncoding = Translate(m_bmdPixelFormat, videoState->colorspace);
+
+			// Build a fresh copy of the HDR data if valid
+			if (hasValidHdrData)
+			{
+				videoState->hdrData = std::make_shared<HDRData>();
+				*(videoState->hdrData) = m_videoHdrData;
+			}
+		}
+
+		m_callback->OnCaptureDeviceVideoStateChange(videoState);
+	}
+	catch (const std::runtime_error& e)
+	{
+		wchar_t* ew = ToString(e.what());
+		Error(ew);
+		delete[] ew;
+
+		return false;
 	}
 
-	m_callback->OnCaptureDeviceVideoStateChange(videoState);
+	return true;
 }
 
 
@@ -1001,6 +1062,17 @@ void BlackMagicDeckLinkCaptureDevice::UpdateState(CaptureDeviceState state)
 
 	if (m_callback)
 		m_callback->OnCaptureDeviceState(state);
+}
+
+
+void BlackMagicDeckLinkCaptureDevice::Error(const CString& error)
+{
+	// WARNING: Can be called from any thread.
+
+	if (m_callback)
+		m_callback->OnCaptureDeviceError(error);
+
+	// TODO: Stop capture and return error state?
 }
 
 

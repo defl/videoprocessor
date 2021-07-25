@@ -18,7 +18,7 @@ extern "C"
 	#include <libavcodec/avcodec.h>
 }
 
-#include <IVideoFrameFormatter.h>
+#include <video_frame_formatter/IVideoFrameFormatter.h>
 
 
  /**

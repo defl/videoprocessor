@@ -72,6 +72,9 @@ const TCHAR* ToString(const CaptureDeviceState eotf)
 
 	case CaptureDeviceState::CAPTUREDEVICESTATE_STOPPING:
 		return TEXT("Stopping");
+
+	case CaptureDeviceState::CAPTUREDEVICESTATE_FAILED:
+		return TEXT("Failed");
 	}
 
 	throw std::runtime_error("CaptureDeviceState ToString() failed, value not recognized");

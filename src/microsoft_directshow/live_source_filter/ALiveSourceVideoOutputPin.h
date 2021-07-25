@@ -9,7 +9,7 @@
 #pragma once
 
 
-#include <IVideoFrameFormatter.h>
+#include <video_frame_formatter/IVideoFrameFormatter.h>
 #include <microsoft_directshow/DirectShowRendererStartStopTimeMethod.h>
 #include <microsoft_directshow/DirectShowDefines.h>
 

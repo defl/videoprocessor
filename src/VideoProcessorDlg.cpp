@@ -16,6 +16,7 @@
 #include <cie.h>
 #include <VideoConversionOverride.h>
 #include <resource.h>
+#include <StringUtils.h>
 #include <VideoProcessorApp.h>
 #include <microsoft_directshow/video_renderers/DirectShowVideoRenderers.h>
 #include <microsoft_directshow/video_renderers/DirectShowMPCVideoRenderer.h>
@@ -46,8 +47,9 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	// UI element messages
 	ON_CBN_SELCHANGE(IDC_CAPTURE_DEVICE_COMBO, &CVideoProcessorDlg::OnCaptureDeviceSelected)
 	ON_CBN_SELCHANGE(IDC_CAPTURE_INPUT_COMBO, &CVideoProcessorDlg::OnCaptureInputSelected)
+	ON_BN_CLICKED(IDC_CAPTURE_RESTART_BUTTON, &CVideoProcessorDlg::OnBnClickedCaptureRestart)
 	ON_BN_CLICKED(IDC_TIMING_CLOCK_FRAME_OFFSET_AUTO_CHECK, &CVideoProcessorDlg::OnBnClickedTimingClockFrameOffsetAutoCheck)
-	ON_CBN_SELCHANGE(IDC_COLORSPACE_CONTAINER_PRESET_COMBO, &CVideoProcessorDlg::OnColorSpaceContainerPresetSelected)
+	ON_CBN_SELCHANGE(IDC_COLORSPACE_CONTAINER_COMBO, &CVideoProcessorDlg::OnColorSpaceContainerSelected)
 	ON_CBN_SELCHANGE(IDC_HDR_COLORSPACE_COMBO, &CVideoProcessorDlg::OnHdrColorSpaceSelected)
 	ON_CBN_SELCHANGE(IDC_HDR_LUMINANCE_COMBO, &CVideoProcessorDlg::OnHdrLuminanceSelected)
 	ON_CBN_SELCHANGE(IDC_RENDERER_COMBO, &CVideoProcessorDlg::OnRendererSelected)
@@ -69,6 +71,7 @@ BEGIN_MESSAGE_MAP(CVideoProcessorDlg, CDialog)
 	ON_MESSAGE(WM_MESSAGE_CAPTURE_DEVICE_STATE_CHANGE, &CVideoProcessorDlg::OnMessageCaptureDeviceStateChange)
 	ON_MESSAGE(WM_MESSAGE_CAPTURE_DEVICE_CARD_STATE_CHANGE, &CVideoProcessorDlg::OnMessageCaptureDeviceCardStateChange)
 	ON_MESSAGE(WM_MESSAGE_CAPTURE_DEVICE_VIDEO_STATE_CHANGE, &CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange)
+	ON_MESSAGE(WM_MESSAGE_CAPTURE_DEVICE_ERROR, &CVideoProcessorDlg::OnMessageCaptureDeviceError)
 	ON_MESSAGE(WM_MESSAGE_DIRECTSHOW_NOTIFICATION, &CVideoProcessorDlg::OnMessageDirectShowNotification)
 	ON_MESSAGE(WM_MESSAGE_RENDERER_STATE_CHANGE, &CVideoProcessorDlg::OnMessageRendererStateChange)
 	ON_MESSAGE(WM_MESSAGE_RENDERER_DETAIL_STRING, &CVideoProcessorDlg::OnMessageRendererDetailString)
@@ -97,6 +100,7 @@ static const std::vector<std::pair<LPCTSTR, ColorSpace>> COLOLORSPACE_CONTAINER_
 enum class HdrColorspaceOptions
 {
 	HDR_COLORSPACE_FOLLOW_INPUT,
+	HDR_COLORSPACE_FOLLOW_INPUT_LLDV,
 	HDR_COLORSPACE_FOLLOW_CONTAINER,
 	HDR_COLORSPACE_BT2020,
 	HDR_COLORSPACE_P3,
@@ -106,25 +110,28 @@ enum class HdrColorspaceOptions
 
 static const std::vector<std::pair<LPCTSTR, HdrColorspaceOptions>> HDR_COLORSPACE_OPTIONS =
 {
-	std::make_pair(TEXT("Follow input"),     HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT),
-	std::make_pair(TEXT("Follow container"), HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_CONTAINER),
-	std::make_pair(TEXT("Force BT.2020"),    HdrColorspaceOptions::HDR_COLORSPACE_BT2020),
-	std::make_pair(TEXT("Force P3"),         HdrColorspaceOptions::HDR_COLORSPACE_P3),
-	std::make_pair(TEXT("Force REC709"),     HdrColorspaceOptions::HDR_COLORSPACE_REC709)
+	std::make_pair(TEXT("Follow input"),        HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT),
+	std::make_pair(TEXT("Follow input (LLDV)"), HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT_LLDV),
+	std::make_pair(TEXT("Follow container"),    HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_CONTAINER),
+	std::make_pair(TEXT("Force BT.2020"),       HdrColorspaceOptions::HDR_COLORSPACE_BT2020),
+	std::make_pair(TEXT("Force P3"),            HdrColorspaceOptions::HDR_COLORSPACE_P3),
+	std::make_pair(TEXT("Force REC709"),        HdrColorspaceOptions::HDR_COLORSPACE_REC709)
 };
 
 
 enum class HdrLuminanceOptions
 {
-	HDR_LUMINANCE_FOLLOW,
-	HDR_LUMINANCE_USER
+	HDR_LUMINANCE_FOLLOW_INPUT,
+	HDR_LUMINANCE_FOLLOW_INPUT_LLDV,
+	HDR_LUMINANCE_USER,
 };
 
 
 static const std::vector<std::pair<LPCTSTR, HdrLuminanceOptions>> HDR_LUMINANCE_OPTIONS =
 {
-	std::make_pair(TEXT("Follow input"), HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW),
-	std::make_pair(TEXT("user"), HdrLuminanceOptions::HDR_LUMINANCE_USER)
+	std::make_pair(TEXT("Follow input"),        HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW_INPUT),
+	std::make_pair(TEXT("Follow input (LLDV)"), HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW_INPUT_LLDV),
+	std::make_pair(TEXT("user"),                HdrLuminanceOptions::HDR_LUMINANCE_USER)
 };
 
 
@@ -300,6 +307,18 @@ void CVideoProcessorDlg::OnCaptureInputSelected()
 }
 
 
+void CVideoProcessorDlg::OnBnClickedCaptureRestart()
+{
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnBnClickedCaptureRestart()")));
+
+	if (m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_FAILED)
+		m_captureDeviceState = CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN;
+
+	m_wantToRestartCapture = true;
+	UpdateState();
+}
+
+
 void CVideoProcessorDlg::OnBnClickedTimingClockFrameOffsetAutoCheck()
 {
 	const bool checked = m_timingClockFrameOffsetAutoCheck.GetCheck();
@@ -308,7 +327,7 @@ void CVideoProcessorDlg::OnBnClickedTimingClockFrameOffsetAutoCheck()
 }
 
 
-void CVideoProcessorDlg::OnColorSpaceContainerPresetSelected()
+void CVideoProcessorDlg::OnColorSpaceContainerSelected()
 {
 	BuildPushRestartVideoState();
 }
@@ -481,8 +500,9 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(WPARAM wParam, LPA
 		return 0;
 
 	assert(newState != m_captureDeviceState);
-
 	m_captureDeviceState = newState;
+
+	bool enableButtons = false;
 
 	switch (newState)
 	{
@@ -493,11 +513,14 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(WPARAM wParam, LPA
 	case CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING:
 		m_captureDeviceStateText.SetWindowText(TEXT("Capturing"));
 		m_timingClockDescriptionText.SetWindowText(m_captureDevice->GetTimingClock()->TimingClockDescription());
+		enableButtons = true;
 		break;
 
 	default:
 		assert(false);
 	}
+
+	m_captureDeviceRestartButton.EnableWindow(enableButtons);
 
 	UpdateState();
 
@@ -575,6 +598,18 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 	}
 
 	UpdateState();
+
+	return 0;
+}
+
+
+LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceError(WPARAM wParam, LPARAM lParam)
+{
+	CString error(*(CString*)wParam);
+	delete (CString*)wParam;
+
+	// TODO: DO something with the error
+	::MessageBox(nullptr, error, TEXT("Capture error"), MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
 
 	return 0;
 }
@@ -776,6 +811,19 @@ void CVideoProcessorDlg::OnCaptureDeviceVideoFrame(VideoFrame& videoFrame)
 }
 
 
+void CVideoProcessorDlg::OnCaptureDeviceError(const CString& error)
+{
+	// WARNING: Most likely to be called from some internal capture card thread!
+
+	CString* postedError = new CString(error);
+
+	PostMessage(
+		WM_MESSAGE_CAPTURE_DEVICE_ERROR,
+		(WPARAM)postedError,
+		0);
+}
+
+
 void CVideoProcessorDlg::OnRendererState(RendererState rendererState)
 {
 	// Will be called synchronous as a response to our calls and hence does
@@ -806,8 +854,9 @@ void CVideoProcessorDlg::UpdateState()
 {
 	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::UpdateState()")));
 
-	// Want to change cards
-	if (m_desiredCaptureDevice != m_captureDevice)
+	// Want to change cards or want to restart capture
+	if (m_desiredCaptureDevice != m_captureDevice ||
+		m_wantToRestartCapture)
 	{
 		m_captureInputCombo.EnableWindow(FALSE);
 
@@ -835,9 +884,14 @@ void CVideoProcessorDlg::UpdateState()
 		if (m_captureDevice)
 			return;
 
+		// If this came from a desire to restart the capture, that ends now
+		if (m_wantToRestartCapture)
+			m_wantToRestartCapture = false;
+
 		// From this point on we should be clean, set up new card if so desired
 		assert(!m_videoRenderer);
 		assert(!m_captureDevice);
+		assert(!m_wantToRestartCapture);
 		assert(m_rendererState == RendererState::RENDERSTATE_UNKNOWN ||
 			   m_rendererState == RendererState::RENDERSTATE_FAILED);
 		assert(m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN);
@@ -974,7 +1028,7 @@ void CVideoProcessorDlg::UpdateState()
 		return;
 	}
 
-	// Somebody wants to restart rendering, allrighty then
+	// Somebody wants to restart rendering
 	if (m_rendererState == RendererState::RENDERSTATE_RENDERING &&
 		m_wantToRestartRenderer)
 	{
@@ -1371,12 +1425,9 @@ void CVideoProcessorDlg::RenderStart()
 			m_rendererStateText.SetWindowText(TEXT("Failed"));
 
 			// Show error in renderer box
-			size_t size = strlen(e.what()) + 1;
-			wchar_t* wtext = new wchar_t[size];
-			size_t outSize;
-			mbstowcs_s(&outSize, wtext, size, e.what(), size - 1);
-			m_windowedVideoWindow.SetWindowText(wtext);
-			delete[] wtext;
+			wchar_t* ew = ToString(e.what());
+			m_windowedVideoWindow.SetWindowText(ew);
+			delete[] ew;
 
 			// Ensure we're not full screen anymore and update state
 			m_rendererFullscreenCheck.SetCheck(FALSE);
@@ -1599,76 +1650,112 @@ bool CVideoProcessorDlg::BuildPushVideoState()
 	// Alterations
 	//
 
+	// The HDFury range of devices can be made to identify themselves as LLDV capable
+	// sinks, causing LLDV capable devices to output Dolby Vision LLDV, which is close to normal HDR.
+	// In that mode there will be no hdr block sent out but PQ and colorspace will be set.
+	const bool isHDFuryLLDV =
+		m_captureDeviceVideoState->colorspace == ColorSpace::BT_2020 &&
+		m_captureDeviceVideoState->eotf == EOTF::PQ &&
+		!m_captureDeviceVideoState->hdrData;
+
 	// Change container colorspace
 	int i = m_colorspaceContainerCombo.GetCurSel();
 	ColorSpace colorSpace = (ColorSpace)m_colorspaceContainerCombo.GetItemData(i);
 	if (colorSpace != ColorSpace::UNKNOWN)
 		videoState->colorspace = colorSpace;
 
-	if (videoState->hdrData)
+	// Change HDR primaries if requested
 	{
-		// Change HDR primaries if available and requested
-		{
-			ColorSpace newColorSpace = ColorSpace::UNKNOWN;
+		ColorSpace hdrColorSpace = ColorSpace::UNKNOWN;
 
-			i = m_hdrColorspaceCombo.GetCurSel();
-			switch ((HdrColorspaceOptions)m_hdrColorspaceCombo.GetItemData(i))
-			{
-				// No need to do anything
-			case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT:
-				break;
-
-				// Translate container's colorspace to XY coordinates
-			case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_CONTAINER:
-				newColorSpace = videoState->colorspace;
-				break;
-
-			case HdrColorspaceOptions::HDR_COLORSPACE_BT2020:
-				newColorSpace = ColorSpace::BT_2020;
-				break;
-
-			case HdrColorspaceOptions::HDR_COLORSPACE_P3:
-				newColorSpace = ColorSpace::P3_D65;  // They're all the same from the XY perspective
-				break;
-
-			case HdrColorspaceOptions::HDR_COLORSPACE_REC709:
-				newColorSpace = ColorSpace::REC_709;
-				break;
-
-			default:
-				throw std::runtime_error("Unknown HdrColorspaceOptions");
-			}
-
-			if (newColorSpace != ColorSpace::UNKNOWN)
-			{
-				videoState->hdrData->displayPrimaryRedX = ColorSpaceToCie1931RedX(newColorSpace);
-				videoState->hdrData->displayPrimaryRedY = ColorSpaceToCie1931RedY(newColorSpace);
-				videoState->hdrData->displayPrimaryGreenX = ColorSpaceToCie1931GreenX(newColorSpace);
-				videoState->hdrData->displayPrimaryGreenY = ColorSpaceToCie1931GreenY(newColorSpace);
-				videoState->hdrData->displayPrimaryBlueX = ColorSpaceToCie1931BlueX(newColorSpace);
-				videoState->hdrData->displayPrimaryBlueY = ColorSpaceToCie1931BlueY(newColorSpace);
-			}
-		}
-
-		// Change HDR lumiance if available and requested
-		i = m_hdrLuminanceCombo.GetCurSel();
-		switch ((HdrLuminanceOptions)m_hdrLuminanceCombo.GetItemData(i))
+		i = m_hdrColorspaceCombo.GetCurSel();
+		switch ((HdrColorspaceOptions)m_hdrColorspaceCombo.GetItemData(i))
 		{
 			// No need to do anything
-			case HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW:
-				break;
+		case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT:
+			break;
 
-			// Take what the user has inputted
-			case HdrLuminanceOptions::HDR_LUMINANCE_USER:
-				videoState->hdrData->maxCll = GetWindowTextAsDouble(m_hdrLuminanceMaxCll);
-				videoState->hdrData->maxFall = GetWindowTextAsDouble(m_hdrLuminanceMaxFall);
-				videoState->hdrData->masteringDisplayMinLuminance = GetWindowTextAsDouble(m_hdrLuminanceMasterMin);
-				videoState->hdrData->masteringDisplayMaxLuminance = GetWindowTextAsDouble(m_hdrLuminanceMasterMax);
-				break;
+			// Special mode where if there is an input, but there are no HDR settings
+			// we force the HDR settings for that colorspace
+		case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT_LLDV:
+			if (isHDFuryLLDV)
+				hdrColorSpace = videoState->colorspace;
+			break;
 
-			default:
-				throw std::runtime_error("Unknown HdrLuminanceOptions");
+			// Translate container's colorspace to XY coordinates
+		case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_CONTAINER:
+			hdrColorSpace = videoState->colorspace;
+			break;
+
+		case HdrColorspaceOptions::HDR_COLORSPACE_BT2020:
+			hdrColorSpace = ColorSpace::BT_2020;
+			break;
+
+		case HdrColorspaceOptions::HDR_COLORSPACE_P3:
+			hdrColorSpace = ColorSpace::P3_D65;  // They're all the same from the XY perspective
+			break;
+
+		case HdrColorspaceOptions::HDR_COLORSPACE_REC709:
+			hdrColorSpace = ColorSpace::REC_709;
+			break;
+
+		default:
+			throw std::runtime_error("Unknown HdrColorspaceOptions");
 		}
+
+		if (hdrColorSpace != ColorSpace::UNKNOWN)
+		{
+			if (!videoState->hdrData)
+				videoState->hdrData = std::make_shared<HDRData>();
+
+			videoState->hdrData->displayPrimaryRedX = ColorSpaceToCie1931RedX(hdrColorSpace);
+			videoState->hdrData->displayPrimaryRedY = ColorSpaceToCie1931RedY(hdrColorSpace);
+			videoState->hdrData->displayPrimaryGreenX = ColorSpaceToCie1931GreenX(hdrColorSpace);
+			videoState->hdrData->displayPrimaryGreenY = ColorSpaceToCie1931GreenY(hdrColorSpace);
+			videoState->hdrData->displayPrimaryBlueX = ColorSpaceToCie1931BlueX(hdrColorSpace);
+			videoState->hdrData->displayPrimaryBlueY = ColorSpaceToCie1931BlueY(hdrColorSpace);
+			videoState->hdrData->whitePointX = ColorSpaceToCie1931WpX(hdrColorSpace);
+			videoState->hdrData->whitePointY = ColorSpaceToCie1931WpY(hdrColorSpace);
+		}
+	}
+
+	// Change HDR lumiance if available and requested
+	i = m_hdrLuminanceCombo.GetCurSel();
+	switch ((HdrLuminanceOptions)m_hdrLuminanceCombo.GetItemData(i))
+	{
+		// No need to do anything
+		case HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW_INPUT:
+			break;
+
+		case HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW_INPUT_LLDV:
+
+			if (isHDFuryLLDV)
+			{
+				if (!videoState->hdrData)
+					videoState->hdrData = std::make_shared<HDRData>();
+
+				videoState->hdrData->maxCll = 1000;
+				videoState->hdrData->maxFall = 400;
+				videoState->hdrData->masteringDisplayMinLuminance = 0.0001;
+				videoState->hdrData->masteringDisplayMaxLuminance = 4000;
+			}
+			break;
+
+
+		// Take what the user has inputted
+		case HdrLuminanceOptions::HDR_LUMINANCE_USER:
+
+			if (!videoState->hdrData)
+				videoState->hdrData = std::make_shared<HDRData>();
+
+			videoState->hdrData->maxCll = GetWindowTextAsDouble(m_hdrLuminanceMaxCll);
+			videoState->hdrData->maxFall = GetWindowTextAsDouble(m_hdrLuminanceMaxFall);
+			videoState->hdrData->masteringDisplayMinLuminance = GetWindowTextAsDouble(m_hdrLuminanceMasterMin);
+			videoState->hdrData->masteringDisplayMaxLuminance = GetWindowTextAsDouble(m_hdrLuminanceMasterMax);
+			break;
+
+		default:
+			throw std::runtime_error("Unknown HdrLuminanceOptions");
 	}
 
 	m_builtVideoState = videoState;
@@ -1804,6 +1891,7 @@ void CVideoProcessorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CAPTURE_DEVICE_COMBO, m_captureDeviceCombo);
 	DDX_Control(pDX, IDC_CAPTURE_INPUT_COMBO, m_captureInputCombo);
 	DDX_Control(pDX, IDC_CAPTURE_STATE_STATIC, m_captureDeviceStateText);
+	DDX_Control(pDX, IDC_CAPTURE_RESTART_BUTTON, m_captureDeviceRestartButton);
 	DDX_Control(pDX, IDC_CAPTURE_DEVICE_OTHER_LIST, m_captureDeviceOtherList);
 
 	// Input group

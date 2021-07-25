@@ -124,13 +124,18 @@ private:
 	timingclocktime_t m_previousTimingClockFrameTime = TIMING_CLOCK_TIME_INVALID;
 
 	void ResetVideoState();
-	void SendVideoStateCallback();
+
+	// Try to create and send a VideoState callback, upon failure will internally call Error() and return false
+	bool SendVideoStateCallback();
 	void SendCardStateCallback();
 
 	// Current state, update through UpdateState()
 	// WARNING: R/W from the capture thread, do not read from other thread
 	CaptureDeviceState m_state = CaptureDeviceState::CAPTUREDEVICESTATE_UNKNOWN;
 	void UpdateState(CaptureDeviceState state);
+
+	// An error occurred and capture will not proceed (until the input changes)
+	void Error(const CString& error);
 
 	// Internal helpers
 	void OnNotifyStatusChanged(BMDDeckLinkStatusID statusID);

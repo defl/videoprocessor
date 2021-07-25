@@ -183,3 +183,43 @@ double ColorSpaceToCie1931BlueY(ColorSpace colorspace)
 
 	throw std::runtime_error("Cannot convert colorspace to CIE1931 coordinate");
 }
+
+
+double ColorSpaceToCie1931WpX(ColorSpace colorspace)
+{
+	switch (colorspace)
+	{
+	case ColorSpace::BT_2020:
+	case ColorSpace::P3_D65:
+	case ColorSpace::REC_709:
+	case ColorSpace::REC_601_525:
+	case ColorSpace::REC_601_625:
+		return 0.3127;
+	case ColorSpace::P3_DCI:
+		return 0.314;
+	case ColorSpace::P3_D60:
+		return 0.32168;
+	}
+
+	throw std::runtime_error("Cannot convert colorspace to CIE1931 coordinate");
+}
+
+
+double ColorSpaceToCie1931WpY(ColorSpace colorspace)
+{
+	switch (colorspace)
+	{
+	case ColorSpace::BT_2020:
+	case ColorSpace::P3_D65:
+	case ColorSpace::REC_709:
+	case ColorSpace::REC_601_525:
+	case ColorSpace::REC_601_625:
+		return 0.329;
+	case ColorSpace::P3_DCI:
+		return 0.351;
+	case ColorSpace::P3_D60:
+		return 0.33767;
+	}
+
+	throw std::runtime_error("Cannot convert colorspace to CIE1931 coordinate");
+}

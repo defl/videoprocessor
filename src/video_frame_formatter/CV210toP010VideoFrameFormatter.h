@@ -9,13 +9,14 @@
 #pragma once
 
 
-#include <IVideoFrameFormatter.h>
+#include <video_frame_formatter/IVideoFrameFormatter.h>
 
 
  /**
-  * Video frame formatter which simply does a direct copy
+  * Video frame formatter which reads V210 and write to P010
+  * (that's YUV422 to YUV420 both in 10 bit, all assuming this is running on little endian hardware)
   */
-class CNoopVideoFrameFormatter:
+class CV210toP010VideoFrameFormatter:
 	public IVideoFrameFormatter
 {
 public:
@@ -26,5 +27,6 @@ public:
 	LONG GetOutFrameSize() const override;
 
 private:
-	int m_bytesPerVideoFrame = 0;
+	uint32_t m_height = 0;
+	uint32_t m_width = 0;
 };

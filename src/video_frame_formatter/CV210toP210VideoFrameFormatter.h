@@ -9,14 +9,14 @@
 #pragma once
 
 
-#include <IVideoFrameFormatter.h>
+#include <video_frame_formatter/IVideoFrameFormatter.h>
 
 
  /**
-  * Video frame formatter which reads V210 and write to P010
-  * (that's YUV422 to YUV420 both in 10 bit, all assuming this is running on little endian hardware)
+  * Video frame formatter which reads V210 and write to P210
+  * (packed to planar conversion)
   */
-class CV210toP010VideoFrameFormatter:
+class CV210toP210VideoFrameFormatter:
 	public IVideoFrameFormatter
 {
 public:
