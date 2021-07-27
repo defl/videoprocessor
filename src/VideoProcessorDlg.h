@@ -16,7 +16,7 @@
 #include <PixelValueRange.h>
 #include <CCie1931Control.h>
 #include <IRenderer.h>
-#include <CColorStatic.h>
+// TODO: binary search indicates this is the white crash cause #include <CColorStatic.h>
 #include <VideoFrame.h>
 #include <FullscreenVideoWindow.h>
 #include <WindowedVideoWindow.h>
@@ -130,7 +130,8 @@ protected:
 	CStatic m_inputBitDepthText;
 	CStatic m_inputVideoFrameCountText;
 	CStatic m_inputVideoFrameMissedText;
-	CColorStatic m_inputLatencyMsText;
+	// TODO: binary search indicates this is the white crash cause CColorStatic m_inputLatencyMsText;
+	CStatic m_inputLatencyMsText;
 
 	// Captured video group
 	CStatic m_videoValidText;
@@ -190,8 +191,10 @@ protected:
 	CComboBox m_rendererPrimariesCombo;
 
 	// Renderer latency (ms) group
-	CColorStatic m_rendererLatencyToVPText;
-	CColorStatic m_rendererLatencyToDSText;
+	// TODO: binary search indicates this is the white crash cause CColorStatic m_rendererLatencyToVPText;
+	// TODO: binary search indicates this is the white crash cause CColorStatic m_rendererLatencyToDSText;
+	CStatic m_rendererLatencyToVPText;
+	CStatic m_rendererLatencyToDSText;
 
 	// Renderer output group
 	CButton m_rendererFullscreenCheck;

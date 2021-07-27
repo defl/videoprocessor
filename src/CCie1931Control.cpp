@@ -8,8 +8,6 @@
 
 #include <stdafx.h>
 
-#include <cmath>
-
 #include <resource.h>
 #include <cie.h>
 
@@ -77,14 +75,14 @@ void CCie1931Control::OnPaint(void)
     // Will use max canvas width and less height
     if (bitmapAspectRatio < canvasAspectRatio)
     {
-        scaledBitmapHeight = (int)std::floor(bitmap.bmHeight * ((double)canvasWidth / (double)bitmap.bmWidth));
+        scaledBitmapHeight = (int)floor(bitmap.bmHeight * ((double)canvasWidth / (double)bitmap.bmWidth));
         scaledBitmapWidth = canvasWidth;
     }
     // Will use max canvas height, and less with
     else
     {
         scaledBitmapHeight = canvasHeight;
-        scaledBitmapWidth = (int)std::floor(bitmap.bmWidth * (double)canvasHeight / (double)bitmap.bmHeight);
+        scaledBitmapWidth = (int)floor(bitmap.bmWidth * (double)canvasHeight / (double)bitmap.bmHeight);
     }
 
     // X,Y coordinates of the zero point and maximum limits in the CIE1931 image (these are image-dependent)
@@ -95,14 +93,14 @@ void CCie1931Control::OnPaint(void)
     static const double y90PctEndsAtFractionOfImage = 0.9;    // fraction of image from bottom to get to Y=0.9 horizontal axis
 
     // coordinates for 0,0 and 1,1
-    int zeroX = (int)std::round(xZeroStartsAtFractionOfImage * (double)scaledBitmapWidth);
-    int zeroY = (int)std::round(scaledBitmapHeight - (yZeroStartsAtFractionOfImage * (double)scaledBitmapHeight));
-    int oneX = (int)std::round((x80PctEndsAtFractionOfImage / 80.0 * 100.0) * (double)scaledBitmapWidth);
-    int oneY = (int)std::round(scaledBitmapWidth - ((y90PctEndsAtFractionOfImage / 90.0 * 100.0) * (double)scaledBitmapHeight));  // Can be negative
+    int zeroX = (int)round(xZeroStartsAtFractionOfImage * (double)scaledBitmapWidth);
+    int zeroY = (int)round(scaledBitmapHeight - (yZeroStartsAtFractionOfImage * (double)scaledBitmapHeight));
+    int oneX = (int)round((x80PctEndsAtFractionOfImage / 80.0 * 100.0) * (double)scaledBitmapWidth);
+    int oneY = (int)round(scaledBitmapWidth - ((y90PctEndsAtFractionOfImage / 90.0 * 100.0) * (double)scaledBitmapHeight));  // Can be negative
 
     // Coordinate helpers
-#define X_cie_to_pixel(cie_x) (int)std::round((zeroX + (oneX - zeroX) * (double)cie_x))
-#define Y_cie_to_pixel(cie_y) (int)std::round((zeroY - (zeroY - oneY) * (double)cie_y))
+#define X_cie_to_pixel(cie_x) (int)round((zeroX + (oneX - zeroX) * (double)cie_x))
+#define Y_cie_to_pixel(cie_y) (int)round((zeroY - (zeroY - oneY) * (double)cie_y))
 
 //
 // Draw

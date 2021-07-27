@@ -180,7 +180,7 @@ DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 
 	while (true)
 	{
-		// Sleep thread on empty queue and wake if frames arrive
+		// TODO: Sleep thread on empty queue and wake if frames arrive
 		Sleep(1);
 
 		VideoFrame videoFrame;
@@ -263,7 +263,7 @@ DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 		if (FAILED(hr))
 		{
 			DbgLog((LOG_TRACE, 1,
-				TEXT("::FillBuffer(#%I64u): Failed to deliver sample, error: %l"),
+				TEXT("::FillBuffer(#%I64u): Failed to deliver sample, error: %i"),
 				videoFrame.GetCounter(), hr));
 
 			videoFrame.SourceBufferRelease();
@@ -275,7 +275,7 @@ DWORD CBufferedLiveSourceVideoOutputPin::ThreadProc()
 		pSample->Release();
 	}
 
-	DbgLog((LOG_TRACE, 1, TEXT("CBufferedLiveSourceVideoOutputPin worker thread existing")));
+	DbgLog((LOG_TRACE, 1, TEXT("CBufferedLiveSourceVideoOutputPin worker thread exiting")));
 
 	return 0;
 }

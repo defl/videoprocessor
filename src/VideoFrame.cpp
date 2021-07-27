@@ -36,6 +36,19 @@ VideoFrame::~VideoFrame()
 }
 
 
+void VideoFrame::SourceBufferAddRef()
+{
+	m_sourceBuffer->AddRef();
+}
+
+
+void VideoFrame::SourceBufferRelease()
+{
+	const ULONG refCount = m_sourceBuffer->Release();
+	assert(refCount == 0);
+}
+
+
 VideoFrame& VideoFrame::operator= (const VideoFrame& videoFrame)
 {
 	assert(this != &videoFrame);

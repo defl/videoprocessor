@@ -111,8 +111,7 @@ BOOL CVideoProcessorApp::InitInstance()
 }
 
 
-// Purely here for debugging purposes where the application is compiled as a console
-// application.
+// Only here for debugging purposes where the application is compiled as a console application.
 int main() {
 	return _tWinMain(GetModuleHandle(NULL), NULL, GetCommandLine(), SW_SHOW);
 }

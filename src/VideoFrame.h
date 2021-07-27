@@ -44,15 +44,9 @@ public:
 	// Timestamp set by the timing clock.
 	timingclocktime_t GetTimingTimestamp() const { return m_timingTimestamp; }
 
-	void SourceBufferAddRef()
-	{
-		m_sourceBuffer->AddRef();
-	}
-	void SourceBufferRelease()
-	{
-		ULONG refCount = m_sourceBuffer->Release();
-		assert(refCount == 0);
-	}
+	// Memory functions to hold onto the video buffer for longer
+	void SourceBufferAddRef();
+	void SourceBufferRelease();
 
 	VideoFrame& operator= (const VideoFrame& videoFrame);
 

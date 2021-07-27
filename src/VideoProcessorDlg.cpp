@@ -494,7 +494,8 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(WPARAM wParam, LPA
 {
 	const CaptureDeviceState newState = (CaptureDeviceState)wParam;
 
-	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(): %s"), ToString(newState)));
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(): %s->%s"),
+		ToString(m_captureDeviceState), ToString(newState)));
 
 	if (!m_captureDevice)
 		return 0;
@@ -524,6 +525,7 @@ LRESULT	CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(WPARAM wParam, LPA
 
 	UpdateState();
 
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(): Done")));
 	return 0;
 }
 
@@ -535,8 +537,10 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceCardStateChange(WPARAM wParam,
 	assert(cardState);
 
 	DbgLog((LOG_TRACE, 1,
-		TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceStateChange(): Lock=%d"),
-		cardState->inputLocked));
+		TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceCardStateChange(): Locked=%s, DisplayMode=%s"),
+		ToString(cardState->inputLocked),
+		cardState->inputDisplayMode ? cardState->inputDisplayMode->ToString() : TEXT("")
+		));
 
 	// Input fields
 	m_inputLockedText.SetWindowText(ToString(cardState->inputLocked));
@@ -565,6 +569,7 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceCardStateChange(WPARAM wParam,
 
 	UpdateState();
 
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceCardStateChange(): Done")));
 	return 0;
 }
 
@@ -575,8 +580,8 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 	videoState.Attach((VideoState*)wParam);
 
 	DbgLog((LOG_TRACE, 1,
-		TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(): Valid=%d"),
-		videoState->valid));
+		TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(): Valid=%s"),
+		videoState->valid ? TEXT("Yes") : TEXT("No")));
 
 	assert(videoState);
 	assert(m_captureDevice);
@@ -588,6 +593,8 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 	// If the renderer did not accept the new state we need to restart the renderer
 	if (!rendererAcceptedState)
 	{
+		DbgLog((LOG_TRACE, 1,
+			TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange():  - Renderer did not accept state, m_wantToRestartRenderer=true")));
 		m_wantToRestartRenderer = true;
 	}
 
@@ -599,6 +606,8 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(WPARAM wParam
 
 	UpdateState();
 
+
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageCaptureDeviceVideoStateChange(): Done")));
 	return 0;
 }
 
@@ -631,25 +640,39 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 {
 	const RendererState newRendererState = (RendererState)wParam;
 
-	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageRendererStateChange(): %s"), ToString(newRendererState)));
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageRendererStateChange(): %s->%s"),
+		ToString(m_rendererState), ToString(newRendererState)));
 
-	assert(newRendererState != RendererState::RENDERSTATE_UNKNOWN);
+	if (m_rendererState == RendererState::RENDERSTATE_STOPPING && newRendererState == RendererState::RENDERSTATE_READY)
+	{
+		int a = 1;
+	}
+
+
+	assert(m_videoRenderer);
 
 	bool enableButtons = false;
 
-	assert(m_videoRenderer);
+	assert(newRendererState != RendererState::RENDERSTATE_UNKNOWN);
 	assert(m_rendererState != newRendererState);
+	const RendererState oldRendererState = m_rendererState;
 	m_rendererState = newRendererState;
 
-	switch (m_rendererState)
+	switch (newRendererState)
 	{
 	// Renderer ready, can be started if wanted
 	case RendererState::RENDERSTATE_READY:
+
+		assert(oldRendererState == RendererState::RENDERSTATE_STARTING);
+
 		m_rendererStateText.SetWindowText(TEXT("Ready"));
 		break;
 
 	// Renderer running, ready for frames
 	case RendererState::RENDERSTATE_RENDERING:
+
+		assert(oldRendererState == RendererState::RENDERSTATE_READY);
+
 		m_deliverCaptureDataToRenderer.store(true, std::memory_order_release);
 		enableButtons = true;
 		m_windowedVideoWindow.ShowLogo(false);
@@ -658,6 +681,9 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 
 	// Stopped rendering, can be cleaned up
 	case RendererState::RENDERSTATE_STOPPED:
+
+		assert(oldRendererState == RendererState::RENDERSTATE_STOPPING);
+
 		RenderRemove();
 		RenderGUIClear();
 		m_rendererStateText.SetWindowText(TEXT(""));
@@ -672,6 +698,7 @@ LRESULT CVideoProcessorDlg::OnMessageRendererStateChange(WPARAM wParam, LPARAM l
 
 	UpdateState();
 
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::OnMessageRendererStateChange(): Done")));
 	return 0;
 }
 
@@ -827,7 +854,7 @@ void CVideoProcessorDlg::OnCaptureDeviceError(const CString& error)
 void CVideoProcessorDlg::OnRendererState(RendererState rendererState)
 {
 	// Will be called synchronous as a response to our calls and hence does
-	// not need posting messages, we still do so to de-couple actions.
+	// not need posting messages, we still do so to keep the pattern.
 
 	PostMessage(
 		WM_MESSAGE_RENDERER_STATE_CHANGE,
@@ -839,7 +866,7 @@ void CVideoProcessorDlg::OnRendererState(RendererState rendererState)
 void CVideoProcessorDlg::OnRendererDetailString(const CString& details)
 {
 	// Will be called synchronous as a response to our calls and hence does
-	// not need posting messages, we still do so to de-couple actions.
+	// not need posting messages, we still do so to keep the pattern.
 
 	CString* pDetailString = new CString(details);
 
@@ -863,7 +890,10 @@ void CVideoProcessorDlg::UpdateState()
 		// Have a render and it's rendering, stop it
 		if (m_videoRenderer &&
 			m_rendererState == RendererState::RENDERSTATE_RENDERING)
+		{
 			RenderStop();
+			return;
+		}
 
 		// Waiting for render to go away
 		// (This has to come before stopping the capture as the renderer might be
@@ -874,7 +904,10 @@ void CVideoProcessorDlg::UpdateState()
 		// Have a capture and it's capturing, stop it
 		if (m_captureDevice &&
 			m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
+		{
 			CaptureStop();
+			return;
+		}
 
 		// If capture device is stopped we're happy to remove it
 		if (m_captureDevice && m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_READY)
@@ -918,6 +951,8 @@ void CVideoProcessorDlg::UpdateState()
 	// If we want to terminate at this point we should be good to do so
 	if (m_wantToTerminate)
 	{
+		DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::UpdateState(): - Want to terminate")));
+
 		assert(!m_captureDevice);
 		assert(!m_desiredCaptureDevice);
 		assert(!m_videoRenderer);
@@ -953,7 +988,10 @@ void CVideoProcessorDlg::UpdateState()
 		// Have a render and it's rendering, stop it
 		if (m_videoRenderer &&
 			m_rendererState == RendererState::RENDERSTATE_RENDERING)
+		{
 			RenderStop();
+			return;
+		}
 
 		// Waiting for render to go away
 		// (This has to come before stopping the capture as the renderer might be
@@ -964,7 +1002,10 @@ void CVideoProcessorDlg::UpdateState()
 		// Have a capture and it's capturing, stop it
 		if (m_captureDevice &&
 			m_captureDeviceState == CaptureDeviceState::CAPTUREDEVICESTATE_CAPTURING)
+		{
 			CaptureStop();
+			return;
+		}
 
 		// Waiting for the capture to be stopped
 		if (m_captureDeviceState != CaptureDeviceState::CAPTUREDEVICESTATE_READY)
@@ -1024,6 +1065,8 @@ void CVideoProcessorDlg::UpdateState()
 		(!m_captureDeviceVideoState ||
 	  	 !m_captureDeviceVideoState->valid))
 	{
+		DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::UpdateState(): - Stopping renderering because of invalid capture video state")));
+
 		RenderStop();
 		return;
 	}
@@ -1033,6 +1076,7 @@ void CVideoProcessorDlg::UpdateState()
 		m_wantToRestartRenderer)
 	{
 		m_wantToRestartRenderer = false;
+		DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::UpdateState(): - Asked to restart renderer")));
 
 		RenderStop();
 		return;
@@ -1041,6 +1085,8 @@ void CVideoProcessorDlg::UpdateState()
 	// We have a renderer and a valid video state, relax and enjoy the show
 	assert(m_captureDeviceVideoState);
 	//assert(m_captureDeviceVideoState->valid);
+
+	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::UpdateState(): - No changes")));
 }
 
 
@@ -1735,9 +1781,9 @@ bool CVideoProcessorDlg::BuildPushVideoState()
 					videoState->hdrData = std::make_shared<HDRData>();
 
 				videoState->hdrData->maxCll = 1000;
-				videoState->hdrData->maxFall = 400;
+				videoState->hdrData->maxFall = 1000;
 				videoState->hdrData->masteringDisplayMinLuminance = 0.0001;
-				videoState->hdrData->masteringDisplayMaxLuminance = 4000;
+				videoState->hdrData->masteringDisplayMaxLuminance = 1000;
 			}
 			break;
 
@@ -2224,14 +2270,15 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 
 		const double frameMs = 1000.0 / m_captureDeviceVideoState->displayMode->RefreshRateHz();
 
-		if (m_videoRenderer->ExitLatencyMs() < (-3*frameMs) ||
-			m_videoRenderer->ExitLatencyMs() > 10)
-			m_rendererLatencyToDSText.SetTextColor(CColorStatic::RED);
-		else if (m_videoRenderer->ExitLatencyMs() < (-2*frameMs) ||
-			     m_videoRenderer->ExitLatencyMs() > -5)
-			m_rendererLatencyToDSText.SetTextColor(CColorStatic::ORANGE);
-		else
-			m_rendererLatencyToDSText.SetTextColor(CColorStatic::GREEN);
+		// TODO: Find a way to show this information again
+		//if (m_videoRenderer->ExitLatencyMs() < (-3*frameMs) ||
+		//	m_videoRenderer->ExitLatencyMs() > 10)
+		//	m_rendererLatencyToDSText.SetTextColor(CColorStatic::RED);
+		//else if (m_videoRenderer->ExitLatencyMs() < (-2*frameMs) ||
+		//	     m_videoRenderer->ExitLatencyMs() > -5)
+		//	m_rendererLatencyToDSText.SetTextColor(CColorStatic::ORANGE);
+		//else
+		//	m_rendererLatencyToDSText.SetTextColor(CColorStatic::GREEN);
 
 		cstring.Format(_T("%lu"), m_videoRenderer->DroppedFrameCount());
 		m_rendererDroppedFrameCountText.SetWindowText(cstring);
@@ -2255,12 +2302,13 @@ void CVideoProcessorDlg::OnTimer(UINT_PTR nIDEvent)
 		cstring.Format(_T("%.01f"), m_captureDevice->HardwareLatencyMs());
 		m_inputLatencyMsText.SetWindowText(cstring);
 
-		if (m_captureDevice->HardwareLatencyMs() < 10)
-			m_inputLatencyMsText.SetTextColor(CColorStatic::GREEN);
-		else if (m_captureDevice->HardwareLatencyMs() < 15)
-			m_inputLatencyMsText.SetTextColor(CColorStatic::ORANGE);
-		else
-			m_inputLatencyMsText.SetTextColor(CColorStatic::RED);
+		// TODO: Find a way to show this information again
+		//if (m_captureDevice->HardwareLatencyMs() < 10)
+		//	m_inputLatencyMsText.SetTextColor(CColorStatic::GREEN);
+		//else if (m_captureDevice->HardwareLatencyMs() < 15)
+		//	m_inputLatencyMsText.SetTextColor(CColorStatic::ORANGE);
+		//else
+		//	m_inputLatencyMsText.SetTextColor(CColorStatic::RED);
 	}
 	else
 	{

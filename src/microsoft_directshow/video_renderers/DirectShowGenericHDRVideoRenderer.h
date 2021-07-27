@@ -38,7 +38,7 @@ public:
 		DXVA_VideoTransferMatrix forceVideoTransferMatrix,
 		DXVA_VideoPrimaries forceVideoPrimaries);
 
-	virtual ~DirectShowGenericHDRVideoRenderer() {}
+	virtual ~DirectShowGenericHDRVideoRenderer();
 
 	// IVideoRenderer
 	bool OnVideoState(VideoStateComPtr&) override;
