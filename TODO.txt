@@ -2,12 +2,12 @@ Roadmap
 =======
 
 1.0.0: Out of beta
-- see if we can do frame formatting before queueing (own thread?)
-- internal: Make generic SDR and HDR directshow filter abstrations
+- internal: Make generic SDR and HDR directshow filter abstractions
 - fixme: 480p60/576p50 signals crash VP -> unsupported range probably, decklink throws but that's not shown, need better mechanism for this
 - clean up TODOs
 
 1.1.0: Constant time delay
+- see if we can do frame formatting before queueing (own thread?)
 - Determine baseline latency with external meter
 - Build aimed-for delay to ensure external lip-sync is spot on
 - Write guide on how to DIY this
