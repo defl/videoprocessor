@@ -27,7 +27,7 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mpv_video_renderer.cpp">
+    <ClCompile Include="mpc_video_renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

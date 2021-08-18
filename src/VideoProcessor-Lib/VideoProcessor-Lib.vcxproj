@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{85f8c0f9-ac94-470e-9302-16fc536e506f}</ProjectGuid>
+    <RootNamespace>VideoProcessorLib</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>.;..\..\3rdparty\blackmagic_decklink;..\..\3rdparty\microsoft_directshow_baseclasses;..\..\3rdparty\lavfilters;..\..\3rdparty\ffmpeg\include;..\..\3rdparty\mpc_video_renderer</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>.;..\..\3rdparty\blackmagic_decklink;..\..\3rdparty\microsoft_directshow_baseclasses;..\..\3rdparty\lavfilters;..\..\3rdparty\ffmpeg\include;..\..\3rdparty\mpc_video_renderer</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="ACaptureDevice.h" />
+    <ClInclude Include="ACaptureDeviceDiscoverer.h" />
+    <ClInclude Include="BitDepth.h" />
+    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.h" />
+    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.h" />
+    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.h" />
+    <ClInclude Include="CaptureInput.h" />
+    <ClInclude Include="cie.h" />
+    <ClInclude Include="ColorSpace.h" />
+    <ClInclude Include="DisplayMode.h" />
+    <ClInclude Include="Encoding.h" />
+    <ClInclude Include="EOTF.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="guid.h" />
+    <ClInclude Include="HDRData.h" />
+    <ClInclude Include="InputLocked.h" />
+    <ClInclude Include="IRenderer.h" />
+    <ClInclude Include="ITimingClock.h" />
+    <ClInclude Include="microsoft_directshow\DirectShowDefines.h" />
+    <ClInclude Include="microsoft_directshow\DirectShowRenderers.h" />
+    <ClInclude Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.h" />
+    <ClInclude Include="microsoft_directshow\DirectShowTimingClock.h" />
+    <ClInclude Include="microsoft_directshow\DirectShowTranslations.h" />
+    <ClInclude Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.h" />
+    <ClInclude Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.h" />
+    <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSource.h" />
+    <ClInclude Include="microsoft_directshow\live_source_filter\CUnbufferedLiveSourceVideoOutputPin.h" />
+    <ClInclude Include="microsoft_directshow\live_source_filter\ILiveSource.h" />
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowEnhancedVideoRenderer.h" />
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowGenericHDRVideoRenderer.h" />
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowGenericVideoRenderer.h" />
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowMPCVideoRenderer.h" />
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowVideoRenderer.h" />
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowVideoRenderers.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="PixelValueRange.h" />
+    <ClInclude Include="RendererId.h" />
+    <ClInclude Include="StringUtils.h" />
+    <ClInclude Include="TimingClock.h" />
+    <ClInclude Include="VideoConversionOverride.h" />
+    <ClInclude Include="VideoFrame.h" />
+    <ClInclude Include="VideoFrameEncoding.h" />
+    <ClInclude Include="VideoState.h" />
+    <ClInclude Include="video_frame_formatter\CFFMpegDecoderVideoFrameFormatter.h" />
+    <ClInclude Include="video_frame_formatter\CNoopVideoFrameFormatter.h" />
+    <ClInclude Include="video_frame_formatter\CV210toP010VideoFrameFormatter.h" />
+    <ClInclude Include="video_frame_formatter\CV210toP210VideoFrameFormatter.h" />
+    <ClInclude Include="video_frame_formatter\IVideoFrameFormatter.h" />
+    <ClInclude Include="WallClock.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ACaptureDevice.cpp" />
+    <ClCompile Include="ACaptureDeviceDiscoverer.cpp" />
+    <ClCompile Include="BitDepth.cpp" />
+    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.cpp" />
+    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.cpp" />
+    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.cpp" />
+    <ClCompile Include="CaptureInput.cpp" />
+    <ClCompile Include="cie.cpp" />
+    <ClCompile Include="ColorSpace.cpp" />
+    <ClCompile Include="DisplayMode.cpp" />
+    <ClCompile Include="Encoding.cpp" />
+    <ClCompile Include="EOTF.cpp" />
+    <ClCompile Include="guid.cpp" />
+    <ClCompile Include="HDRData.cpp" />
+    <ClCompile Include="InputLocked.cpp" />
+    <ClCompile Include="IRenderer.cpp" />
+    <ClCompile Include="microsoft_directshow\DirectShowRenderers.cpp" />
+    <ClCompile Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.cpp" />
+    <ClCompile Include="microsoft_directshow\DirectShowTimingClock.cpp" />
+    <ClCompile Include="microsoft_directshow\DirectShowTranslations.cpp" />
+    <ClCompile Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.cpp" />
+    <ClCompile Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.cpp" />
+    <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSource.cpp" />
+    <ClCompile Include="microsoft_directshow\live_source_filter\CUnbufferedLiveSourceVideoOutputPin.cpp" />
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowEnhancedVideoRenderer.cpp" />
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowGenericHDRVideoRenderer.cpp" />
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowGenericVideoRenderer.cpp" />
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowMPCVideoRenderer.cpp" />
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowVideoRenderer.cpp" />
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowVideoRenderers.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="PixelValueRange.cpp" />
+    <ClCompile Include="RendererId.cpp" />
+    <ClCompile Include="StringUtils.cpp" />
+    <ClCompile Include="TimingClock.cpp" />
+    <ClCompile Include="VideoConversionOverride.cpp" />
+    <ClCompile Include="VideoFrame.cpp" />
+    <ClCompile Include="VideoFrameEncoding.cpp" />
+    <ClCompile Include="VideoState.cpp" />
+    <ClCompile Include="video_frame_formatter\CFFMpegDecoderVideoFrameFormatter.cpp" />
+    <ClCompile Include="video_frame_formatter\CNoopVideoFrameFormatter.cpp" />
+    <ClCompile Include="video_frame_formatter\CV210toP010VideoFrameFormatter.cpp" />
+    <ClCompile Include="video_frame_formatter\CV210toP210VideoFrameFormatter.cpp" />
+    <ClCompile Include="WallClock.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\3rdparty\blackmagic_decklink\BlackMagicDeckLink.vcxproj">
+      <Project>{50140967-b11e-456f-8569-dab06d2022d7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\3rdparty\ffmpeg\ffmpeg.vcxproj">
+      <Project>{d17c11da-6e0a-4299-a9ab-6c55745bac7c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\3rdparty\lavfilters\LAVFilters.vcxproj">
+      <Project>{2d4880b2-b4be-4bb4-a03e-3f4ecbb8bbc8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\3rdparty\microsoft_directshow_baseclasses\MicrosoftDirectshowBaseclasses.vcxproj">
+      <Project>{fbc2d6cb-389e-4316-a41f-38b098e27ae1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\3rdparty\mpc_video_renderer\mpc_video_renderer.vcxproj">
+      <Project>{0b36de56-2a17-4819-82a9-c21caa5fdd2b}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

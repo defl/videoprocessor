@@ -1,0 +1,388 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "..\\..\\images\\VideoProcessor.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_VIDEOPROCESSOR_DIALOG DIALOGEX 0, 0, 825, 314
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "VideoProcessor"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_CAPTURE_DEVICE_COMBO,12,18,126,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_CAPTURE_INPUT_COMBO,12,36,126,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Color space",IDC_VIDEO_DATA_GROUP,150,0,204,24
+    GROUPBOX        "Renderer",IDC_RENDERER_GROUP,360,0,462,312
+    CTEXT           "<renderer output>",IDC_RENDERER_WINDOWED_VIDEO_WINDOW,516,30,300,276,SS_CENTERIMAGE
+    RTEXT           "Disp.Mstr.",IDC_STATIC,150,91,39,8
+    RTEXT           "MaxCLL",IDC_STATIC,159,77,30,8
+    LTEXT           "MaxFALL",IDC_STATIC,258,76,30,8
+    LTEXT           "<eotf>",IDC_VIDEO_EOTF_STATIC,12,234,126,8
+    LTEXT           "<color space>",IDC_VIDEO_COLORSPACE_STATIC,12,246,126,8
+    GROUPBOX        "Captured video",IDC_VIDEO_SIGNAL_GROUP,6,186,138,72
+    GROUPBOX        "HDR Luminance",IDC_STATIC_HDR_DATA_GROUP,150,66,204,42
+    LISTBOX         IDC_CAPTURE_DEVICE_OTHER_LIST,12,78,126,30,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Locked:",IDC_STATIC,12,127,30,8
+    LTEXT           "",IDC_INPUT_LOCKED_STATIC,42,127,96,8
+    LTEXT           "<display mode>",IDC_INPUT_DISPLAY_MODE_STATIC,12,139,126,8
+    LTEXT           "<encoding>",IDC_INPUT_ENCODING_STATIC,12,151,96,8
+    LTEXT           "<display mode>",IDC_VIDEO_DISPLAY_MODE_STATIC,12,210,126,8
+    LTEXT           "<pixel format>",IDC_VIDEO_PIXEL_FORMAT_STATIC,12,222,126,8
+    GROUPBOX        "Input",IDC_HDMI_GROUP,6,115,138,71
+    GROUPBOX        "Capture device",IDC_CAPTURE_DEVICE_OTHER_GROUP,6,0,138,114
+    CTEXT           "<CIE 1931 XY diagram>",IDC_CIE1931XY_GRAPH,150,108,204,198,SS_CENTERIMAGE
+    LTEXT           "<bd>",IDC_INPUT_BIT_DEPTH_STATIC,108,151,30,8
+    LTEXT           "State:",IDC_STATIC,12,54,24,8
+    LTEXT           "",IDC_CAPTURE_STATE_STATIC,42,54,48,8
+    LTEXT           "Other properties:",IDC_STATIC,12,66,66,8
+    LTEXT           "Valid:",IDC_STATIC,12,198,30,8
+    LTEXT           "",IDC_VIDEO_VALID_STATIC,42,198,96,8
+    RTEXT           "State:",IDC_STATIC,366,30,24,8
+    LTEXT           "",IDC_RENDERER_STATE_STATIC,396,30,108,8
+    COMBOBOX        IDC_RENDERER_DIRECTSHOW_NOMINAL_RANGE_COMBO,432,169,72,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Nominal range",IDC_STATIC,372,172,60,8
+    PUSHBUTTON      "Restart",IDC_RENDERER_RESTART_BUTTON,774,12,42,12,WS_DISABLED
+    LTEXT           "Transfer function",IDC_STATIC,372,189,60,8
+    COMBOBOX        IDC_RENDERER_DIRECTSHOW_TRANSFER_FUNCTION_COMBO,432,187,72,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Transfer matrix",IDC_STATIC,372,208,60,8
+    COMBOBOX        IDC_RENDERER_DIRECTSHOW_TRANSFER_MATRIX_COMBO,432,205,72,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_RENDERER_DIRECTSHOW_PRIMARIES_COMBO,432,223,72,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Primaries",IDC_STATIC,372,225,60,8
+    GROUPBOX        "Timing clock",IDC_CLOCK_GROUP,6,258,138,54
+    LTEXT           "Use",IDC_STATIC,372,67,18,8
+    RTEXT           "0",IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_STATIC,402,67,12,8
+    LTEXT           "Start-Stop",IDC_STATIC,372,153,60,8
+    COMBOBOX        IDC_RENDERER_DIRECTSHOW_START_STOP_TIME_METHOD_COMBO,432,151,72,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "/",IDC_STATIC,419,67,8,8
+    EDITTEXT        IDC_RENDERER_VIDEO_FRAME_QUEUE_SIZE_MAX_EDIT,432,66,18,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TIMING_CLOCK_FRAME_OFFSET_EDIT,72,283,48,12,ES_AUTOHSCROLL
+    RTEXT           "Frame offset:",IDC_STATIC,12,285,45,8
+    LTEXT           "ms",IDC_STATIC,123,285,12,8
+    CONTROL         "",IDC_RENDERER_VIDEO_FRAME_USE_QUEUE_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,390,67,8,10
+    LTEXT           "<clock descr>",IDC_TIMING_CLOCK_DESCRIPTION_STATIC,12,270,126,8
+    RTEXT           "Latency:",IDC_STATIC,12,174,29,8
+    RTEXT           "<cap lat>",IDC_INPUT_LATENCY_MS_STATIC,48,174,48,8
+    RTEXT           "VP renderer:",IDC_STATIC,372,253,42,8
+    GROUPBOX        "Latency (ms)",IDC_STATIC_LATENCY_GROUP,366,240,144,36
+    LTEXT           "<to vp rend lat>",IDC_RENDERER_LATENCY_TO_VP_STATIC,420,253,54,8
+    RTEXT           "DS renderer:",IDC_STATIC,372,264,42,8
+    LTEXT           "<to ds rend lat>",IDC_RENDERER_LATENCY_TO_DS_STATIC,420,264,54,8
+    RTEXT           "Drop:",IDC_STATIC,457,67,19,8
+    RTEXT           "0",IDC_RENDERER_DROPPED_FRAME_COUNT_STATIC,480,67,26,8
+    PUSHBUTTON      "Reset",IDC_RENDERER_RESET_BUTTON,372,86,42,12,WS_DISABLED
+    RTEXT           "V frames:",IDC_STATIC,12,163,32,8
+    RTEXT           "miss:",IDC_STATIC,83,163,17,8
+    LTEXT           "0",IDC_INPUT_VIDEO_FRAME_COUNT_STATIC,48,163,36,8
+    LTEXT           "0",IDC_INPUT_VIDEO_FRAME_MISSED_STATIC,111,163,24,8
+    COMBOBOX        IDC_RENDERER_COMBO,366,12,198,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Auto",IDC_TIMING_CLOCK_FRAME_OFFSET_AUTO_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,72,297,31,10
+    CONTROL         "Auto",IDC_RENDERER_RESET_AUTO_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,420,88,31,10
+    LTEXT           "<renderer detail string>",IDC_RENDERER_DETAIL_STRING_STATIC,569,15,199,8
+    GROUPBOX        "Queue",IDC_STATIC_RENDERER_QUEUE_GROUP,366,54,144,48
+    GROUPBOX        "DirectShow override",IDC_STATIC_RENDERER_DIRECTSHOW_GROUP,366,139,144,102
+    CONTROL         "Full screen",IDC_RENDERER_FULL_SCREEN_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,372,289,50,10
+    GROUPBOX        "Video conversion",IDC_STATIC_RENDERER_VIDEO_CONVERSION_GROUP,366,102,144,36
+    COMBOBOX        IDC_RENDERER_VIDEO_CONVERSION_COMBO,372,115,132,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "ms",IDC_STATIC,97,174,10,8
+    GROUPBOX        "Output",IDC_STATIC_LATENCY_GROUP2,366,276,144,24
+    RTEXT           "R",IDC_STATIC,153,37,8,8
+    RTEXT           "G",IDC_STATIC,219,38,8,8
+    RTEXT           "B",IDC_STATIC,288,38,8,8
+    EDITTEXT        IDC_HDR_COLORSPACE_G_EDIT,230,36,54,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_HDR_COLORSPACE_B_EDIT,298,36,54,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_HDR_COLORSPACE_R_EDIT,164,36,54,12,ES_AUTOHSCROLL | WS_DISABLED
+    COMBOBOX        IDC_COLORSPACE_CONTAINER_COMBO,200,7,148,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_HDR_COLORSPACE_COMBO,240,50,109,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Container",IDC_STATIC,159,10,33,8
+    EDITTEXT        IDC_HDR_COLORSPACE_WP_EDIT,172,49,46,12,ES_AUTOHSCROLL | WS_DISABLED
+    RTEXT           "WP",IDC_STATIC,156,51,12,8
+    EDITTEXT        IDC_HDR_LUMINANCE_MAXCLL_EDIT,191,75,42,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_HDR_LUMINANCE_MAXFALL_EDIT,290,75,42,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_HDR_LUMINANCE_MASTER_MIN_EDIT,191,89,42,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_HDR_LUMINANCE_MASTER_MAX_EDIT,244,89,42,12,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "-",IDC_STATIC,236,92,8,8
+    GROUPBOX        "HDR Color space",IDC_VIDEO_DATA_GROUP2,150,24,204,42
+    COMBOBOX        IDC_HDR_LUMINANCE_COMBO,300,91,49,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Restart",IDC_CAPTURE_RESTART_BUTTON,96,54,42,12,WS_DISABLED
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,0,0,0
+ PRODUCTVERSION 0,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "Dennis Fleurbaaij"
+            VALUE "FileDescription", "VideoProcessor main executable"
+            VALUE "InternalName", "VideoProcessor.exe"
+            VALUE "LegalCopyright", "Copyright © 2021 Dennis Fleurbaaij."
+            VALUE "OriginalFilename", "VideoProcessor.exe"
+            VALUE "ProductName", "VideoProcessor"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_VIDEOPROCESSOR_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 817
+        BOTTOMMARGIN, 307
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_VIDEOPROCESSOR_DIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 100, 100,
+    0, 0, 100, 100,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 100,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 0, 100,
+    0, 0, 0, 100,
+    0, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    100, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 100, 0,
+    0, 100, 0, 0,
+    0, 0, 0, 0,
+    100, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_CIE1931XY           BITMAP                  "..\\..\\images\\cie1932xy.bmp"
+
+IDB_LOGO                BITMAP                  "..\\..\\images\\logo.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_ACCELERATOR1 ACCELERATORS
+BEGIN
+    VK_ESCAPE,      ID_COMMAND_FULLSCREEN_EXIT, VIRTKEY, NOINVERT
+    VK_RETURN,      ID_COMMAND_FULLSCREEN_TOGGLE, VIRTKEY, ALT, NOINVERT
+    "R",            ID_COMMAND_RENDERER_RESET, VIRTKEY, NOINVERT
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

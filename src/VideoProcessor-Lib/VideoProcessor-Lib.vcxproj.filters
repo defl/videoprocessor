@@ -1,0 +1,330 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\video_frame_formatter">
+      <UniqueIdentifier>{ec9d205a-5dac-492a-919c-c75983efe17a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\video_frame_formatter">
+      <UniqueIdentifier>{1049c3f7-7486-48b3-83c1-0a31f12feee1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\blackmagic_decklink">
+      <UniqueIdentifier>{01e34d3c-40ef-4bac-ac63-92a35b729466}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\blackmagic_decklink">
+      <UniqueIdentifier>{5e8b88b3-01fd-4797-ad1f-4066604832fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\microsoft_directshow">
+      <UniqueIdentifier>{5c1182d1-a336-4426-aa69-b33823df8e86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\microsoft_directshow">
+      <UniqueIdentifier>{c7a059d6-fde5-4fc8-b261-c3d4a04d5060}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\microsoft_directshow\live_source_filter">
+      <UniqueIdentifier>{ba6aa8f6-9b02-46f0-b4c6-30625cbc85c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\microsoft_directshow\live_source_filter">
+      <UniqueIdentifier>{8e30174c-f5ed-4375-8587-6831d7cd985a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\microsoft_directshow\video_renderers">
+      <UniqueIdentifier>{138feeb1-368f-44c0-9492-0199b0d3c0bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\microsoft_directshow\video_renderers">
+      <UniqueIdentifier>{2c2580ce-9308-4ade-a329-212302d77d60}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="video_frame_formatter\CV210toP010VideoFrameFormatter.h">
+      <Filter>Header Files\video_frame_formatter</Filter>
+    </ClInclude>
+    <ClInclude Include="video_frame_formatter\CV210toP210VideoFrameFormatter.h">
+      <Filter>Header Files\video_frame_formatter</Filter>
+    </ClInclude>
+    <ClInclude Include="video_frame_formatter\IVideoFrameFormatter.h">
+      <Filter>Header Files\video_frame_formatter</Filter>
+    </ClInclude>
+    <ClInclude Include="video_frame_formatter\CFFMpegDecoderVideoFrameFormatter.h">
+      <Filter>Header Files\video_frame_formatter</Filter>
+    </ClInclude>
+    <ClInclude Include="video_frame_formatter\CNoopVideoFrameFormatter.h">
+      <Filter>Header Files\video_frame_formatter</Filter>
+    </ClInclude>
+    <ClInclude Include="ACaptureDevice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ACaptureDeviceDiscoverer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BitDepth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CaptureInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorSpace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DisplayMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EOTF.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="guid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HDRData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ITimingClock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PixelValueRange.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererId.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoFrameEncoding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimingClock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InputLocked.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WallClock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.h">
+      <Filter>Header Files\blackmagic_decklink</Filter>
+    </ClInclude>
+    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.h">
+      <Filter>Header Files\blackmagic_decklink</Filter>
+    </ClInclude>
+    <ClInclude Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.h">
+      <Filter>Header Files\blackmagic_decklink</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\DirectShowDefines.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\DirectShowRenderers.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\DirectShowTimingClock.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\DirectShowTranslations.h">
+      <Filter>Header Files\microsoft_directshow</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.h">
+      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.h">
+      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\live_source_filter\CLiveSource.h">
+      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\live_source_filter\CUnbufferedLiveSourceVideoOutputPin.h">
+      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\live_source_filter\ILiveSource.h">
+      <Filter>Header Files\microsoft_directshow\live_source_filter</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowVideoRenderers.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowEnhancedVideoRenderer.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowGenericHDRVideoRenderer.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowGenericVideoRenderer.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowMPCVideoRenderer.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="microsoft_directshow\video_renderers\DirectShowVideoRenderer.h">
+      <Filter>Header Files\microsoft_directshow\video_renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoConversionOverride.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cie.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="video_frame_formatter\CV210toP010VideoFrameFormatter.cpp">
+      <Filter>Source Files\video_frame_formatter</Filter>
+    </ClCompile>
+    <ClCompile Include="video_frame_formatter\CV210toP210VideoFrameFormatter.cpp">
+      <Filter>Source Files\video_frame_formatter</Filter>
+    </ClCompile>
+    <ClCompile Include="video_frame_formatter\CFFMpegDecoderVideoFrameFormatter.cpp">
+      <Filter>Source Files\video_frame_formatter</Filter>
+    </ClCompile>
+    <ClCompile Include="video_frame_formatter\CNoopVideoFrameFormatter.cpp">
+      <Filter>Source Files\video_frame_formatter</Filter>
+    </ClCompile>
+    <ClCompile Include="ACaptureDevice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ACaptureDeviceDiscoverer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BitDepth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CaptureInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorSpace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DisplayMode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EOTF.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="guid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HDRData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PixelValueRange.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererId.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoFrameEncoding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TimingClock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InputLocked.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WallClock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDeviceDiscoverer.cpp">
+      <Filter>Source Files\blackmagic_decklink</Filter>
+    </ClCompile>
+    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkTranslate.cpp">
+      <Filter>Source Files\blackmagic_decklink</Filter>
+    </ClCompile>
+    <ClCompile Include="blackmagic_decklink\BlackMagicDeckLinkCaptureDevice.cpp">
+      <Filter>Source Files\blackmagic_decklink</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\DirectShowTranslations.cpp">
+      <Filter>Source Files\microsoft_directshow</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\DirectShowRenderers.cpp">
+      <Filter>Source Files\microsoft_directshow</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\DirectShowRendererStartStopTimeMethod.cpp">
+      <Filter>Source Files\microsoft_directshow</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\DirectShowTimingClock.cpp">
+      <Filter>Source Files\microsoft_directshow</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\live_source_filter\ALiveSourceVideoOutputPin.cpp">
+      <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\live_source_filter\CBufferedLiveSourceVideoOutputPin.cpp">
+      <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\live_source_filter\CLiveSource.cpp">
+      <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\live_source_filter\CUnbufferedLiveSourceVideoOutputPin.cpp">
+      <Filter>Source Files\microsoft_directshow\live_source_filter</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowEnhancedVideoRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowGenericHDRVideoRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowGenericVideoRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowMPCVideoRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowVideoRenderer.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="microsoft_directshow\video_renderers\DirectShowVideoRenderers.cpp">
+      <Filter>Source Files\microsoft_directshow\video_renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoConversionOverride.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cie.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -1,7 +1,10 @@
+next
+- internal: major refactor, code is now a lib wich can be tested
+
 0.4.2
 - bugfix: white screen crash at end of play
 - Support for HDFury LLDV->HDR (http://videoprocessor.org/lldv)
-- bugfix: memory leak up
+- bugfix: formatter destruction memory leak clean up
 - added pop-up box for displaying capture device errors to the user
 - added button to restart capture device
 - internal: Put formatters together

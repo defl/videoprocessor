@@ -226,7 +226,7 @@
     <Text Include="README.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mpv_video_renderer.cpp" />
+    <ClCompile Include="mpc_video_renderer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
