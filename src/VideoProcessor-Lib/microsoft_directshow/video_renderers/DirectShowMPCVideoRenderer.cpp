@@ -116,7 +116,6 @@ void DirectShowMPCVideoRenderer::OnPaint()
 //
 
 
-
 void DirectShowMPCVideoRenderer::WindowSetup()
 {
 	if (FAILED(m_videoWindow->put_Owner((OAHWND)m_videoHwnd)))
