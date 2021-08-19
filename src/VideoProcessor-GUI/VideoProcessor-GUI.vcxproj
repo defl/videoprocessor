@@ -190,6 +190,9 @@
       <AdditionalDependencies>opengl32.lib;strmiids.lib;winmm.lib;libswscale.a;libavutil.a;libavcodec.a;bcrypt.lib;Propsys.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\3rdparty\ffmpeg\lib\msvc2019_x64_debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)tools\generate_version.ps1" "$(ProjectDir)\" "$(SolutionDir)\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -211,6 +214,9 @@
       <AdditionalLibraryDirectories>..\..\3rdparty\ffmpeg\lib\msvc2019_x64_release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;strmiids.lib;winmm.lib;libswscale.a;libavutil.a;libavcodec.a;bcrypt.lib;Propsys.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)tools\generate_version.ps1" "$(ProjectDir)\" "$(SolutionDir)\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
