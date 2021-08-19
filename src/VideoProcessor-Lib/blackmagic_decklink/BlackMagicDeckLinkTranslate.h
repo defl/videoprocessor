@@ -11,7 +11,7 @@
 
 #include <DeckLinkAPI_h.h>
 
-#include <Encoding.h>
+#include <ColorFormat.h>
 #include <BitDepth.h>
 #include <VideoFrameEncoding.h>
 #include <EOTF.h>
@@ -19,7 +19,7 @@
 #include <DisplayMode.h>
 
 
-Encoding TranslateEncoding(BMDDetectedVideoInputFormatFlags detectedVideoInputFormatFlagsValue);
+ColorFormat TranslateColorFormat(BMDDetectedVideoInputFormatFlags detectedVideoInputFormatFlagsValue);
 
 BitDepth TranslateBithDepth(BMDDetectedVideoInputFormatFlags detectedVideoInputFormatFlagsValue);
 

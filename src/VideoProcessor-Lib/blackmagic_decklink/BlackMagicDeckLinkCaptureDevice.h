@@ -89,6 +89,7 @@ private:
 	CComQIPtr<IDeckLinkProfileManager> m_deckLinkProfileManager;
 	CComQIPtr<IDeckLinkNotification> m_deckLinkNotification;
 	CComQIPtr<IDeckLinkStatus> m_deckLinkStatus;
+	CComQIPtr<IDeckLinkHDMIInputEDID> m_deckLinkHDMIInputEDID;
 	bool m_canCapture = true;
 	std::vector<CaptureInput> m_captureInputSet;
 

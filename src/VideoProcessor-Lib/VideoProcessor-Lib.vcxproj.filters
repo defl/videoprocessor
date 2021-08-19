@@ -84,7 +84,7 @@
     <ClInclude Include="DisplayMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Encoding.h">
+    <ClInclude Include="ColorFormat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EOTF.h">
@@ -227,7 +227,7 @@
     <ClCompile Include="DisplayMode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Encoding.cpp">
+    <ClCompile Include="ColorFormat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EOTF.cpp">

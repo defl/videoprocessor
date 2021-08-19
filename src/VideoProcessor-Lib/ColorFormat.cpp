@@ -8,22 +8,22 @@
 
 #include <pch.h>
 
-#include "Encoding.h"
+#include "ColorFormat.h"
 
 
-const TCHAR* ToString(const Encoding encoding)
+const TCHAR* ToString(const ColorFormat encoding)
 {
 	switch (encoding)
 	{
-	case Encoding::UNKNOWN:
+	case ColorFormat::UNKNOWN:
 		return TEXT("UNKNOWN");
 
-	case Encoding::YCbCr422:
+	case ColorFormat::YCbCr422:
 		return TEXT("YCbCr 4:2:2");
 
-	case Encoding::RGB444:
+	case ColorFormat::RGB444:
 		return TEXT("RGB 4:4:4");
 	}
 
-	throw std::runtime_error("Encoding ToString() failed, value not recognized");
+	throw std::runtime_error("ColorFormat ToString() failed, value not recognized");
 }

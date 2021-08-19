@@ -19,7 +19,7 @@ static const int OUTPUT_LINESIZE_ALIGNMENT = 1;
 CFFMpegDecoderVideoFrameFormatter::CFFMpegDecoderVideoFrameFormatter(
 	AVCodecID inputCodecId,
 	AVPixelFormat targetPixelFormat):
-	m_targetPixelFormat(targetPixelFormat)
+	mTargetPixelFormat(targetPixelFormat)
 {
 	// Check params
 
@@ -29,7 +29,7 @@ CFFMpegDecoderVideoFrameFormatter::CFFMpegDecoderVideoFrameFormatter(
 	if (targetPixelFormat == AV_PIX_FMT_NONE)
 		throw std::runtime_error("Need valid AV_PIX_FMT_*");
 
-	if(!sws_isSupportedOutput(m_targetPixelFormat))
+	if(!sws_isSupportedOutput(mTargetPixelFormat))
 		throw std::runtime_error("Target pixel format not supported by swscale");
 
 	// Build decoder and context
@@ -38,32 +38,32 @@ CFFMpegDecoderVideoFrameFormatter::CFFMpegDecoderVideoFrameFormatter(
 	if (!avCodecDecoder)
 		throw std::runtime_error("Codec not found");
 
-	m_avCodecContext = avcodec_alloc_context3(avCodecDecoder);
-	if (!m_avCodecContext)
+	mAVCodecContext = avcodec_alloc_context3(avCodecDecoder);
+	if (!mAVCodecContext)
 		throw std::runtime_error("Could not allocate video codec context");
 
 	// This is a non-standard ffmpeg extension signalling no use of other threads
-	m_avCodecContext->thread_count = -1;
+	mAVCodecContext->thread_count = -1;
 
-	if (avcodec_open2(m_avCodecContext, avCodecDecoder, nullptr) < 0)
+	if (avcodec_open2(mAVCodecContext, avCodecDecoder, nullptr) < 0)
 		throw std::runtime_error("Could not open codec");
 
-	if(!sws_isSupportedInput(m_avCodecContext->pix_fmt))
+	if(!sws_isSupportedInput(mAVCodecContext->pix_fmt))
 		throw std::runtime_error("Source decoder pixel format not supported");
 
 	// Alloc used buffers
 
-	inputFrame = av_frame_alloc();
-	if (!inputFrame)
+	mInputFrame = av_frame_alloc();
+	if (!mInputFrame)
 		throw std::runtime_error("Failed to alloc input frame");
 
-	outputFrame = av_frame_alloc();
-	if (!outputFrame)
+	mOutputFrame = av_frame_alloc();
+	if (!mOutputFrame)
 		throw std::runtime_error("Failed to alloc output frame");
 
-	pkt = av_packet_alloc();
-	if (!pkt)
-		throw std::runtime_error("Failed to alloc pkt");
+	mPkt = av_packet_alloc();
+	if (!mPkt)
+		throw std::runtime_error("Failed to alloc mPkt");
 }
 
 
@@ -71,20 +71,20 @@ CFFMpegDecoderVideoFrameFormatter::~CFFMpegDecoderVideoFrameFormatter()
 {
 	Cleanup();
 
-	if (m_avCodecContext)
+	if (mAVCodecContext)
 	{
-		avcodec_close(m_avCodecContext);
-		avcodec_free_context(&m_avCodecContext);
+		avcodec_close(mAVCodecContext);
+		avcodec_free_context(&mAVCodecContext);
 	}
 
-	if (pkt)
-		av_packet_free(&pkt);
+	if(mInputFrame)
+		av_frame_free(&mInputFrame);
 
-	if(inputFrame)
-		av_frame_free(&inputFrame);
+	if (mOutputFrame)
+		av_frame_free(&mOutputFrame);
 
-	if (outputFrame)
-		av_frame_free(&outputFrame);
+	if (mPkt)
+		av_packet_free(&mPkt);
 }
 
 
@@ -95,53 +95,46 @@ void CFFMpegDecoderVideoFrameFormatter::OnVideoState(VideoStateComPtr& videoStat
 
 	Cleanup();
 
-	m_inputBytesPerVideoFrame = videoState->BytesPerFrame();
-	assert(m_inputBytesPerVideoFrame > 0);
+	mInputBytesPerVideoFrame = videoState->BytesPerFrame();
+	assert(mInputBytesPerVideoFrame > 0);
 
-	m_height = videoState->displayMode->FrameHeight();
-	assert(m_height > 0);
+	mHeight = videoState->displayMode->FrameHeight();
+	assert(mHeight > 0);
 
-	m_width = videoState->displayMode->FrameWidth();
-	assert(m_width > 0);
+	mWidth = videoState->displayMode->FrameWidth();
+	assert(mWidth > 0);
 
 	// Update codec context with width and height
-	m_avCodecContext->height = m_height;
-	m_avCodecContext->width = m_width;
+	mAVCodecContext->height = mHeight;
+	mAVCodecContext->width = mWidth;
 
 	// Build context
-	m_sws = sws_getContext(
-		m_width, m_height,
-		m_avCodecContext->pix_fmt,
-		m_width, m_height,
-		m_targetPixelFormat,
+	mSws = sws_getContext(
+		mWidth, mHeight,
+		mAVCodecContext->pix_fmt,
+		mWidth, mHeight,
+		mTargetPixelFormat,
 		SWS_FAST_BILINEAR,
 		nullptr,
 		nullptr,
 		nullptr);
 
-	if (!m_sws)
+	if (!mSws)
 		throw std::runtime_error("Failed to get context");
 
-	if (!av_image_alloc(
-		inputFrame->data, inputFrame->linesize,
-		m_width, m_height,
-		m_avCodecContext->pix_fmt,
-		1 /* alignment */))
-		throw std::runtime_error("Failed to allocate inputFrame image");
-
 	if(!av_image_alloc(
-		outputFrame->data, outputFrame->linesize,
-		m_width, m_height,
-		m_targetPixelFormat,
+		mOutputFrame->data, mOutputFrame->linesize,
+		mWidth, mHeight,
+		mTargetPixelFormat,
 		OUTPUT_LINESIZE_ALIGNMENT))
-		throw std::runtime_error("Failed to allocate outputFrame image");
+		throw std::runtime_error("Failed to allocate mOutputFrame image");
 
-	m_outFrameSize = av_image_get_buffer_size(
-		m_targetPixelFormat,
-		m_width, m_height,
+	mOutFrameSize = av_image_get_buffer_size(
+		mTargetPixelFormat,
+		mWidth, mHeight,
 		OUTPUT_LINESIZE_ALIGNMENT);
 
-	if(m_outFrameSize <= 0)
+	if(mOutFrameSize <= 0)
 		throw std::runtime_error("Failed to get output frame size");
 }
 
@@ -150,18 +143,20 @@ bool CFFMpegDecoderVideoFrameFormatter::FormatVideoFrame(
 	const VideoFrame& inFrame,
 	BYTE* outBuffer)
 {
-	if (m_width == 0 || m_height == 0 || m_inputBytesPerVideoFrame == 0)
+	assert(mOutFrameSize > 0);  // Means it's set up
+
+	if (mWidth == 0 || mHeight == 0 || mInputBytesPerVideoFrame == 0)
 		throw std::runtime_error("Width, height or bytes per frame not known, call OnVideoState() first");
 
-	pkt->data = (uint8_t*)inFrame.GetData();
-	pkt->size = m_inputBytesPerVideoFrame;
+	mPkt->data = (uint8_t*)inFrame.GetData();
+	mPkt->size = mInputBytesPerVideoFrame;
 
 	// Decode
-	int ret = avcodec_send_packet(m_avCodecContext, pkt);
+	int ret = avcodec_send_packet(mAVCodecContext, mPkt);
 	if (ret < 0)
 		throw std::runtime_error("Failed to send packet for decoding");
 
-	ret = avcodec_receive_frame(m_avCodecContext, inputFrame);
+	ret = avcodec_receive_frame(mAVCodecContext, mInputFrame);
 	if (ret == AVERROR(EAGAIN))
 		return false;
 	if (ret == AVERROR_EOF)
@@ -171,22 +166,22 @@ bool CFFMpegDecoderVideoFrameFormatter::FormatVideoFrame(
 
 	// Convert
 	int scaled_lines = sws_scale(
-		m_sws,
-		inputFrame->data, inputFrame->linesize,
-		0, m_height,
-		outputFrame->data, outputFrame->linesize);
-	if (scaled_lines != m_height)
+		mSws,
+		mInputFrame->data, mInputFrame->linesize,
+		0, mHeight,
+		mOutputFrame->data, mOutputFrame->linesize);
+	if (scaled_lines != mHeight)
 		throw std::runtime_error("Failed to sws_scale all lines");
 
 	int copiedSize = av_image_copy_to_buffer(
 		(uint8_t*)outBuffer,
-		m_outFrameSize,
-		outputFrame->data, outputFrame->linesize,
-		m_targetPixelFormat,
-		m_width, m_height,
+		mOutFrameSize,
+		mOutputFrame->data, mOutputFrame->linesize,
+		mTargetPixelFormat,
+		mWidth, mHeight,
 		OUTPUT_LINESIZE_ALIGNMENT);
 
-	if (copiedSize != m_outFrameSize)
+	if (copiedSize != mOutFrameSize)
 		throw std::runtime_error("Failed to av_image_copy_to_buffer");
 
 	return true;
@@ -195,18 +190,17 @@ bool CFFMpegDecoderVideoFrameFormatter::FormatVideoFrame(
 
 LONG CFFMpegDecoderVideoFrameFormatter::GetOutFrameSize() const
 {
-	assert(m_outFrameSize > 0);
-	return m_outFrameSize;
+	assert(mOutFrameSize > 0);
+	return mOutFrameSize;
 }
 
 
 void CFFMpegDecoderVideoFrameFormatter::Cleanup()
 {
-	if (m_outFrameSize > 0)
+	if (mOutFrameSize > 0)
 	{
-		sws_freeContext(m_sws);
+		sws_freeContext(mSws);
 
-		av_freep(&inputFrame->data[0]);
-		av_freep(&outputFrame->data[0]);
+		av_freep(&mOutputFrame->data[0]);
 	}
 }

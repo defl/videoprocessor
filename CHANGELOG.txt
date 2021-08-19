@@ -1,5 +1,8 @@
-next
+0.4.3
+- bugfix: fix crash on destruction of ffmpeg converter due to double free
+- bugfix: 480p60/576p50 signals crash VP
 - internal: major refactor, code is now a lib wich can be tested
+- updated to ffmpeg master from 20210819
 
 0.4.2
 - bugfix: white screen crash at end of play

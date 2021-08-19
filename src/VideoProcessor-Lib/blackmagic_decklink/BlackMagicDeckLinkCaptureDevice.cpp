@@ -36,7 +36,8 @@ BlackMagicDeckLinkCaptureDevice::BlackMagicDeckLinkCaptureDevice(const IDeckLink
 	m_deckLinkAttributes(deckLinkDevice),
 	m_deckLinkProfileManager(deckLinkDevice),
 	m_deckLinkNotification(deckLinkDevice),
-	m_deckLinkStatus(deckLinkDevice)
+	m_deckLinkStatus(deckLinkDevice),
+	m_deckLinkHDMIInputEDID(deckLinkDevice)
 {
 	if (!deckLinkDevice)
 		throw std::runtime_error("No DeckLink device given in constructor");
@@ -64,17 +65,15 @@ BlackMagicDeckLinkCaptureDevice::BlackMagicDeckLinkCaptureDevice(const IDeckLink
 	}
 
 	// Enable all EDID functionality if possible
-	//// TODO: This leads to compliation errors
-	//CComQIPtr<IDeckLinkHDMIInputEDID> deckLinkHDMIInputEDID = deckLinkDevice;
-	//if (deckLinkHDMIInputEDID)
-	//{
-	//	const LONGLONG allKnownRanges = bmdDynamicRangeSDR | bmdDynamicRangeHDRStaticPQ | bmdDynamicRangeHDRStaticHLG;
-	//	IF_NOT_S_OK(deckLinkHDMIInputEDID->SetInt(bmdDeckLinkHDMIInputEDIDDynamicRange, allKnownRanges))
-	//		throw std::runtime_error("Failed to set EDID ranges");
+	if (m_deckLinkHDMIInputEDID)
+	{
+		const LONGLONG allKnownRanges = bmdDynamicRangeSDR | bmdDynamicRangeHDRStaticPQ | bmdDynamicRangeHDRStaticHLG;
+		IF_NOT_S_OK(m_deckLinkHDMIInputEDID->SetInt(bmdDeckLinkHDMIInputEDIDDynamicRange, allKnownRanges))
+			throw std::runtime_error("Failed to set EDID ranges");
 
-	//	IF_NOT_S_OK(deckLinkHDMIInputEDID->WriteToEDID())
-	//		throw std::runtime_error("Failed to write EDID");
-	//}
+		IF_NOT_S_OK(m_deckLinkHDMIInputEDID->WriteToEDID())
+			throw std::runtime_error("Failed to write EDID");
+	}
 
 	// Get current capture id
 	LONGLONG captureInputId;
@@ -1026,7 +1025,7 @@ void BlackMagicDeckLinkCaptureDevice::SendCardStateCallback()
 
 	IF_S_OK(m_deckLinkStatus->GetInt(bmdDeckLinkStatusDetectedVideoInputFormatFlags, &intValue))
 	{
-		cardState->inputEncoding = TranslateEncoding((BMDDetectedVideoInputFormatFlags)intValue);
+		cardState->inputEncoding = TranslateColorFormat((BMDDetectedVideoInputFormatFlags)intValue);
 		cardState->inputBitDepth = TranslateBithDepth((BMDDetectedVideoInputFormatFlags)intValue);
 	}
 

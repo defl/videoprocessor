@@ -18,7 +18,7 @@
 #include <ColorSpace.h>
 #include <DisplayMode.h>
 #include <InputLocked.h>
-#include <Encoding.h>
+#include <ColorFormat.h>
 #include <BitDepth.h>
 #include <HDRData.h>
 #include <CaptureInput.h>
@@ -50,7 +50,7 @@ public:
 
 	InputLocked inputLocked = InputLocked::UNKNOWN;
 	DisplayModeSharedPtr inputDisplayMode = nullptr;
-	Encoding inputEncoding = Encoding::UNKNOWN;
+	ColorFormat inputEncoding = ColorFormat::UNKNOWN;
 	BitDepth inputBitDepth = BitDepth::UNKNOWN;
 
 	//

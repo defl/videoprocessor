@@ -41,20 +41,20 @@ public:
 
 private:
 
-	const AVPixelFormat m_targetPixelFormat;
-	const AVCodec* m_avCodecDecoder;
-	AVCodecContext* m_avCodecContext;
+	const AVPixelFormat mTargetPixelFormat;
+	const AVCodec* mAVCodecDecoder;
+	AVCodecContext* mAVCodecContext;
 
-	int m_inputBytesPerVideoFrame = 0;
-	int m_height = 0;
-	int m_width = 0;
-	LONG m_outFrameSize = 0;
+	int mInputBytesPerVideoFrame = 0;
+	int mHeight = 0;
+	int mWidth = 0;
+	LONG mOutFrameSize = 0;
 
-	struct SwsContext* m_sws = nullptr;
-	AVFrame* inputFrame = nullptr;
-	AVFrame* outputFrame = nullptr;
+	struct SwsContext* mSws = nullptr;
+	AVFrame* mInputFrame = nullptr;
+	AVFrame* mOutputFrame = nullptr;
 
-	AVPacket* pkt;
+	AVPacket* mPkt;
 
 	void Cleanup();
 };

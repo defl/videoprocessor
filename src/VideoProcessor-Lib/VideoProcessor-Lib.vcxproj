@@ -171,7 +171,7 @@
     <ClInclude Include="cie.h" />
     <ClInclude Include="ColorSpace.h" />
     <ClInclude Include="DisplayMode.h" />
-    <ClInclude Include="Encoding.h" />
+    <ClInclude Include="ColorFormat.h" />
     <ClInclude Include="EOTF.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="guid.h" />
@@ -222,7 +222,7 @@
     <ClCompile Include="cie.cpp" />
     <ClCompile Include="ColorSpace.cpp" />
     <ClCompile Include="DisplayMode.cpp" />
-    <ClCompile Include="Encoding.cpp" />
+    <ClCompile Include="ColorFormat.cpp" />
     <ClCompile Include="EOTF.cpp" />
     <ClCompile Include="guid.cpp" />
     <ClCompile Include="HDRData.cpp" />

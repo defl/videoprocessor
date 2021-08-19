@@ -166,13 +166,13 @@ static const std::map<BMDDisplayMode, BMDDisplayModeData> BD_DISPLAY_MODE_DATA =
 // Functions
 //
 
-Encoding TranslateEncoding(BMDDetectedVideoInputFormatFlags detectedVideoInputFormatFlagsValue)
+ColorFormat TranslateColorFormat(BMDDetectedVideoInputFormatFlags detectedVideoInputFormatFlagsValue)
 {
 	if (detectedVideoInputFormatFlagsValue & bmdDetectedVideoInputYCbCr422)
-		return Encoding::YCbCr422;
+		return ColorFormat::YCbCr422;
 
 	if (detectedVideoInputFormatFlagsValue & bmdDetectedVideoInputRGB444)
-		return Encoding::RGB444;
+		return ColorFormat::RGB444;
 
 	throw std::runtime_error("Failed to translate BMDDetectedVideoInputFormatFlags to encoding");
 }
@@ -272,6 +272,8 @@ ColorSpace Translate(BMDColorspace colorSpace, uint32_t verticalLines)
 	case bmdColorspaceRec601:
 		if (verticalLines == 525)
 			return ColorSpace::REC_601_525;
+		if (verticalLines == 576)
+			return ColorSpace::REC_601_576;
 		if (verticalLines == 625)
 			return ColorSpace::REC_601_625;
 

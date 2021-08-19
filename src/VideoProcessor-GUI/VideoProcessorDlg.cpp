@@ -550,7 +550,7 @@ LRESULT CVideoProcessorDlg::OnMessageCaptureDeviceCardStateChange(WPARAM wParam,
 	else
 		m_inputDisplayModeText.SetWindowText(TEXT(""));
 
-	if (cardState->inputEncoding != Encoding::UNKNOWN)
+	if (cardState->inputEncoding != ColorFormat::UNKNOWN)
 		m_inputEncodingText.SetWindowText(ToString(cardState->inputEncoding));
 	else
 		m_inputEncodingText.SetWindowText(TEXT(""));

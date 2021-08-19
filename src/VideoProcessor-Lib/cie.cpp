@@ -13,7 +13,8 @@
 
 bool CieValidColor(double color)
 {
-	return (color >= 0) && (color <= 1.0);
+	// In some exotic modes this can be just over 1.08
+	return (color >= 0) && (color <= 1.1);
 }
 
 

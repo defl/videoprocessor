@@ -21,6 +21,7 @@ const TCHAR* ToString(const ColorSpace colorspace)
 	case ColorSpace::REC_601_525:
 		return TEXT("REC.601 (NTSC)");
 
+	case ColorSpace::REC_601_576:
 	case ColorSpace::REC_601_625:
 		return TEXT("REC.601 (PAL/SECAM)");
 
@@ -67,6 +68,7 @@ double ColorSpaceToCie1931RedX(ColorSpace colorspace)
 		return 0.64;
 	case ColorSpace::REC_601_525:
 		return 0.63;
+	case ColorSpace::REC_601_576:
 	case ColorSpace::REC_601_625:
 		return 0.64;
 	}
@@ -89,6 +91,7 @@ double ColorSpaceToCie1931RedY(ColorSpace colorspace)
 		return 0.33;
 	case ColorSpace::REC_601_525:
 		return 0.34;
+	case ColorSpace::REC_601_576:
 	case ColorSpace::REC_601_625:
 		return 0.33;
 	}
@@ -111,6 +114,7 @@ double ColorSpaceToCie1931GreenX(ColorSpace colorspace)
 		return 0.30;
 	case ColorSpace::REC_601_525:
 		return 0.310;
+	case ColorSpace::REC_601_576:
 	case ColorSpace::REC_601_625:
 		return 0.290;
 	}
@@ -133,6 +137,7 @@ double ColorSpaceToCie1931GreenY(ColorSpace colorspace)
 		return 0.60;
 	case ColorSpace::REC_601_525:
 		return 0.595;
+	case ColorSpace::REC_601_576:
 	case ColorSpace::REC_601_625:
 		return 0.600;
 	}
@@ -155,6 +160,7 @@ double ColorSpaceToCie1931BlueX(ColorSpace colorspace)
 		return 0.15;
 	case ColorSpace::REC_601_525:
 		return 0.155;
+	case ColorSpace::REC_601_576:
 	case ColorSpace::REC_601_625:
 		return 0.150;
 	}
@@ -177,6 +183,7 @@ double ColorSpaceToCie1931BlueY(ColorSpace colorspace)
 		return 0.06;
 	case ColorSpace::REC_601_525:
 		return 0.07;
+	case ColorSpace::REC_601_576:
 	case ColorSpace::REC_601_625:
 		return 0.06;
 	}
@@ -193,6 +200,7 @@ double ColorSpaceToCie1931WpX(ColorSpace colorspace)
 	case ColorSpace::P3_D65:
 	case ColorSpace::REC_709:
 	case ColorSpace::REC_601_525:
+	case ColorSpace::REC_601_576:
 	case ColorSpace::REC_601_625:
 		return 0.3127;
 	case ColorSpace::P3_DCI:
@@ -213,6 +221,7 @@ double ColorSpaceToCie1931WpY(ColorSpace colorspace)
 	case ColorSpace::P3_D65:
 	case ColorSpace::REC_709:
 	case ColorSpace::REC_601_525:
+	case ColorSpace::REC_601_576:
 	case ColorSpace::REC_601_625:
 		return 0.329;
 	case ColorSpace::P3_DCI:

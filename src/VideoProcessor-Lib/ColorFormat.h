@@ -14,7 +14,7 @@
 
 // (Color space) encoding of the signal
 // TODO: Rename me to something more understandable and fix line above here so give more details
-enum class Encoding
+enum class ColorFormat
 {
 	UNKNOWN,
 	YCbCr422,
@@ -22,4 +22,4 @@ enum class Encoding
 };
 
 
-const TCHAR* ToString(const Encoding encoding);
+const TCHAR* ToString(const ColorFormat encoding);
