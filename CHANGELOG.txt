@@ -1,3 +1,6 @@
+1.0.0
+- No changes
+
 0.4.3
 - bugfix: fix crash on destruction of ffmpeg converter due to double free
 - bugfix: 480p60/576p50 signals crash VP
