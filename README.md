@@ -12,6 +12,7 @@ You can find all the static details on [videoprocessor.org](http://videoprocesso
 - [Getting started](http://videoprocessor.org/getting_started)
 - [Manual](http://videoprocessor.org/manual)
 - [FAQ](http://videoprocessor.org/faq)
+- [Wiki](https://github.com/defl/videoprocessor/wiki)
 
 # Screenshot
 
