@@ -270,6 +270,9 @@ ColorSpace Translate(BMDColorspace colorSpace, uint32_t verticalLines)
 	switch (colorSpace)
 	{
 	case bmdColorspaceRec601:
+
+		if (verticalLines == 486)
+			return ColorSpace::UNKNOWN;  // The card will once in a while throw an odd (invalid?) mode with 486 vertical lines for a very brief period, we simply ignore it.
 		if (verticalLines == 525)
 			return ColorSpace::REC_601_525;
 		if (verticalLines == 576)

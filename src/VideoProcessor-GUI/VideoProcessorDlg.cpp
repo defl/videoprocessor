@@ -882,7 +882,7 @@ void CVideoProcessorDlg::UpdateState()
 	DbgLog((LOG_TRACE, 1, TEXT("CVideoProcessorDlg::UpdateState()")));
 
 	// Want to change cards or want to restart capture
-	if (m_desiredCaptureDevice != m_captureDevice ||
+	if (!m_desiredCaptureDevice.IsEqualObject(m_captureDevice) ||
 		m_wantToRestartCapture)
 	{
 		m_captureInputCombo.EnableWindow(FALSE);
