@@ -962,7 +962,7 @@ bool BlackMagicDeckLinkCaptureDevice::SendVideoStateCallback()
 			assert(m_bmdPixelFormat != BMD_PIXEL_FORMAT_INVALID);
 			assert(m_bmdDisplayMode != BMD_DISPLAY_MODE_INVALID);
 			assert(m_videoEotf != BMD_EOTF_INVALID);
-			assert(m_videoColorSpace != BMD_EOTF_INVALID);
+			assert(m_videoColorSpace != BMD_COLOR_SPACE_INVALID);
 
 			videoState->valid = true;
 			videoState->displayMode = Translate(m_bmdDisplayMode);
