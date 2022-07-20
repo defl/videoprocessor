@@ -18,7 +18,10 @@
 #include <IRenderer.h>
 #include <VideoFrame.h>
 #include <FullscreenVideoWindow.h>
+#include <VideoConversionOverride.h>
 #include <WindowedVideoWindow.h>
+#include <microsoft_directshow/DirectShowRendererStartStopTimeMethod.h>
+#include <microsoft_directshow/DirectShowDefines.h>
 
 #include "resource.h"
 
@@ -33,6 +36,25 @@
 #define WM_MESSAGE_DIRECTSHOW_NOTIFICATION              (WM_APP + 7)
 #define WM_MESSAGE_RENDERER_STATE_CHANGE                (WM_APP + 8)
 #define WM_MESSAGE_RENDERER_DETAIL_STRING               (WM_APP + 9)
+
+
+enum class HdrColorspaceOptions
+{
+	HDR_COLORSPACE_FOLLOW_INPUT,
+	HDR_COLORSPACE_FOLLOW_INPUT_LLDV,
+	HDR_COLORSPACE_FOLLOW_CONTAINER,
+	HDR_COLORSPACE_BT2020,
+	HDR_COLORSPACE_P3,
+	HDR_COLORSPACE_REC709
+};
+
+
+enum class HdrLuminanceOptions
+{
+	HDR_LUMINANCE_FOLLOW_INPUT,
+	HDR_LUMINANCE_FOLLOW_INPUT_LLDV,
+	HDR_LUMINANCE_USER,
+};
 
 
 /**
@@ -56,6 +78,16 @@ public:
 	void DefaultRendererName(const CString&);
 	void StartFrameOffsetAuto();
 	void StartFrameOffset(const CString&);
+	void DefaultVideoConversionOverride(VideoConversionOverride);
+	void DefaultContainerColorSpace(ColorSpace);
+	void DefaultHDRColorSpace(HdrColorspaceOptions);
+	void DefaultHDRLuminance(HdrLuminanceOptions);
+	void DefaultRendererStartStopTimeMethod(DirectShowStartStopTimeMethod);
+	void DefaultRendererNominalRange(DXVA_NominalRange);
+	void DefaultRendererTransferFunction(DXVA_VideoTransferFunction);
+	void DefaultRendererTransferMatrix(DXVA_VideoTransferMatrix);
+	void DefaultRendererPrimaries(DXVA_VideoPrimaries);
+
 
 	// UI-related handlers
 	afx_msg void OnCaptureDeviceSelected();
@@ -220,6 +252,15 @@ protected:
 	CString m_defaultRendererName;
 	bool m_frameOffsetAutoStart = false;
 	CString m_defaultFrameOffset = TEXT("90");
+	VideoConversionOverride m_defaultVideoConversionOverride = VideoConversionOverride::VIDEOCONVERSION_NONE;
+	ColorSpace m_defaultContainerColorSpace = ColorSpace::UNKNOWN;
+	HdrColorspaceOptions m_defaultHDRColorSpaceOption = HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT;
+	HdrLuminanceOptions m_defaultHDRLuminanceOption = HdrLuminanceOptions::HDR_LUMINANCE_FOLLOW_INPUT;
+	DirectShowStartStopTimeMethod m_defaultDSSSTimeMethod = DirectShowStartStopTimeMethod::DS_SSTM_CLOCK_SMART;
+	DXVA_NominalRange m_defaultNominalRange = DXVA_NominalRange::DXVA_NominalRange_Unknown;  // Auto
+	DXVA_VideoTransferFunction m_defaultTransferFunction = DXVA_VideoTransferFunction::DXVA_VideoTransFunc_Unknown;  // Auto
+	DXVA_VideoTransferMatrix m_defaultTransferMatrix = DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_Unknown;  // Auto
+	DXVA_VideoPrimaries m_defaultPrimaries = DXVA_VideoPrimaries::DXVA_VideoPrimaries_Unknown;  // Auto
 
 
 	IVideoRenderer* m_videoRenderer = nullptr;

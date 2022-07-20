@@ -14,7 +14,6 @@
 
 #include <version.h>
 #include <cie.h>
-#include <VideoConversionOverride.h>
 #include <resource.h>
 #include <StringUtils.h>
 #include <VideoProcessorApp.h>
@@ -23,8 +22,6 @@
 #include <microsoft_directshow/video_renderers/DirectShowEnhancedVideoRenderer.h>
 #include <microsoft_directshow/video_renderers/DirectShowGenericVideoRenderer.h>
 #include <microsoft_directshow/video_renderers/DirectShowGenericHDRVideoRenderer.h>
-#include <microsoft_directshow/DirectShowRendererStartStopTimeMethod.h>
-#include <microsoft_directshow/DirectShowDefines.h>
 #include <guid.h>
 
 #include "VideoProcessorDlg.h"
@@ -97,17 +94,6 @@ static const std::vector<std::pair<LPCTSTR, ColorSpace>> COLOLORSPACE_CONTAINER_
 };
 
 
-enum class HdrColorspaceOptions
-{
-	HDR_COLORSPACE_FOLLOW_INPUT,
-	HDR_COLORSPACE_FOLLOW_INPUT_LLDV,
-	HDR_COLORSPACE_FOLLOW_CONTAINER,
-	HDR_COLORSPACE_BT2020,
-	HDR_COLORSPACE_P3,
-	HDR_COLORSPACE_REC709
-};
-
-
 static const std::vector<std::pair<LPCTSTR, HdrColorspaceOptions>> HDR_COLORSPACE_OPTIONS =
 {
 	std::make_pair(TEXT("Follow input"),        HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT),
@@ -116,14 +102,6 @@ static const std::vector<std::pair<LPCTSTR, HdrColorspaceOptions>> HDR_COLORSPAC
 	std::make_pair(TEXT("Force BT.2020"),       HdrColorspaceOptions::HDR_COLORSPACE_BT2020),
 	std::make_pair(TEXT("Force P3"),            HdrColorspaceOptions::HDR_COLORSPACE_P3),
 	std::make_pair(TEXT("Force REC709"),        HdrColorspaceOptions::HDR_COLORSPACE_REC709)
-};
-
-
-enum class HdrLuminanceOptions
-{
-	HDR_LUMINANCE_FOLLOW_INPUT,
-	HDR_LUMINANCE_FOLLOW_INPUT_LLDV,
-	HDR_LUMINANCE_USER,
 };
 
 
@@ -150,29 +128,29 @@ static const std::vector<DirectShowStartStopTimeMethod> RENDERER_DIRECTSHOW_STAR
 
 static const std::vector<std::pair<LPCTSTR, DXVA_NominalRange>> DIRECTSHOW_NOMINAL_RANGE_OPTIONS =
 {
-	std::make_pair(TEXT("Auto"),             DXVA_NominalRange_Unknown),
-	std::make_pair(TEXT("Full (0-255)"),     DXVA_NominalRange_0_255),
-	std::make_pair(TEXT("Limited (16-235)"), DXVA_NominalRange_16_235),
-	std::make_pair(TEXT("Small (48-208)"),   DXVA_NominalRange_48_208)
+	std::make_pair(TEXT("Auto"),             DXVA_NominalRange::DXVA_NominalRange_Unknown),
+	std::make_pair(TEXT("Full (0-255)"),     DXVA_NominalRange::DXVA_NominalRange_0_255),
+	std::make_pair(TEXT("Limited (16-235)"), DXVA_NominalRange::DXVA_NominalRange_16_235),
+	std::make_pair(TEXT("Small (48-208)"),   DXVA_NominalRange::DXVA_NominalRange_48_208)
 };
 
 
 static const std::vector<std::pair<LPCTSTR, DXVA_VideoTransferFunction>> DIRECTSHOW_TRANSFER_FUNCTION_OPTIONS =
 {
-	std::make_pair(TEXT("Auto"),                      DXVA_VideoTransFunc_Unknown),
+	std::make_pair(TEXT("Auto"),                      DXVA_VideoTransferFunction::DXVA_VideoTransFunc_Unknown),
 	std::make_pair(TEXT("PQ"),                        DIRECTSHOW_VIDEOTRANSFUNC_2084),
-	std::make_pair(TEXT("Rec 709 (γ=2.2)"),           DXVA_VideoTransFunc_22_709),
+	std::make_pair(TEXT("Rec 709 (γ=2.2)"),           DXVA_VideoTransferFunction::DXVA_VideoTransFunc_22_709),
 	std::make_pair(TEXT("Bt.2020 constant"),          DIRECTSHOW_VIDEOTRANSFUNC_2020_const),
 
-	std::make_pair(TEXT("True gamma 1.8"),            DXVA_VideoTransFunc_18),
-	std::make_pair(TEXT("True gamma 2.0"),            DXVA_VideoTransFunc_20),
-	std::make_pair(TEXT("True gamma 2.2"),            DXVA_VideoTransFunc_22),
+	std::make_pair(TEXT("True gamma 1.8"),            DXVA_VideoTransferFunction::DXVA_VideoTransFunc_18),
+	std::make_pair(TEXT("True gamma 2.0"),            DXVA_VideoTransferFunction::DXVA_VideoTransFunc_20),
+	std::make_pair(TEXT("True gamma 2.2"),            DXVA_VideoTransferFunction::DXVA_VideoTransFunc_22),
 	std::make_pair(TEXT("True gamma 2.6"),            DIRECTSHOW_VIDEOTRANSFUNC_26),
-	std::make_pair(TEXT("True gamma 2.8"),            DXVA_VideoTransFunc_28),
+	std::make_pair(TEXT("True gamma 2.8"),            DXVA_VideoTransferFunction::DXVA_VideoTransFunc_28),
 
-	std::make_pair(TEXT("Linear RGB (γ=1.0)"),        DXVA_VideoTransFunc_10),
-	std::make_pair(TEXT("204M (γ=2.2)"),              DXVA_VideoTransFunc_22_240M),
-	std::make_pair(TEXT("8-bit gamma 2.2"),           DXVA_VideoTransFunc_22_8bit_sRGB),
+	std::make_pair(TEXT("Linear RGB (γ=1.0)"),        DXVA_VideoTransferFunction::DXVA_VideoTransFunc_10),
+	std::make_pair(TEXT("204M (γ=2.2)"),              DXVA_VideoTransferFunction::DXVA_VideoTransFunc_22_240M),
+	std::make_pair(TEXT("8-bit gamma 2.2"),           DXVA_VideoTransferFunction::DXVA_VideoTransFunc_22_8bit_sRGB),
 	std::make_pair(TEXT("Log 100:1 H.264"),           DIRECTSHOW_VIDEOTRANSFUNC_Log_100),
 	std::make_pair(TEXT("Log 316:1 H.264"),           DIRECTSHOW_VIDEOTRANSFUNC_Log_316),
 	std::make_pair(TEXT("Rec 709 (γ=2.2) symmetric"), DIRECTSHOW_VIDEOTRANSFUNC_709_sym),
@@ -183,12 +161,12 @@ static const std::vector<std::pair<LPCTSTR, DXVA_VideoTransferFunction>> DIRECTS
 
 static const std::vector<std::pair<LPCTSTR, DXVA_VideoTransferMatrix>> DIRECTSHOW_TRANSFER_MATRIX_OPTIONS =
 {
-	std::make_pair(TEXT("Auto"),       DXVA_VideoTransferMatrix_Unknown),
+	std::make_pair(TEXT("Auto"),       DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_Unknown),
 	std::make_pair(TEXT("BT.2020 10"), DIRECTSHOW_VIDEOTRANSFERMATRIX_BT2020_10),
 	std::make_pair(TEXT("BT.2020 12"), DIRECTSHOW_VIDEOTRANSFERMATRIX_BT2020_12),
-	std::make_pair(TEXT("BT.709"),     DXVA_VideoTransferMatrix_BT709),
-	std::make_pair(TEXT("BT.601"),     DXVA_VideoTransferMatrix_BT601),
-	std::make_pair(TEXT("240M"),       DXVA_VideoTransferMatrix_SMPTE240M),
+	std::make_pair(TEXT("BT.709"),     DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_BT709),
+	std::make_pair(TEXT("BT.601"),     DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_BT601),
+	std::make_pair(TEXT("240M"),       DXVA_VideoTransferMatrix::DXVA_VideoTransferMatrix_SMPTE240M),
 	std::make_pair(TEXT("FCC"),        DIRECTSHOW_VIDEOTRANSFERMATRIX_FCC),
 	std::make_pair(TEXT("YCgCo"),      DIRECTSHOW_VIDEOTRANSFERMATRIX_YCgCo)
 };
@@ -196,13 +174,13 @@ static const std::vector<std::pair<LPCTSTR, DXVA_VideoTransferMatrix>> DIRECTSHO
 
 static const std::vector<std::pair<LPCTSTR, DXVA_VideoPrimaries>> DIRECTSHOW_PRIMARIES_OPTIONS =
 {
-	std::make_pair(TEXT("Auto"),         DXVA_VideoPrimaries_Unknown),
+	std::make_pair(TEXT("Auto"),         DXVA_VideoPrimaries::DXVA_VideoPrimaries_Unknown),
 	std::make_pair(TEXT("BT.2020"),      DIRECTSHOW_VIDEOPRIMARIES_BT2020),
 	std::make_pair(TEXT("DCI-P3"),       DIRECTSHOW_VIDEOPRIMARIES_DCI_P3),
-	std::make_pair(TEXT("BT.709"),       DXVA_VideoPrimaries_BT709),
+	std::make_pair(TEXT("BT.709"),       DXVA_VideoPrimaries::DXVA_VideoPrimaries_BT709),
 
-	std::make_pair(TEXT("NTSC SysM"),    DXVA_VideoPrimaries_BT470_2_SysM),
-	std::make_pair(TEXT("NTSC SysBG"),   DXVA_VideoPrimaries_BT470_2_SysBG),
+	std::make_pair(TEXT("NTSC SysM"),    DXVA_VideoPrimaries::DXVA_VideoPrimaries_BT470_2_SysM),
+	std::make_pair(TEXT("NTSC SysBG"),   DXVA_VideoPrimaries::DXVA_VideoPrimaries_BT470_2_SysBG),
 	std::make_pair(TEXT("CIE 1931 XYZ"), DIRECTSHOW_VIDEOPRIMARIES_XYZ),
 	std::make_pair(TEXT("ACES"),         DIRECTSHOW_VIDEOPRIMARIES_ACES),
 };
@@ -262,6 +240,59 @@ void CVideoProcessorDlg::StartFrameOffsetAuto()
 void CVideoProcessorDlg::StartFrameOffset(const CString& frameOffset)
 {
 	m_defaultFrameOffset = frameOffset;
+}
+
+
+void CVideoProcessorDlg::DefaultVideoConversionOverride(VideoConversionOverride videoConversionOverride)
+{
+	m_defaultVideoConversionOverride = videoConversionOverride;
+}
+
+
+void CVideoProcessorDlg::DefaultContainerColorSpace(ColorSpace containerColorSpace)
+{
+	m_defaultContainerColorSpace = containerColorSpace;
+}
+
+
+void CVideoProcessorDlg::DefaultHDRColorSpace(HdrColorspaceOptions hdrColorSpaceOption)
+{
+	m_defaultHDRColorSpaceOption = hdrColorSpaceOption;
+}
+
+
+void CVideoProcessorDlg::DefaultHDRLuminance(HdrLuminanceOptions hdrLuminanceOption)
+{
+	m_defaultHDRLuminanceOption = hdrLuminanceOption;
+}
+
+
+void CVideoProcessorDlg::DefaultRendererStartStopTimeMethod(DirectShowStartStopTimeMethod dsssTimeMethod)
+{
+	m_defaultDSSSTimeMethod = dsssTimeMethod;
+}
+
+void CVideoProcessorDlg::DefaultRendererNominalRange(DXVA_NominalRange nominalRange)
+{
+	m_defaultNominalRange = nominalRange;
+}
+
+
+void CVideoProcessorDlg::DefaultRendererTransferFunction(DXVA_VideoTransferFunction transferFunction)
+{
+	m_defaultTransferFunction = transferFunction;
+}
+
+
+void CVideoProcessorDlg::DefaultRendererTransferMatrix(DXVA_VideoTransferMatrix transferMatrix)
+{
+	m_defaultTransferMatrix = transferMatrix;
+}
+
+
+void CVideoProcessorDlg::DefaultRendererPrimaries(DXVA_VideoPrimaries primaries)
+{
+	m_defaultPrimaries = primaries;
 }
 
 
@@ -1718,35 +1749,35 @@ bool CVideoProcessorDlg::BuildPushVideoState()
 		switch ((HdrColorspaceOptions)m_hdrColorspaceCombo.GetItemData(i))
 		{
 			// No need to do anything
-		case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT:
-			break;
+			case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT:
+				break;
 
 			// Special mode where if there is an input, but there are no HDR settings
 			// we force the HDR settings for that colorspace
-		case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT_LLDV:
-			if (isHDFuryLLDV)
-				hdrColorSpace = videoState->colorspace;
-			break;
+			case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_INPUT_LLDV:
+				if (isHDFuryLLDV)
+					hdrColorSpace = videoState->colorspace;
+				break;
 
 			// Translate container's colorspace to XY coordinates
-		case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_CONTAINER:
-			hdrColorSpace = videoState->colorspace;
-			break;
+			case HdrColorspaceOptions::HDR_COLORSPACE_FOLLOW_CONTAINER:
+				hdrColorSpace = videoState->colorspace;
+				break;
 
-		case HdrColorspaceOptions::HDR_COLORSPACE_BT2020:
-			hdrColorSpace = ColorSpace::BT_2020;
-			break;
+			case HdrColorspaceOptions::HDR_COLORSPACE_BT2020:
+				hdrColorSpace = ColorSpace::BT_2020;
+				break;
 
-		case HdrColorspaceOptions::HDR_COLORSPACE_P3:
-			hdrColorSpace = ColorSpace::P3_D65;  // They're all the same from the XY perspective
-			break;
+			case HdrColorspaceOptions::HDR_COLORSPACE_P3:
+				hdrColorSpace = ColorSpace::P3_D65;  // They're all the same from the XY perspective
+				break;
 
-		case HdrColorspaceOptions::HDR_COLORSPACE_REC709:
-			hdrColorSpace = ColorSpace::REC_709;
-			break;
+			case HdrColorspaceOptions::HDR_COLORSPACE_REC709:
+				hdrColorSpace = ColorSpace::REC_709;
+				break;
 
-		default:
-			throw std::runtime_error("Unknown HdrColorspaceOptions");
+			default:
+				throw std::runtime_error("Unknown HdrColorspaceOptions");
 		}
 
 		if (hdrColorSpace != ColorSpace::UNKNOWN)
@@ -2051,64 +2082,82 @@ BOOL CVideoProcessorDlg::OnInitDialog()
 	{
 		int index = m_colorspaceContainerCombo.AddString(p.first);
 		m_colorspaceContainerCombo.SetItemData(index, (int)p.second);
+
+		if (p.second == m_defaultContainerColorSpace)
+			m_colorspaceContainerCombo.SetCurSel(index);
 	}
-	m_colorspaceContainerCombo.SetCurSel(0);
 
 	for (auto p : HDR_COLORSPACE_OPTIONS)
 	{
 		int index = m_hdrColorspaceCombo.AddString(p.first);
 		m_hdrColorspaceCombo.SetItemData(index, (int)p.second);
+
+		if (p.second == m_defaultHDRColorSpaceOption)
+			m_hdrColorspaceCombo.SetCurSel(index);
 	}
-	m_hdrColorspaceCombo.SetCurSel(0);
 
 	for (auto p : HDR_LUMINANCE_OPTIONS)
 	{
 		int index = m_hdrLuminanceCombo.AddString(p.first);
 		m_hdrLuminanceCombo.SetItemData(index, (int)p.second);
+
+		if (p.second == m_defaultHDRLuminanceOption)
+			m_hdrLuminanceCombo.SetCurSel(index);
 	}
-	m_hdrLuminanceCombo.SetCurSel(0);
 
 	for (auto p : RENDERER_DIRECTSHOW_START_STOP_TIME_OPTIONS)
 	{
 		int index = m_rendererDirectShowStartStopTimeMethodCombo.AddString(ToString(p));
 		m_rendererDirectShowStartStopTimeMethodCombo.SetItemData(index, (int)p);
+
+		if (p == m_defaultDSSSTimeMethod)
+			m_rendererDirectShowStartStopTimeMethodCombo.SetCurSel(index);
 	}
-	m_rendererDirectShowStartStopTimeMethodCombo.SetCurSel(0);
 
 	for (const auto& p : DIRECTSHOW_NOMINAL_RANGE_OPTIONS)
 	{
 		int index = m_rendererNominalRangeCombo.AddString(p.first);
 		m_rendererNominalRangeCombo.SetItemData(index, p.second);
+
+		if (p.second == m_defaultNominalRange)
+			m_rendererNominalRangeCombo.SetCurSel(index);
 	}
-	m_rendererNominalRangeCombo.SetCurSel(0);
 
 	for (const auto& p : DIRECTSHOW_TRANSFER_FUNCTION_OPTIONS)
 	{
 		int index = m_rendererTransferFunctionCombo.AddString(p.first);
 		m_rendererTransferFunctionCombo.SetItemData(index, (int)p.second);
+
+		if (p.second == m_defaultTransferFunction)
+			m_rendererTransferFunctionCombo.SetCurSel(index);
 	}
-	m_rendererTransferFunctionCombo.SetCurSel(0);
 
 	for (const auto& p : DIRECTSHOW_TRANSFER_MATRIX_OPTIONS)
 	{
 		int index = m_rendererTransferMatrixCombo.AddString(p.first);
 		m_rendererTransferMatrixCombo.SetItemData(index, (int)p.second);
+
+		if (p.second == m_defaultTransferMatrix)
+			m_rendererTransferMatrixCombo.SetCurSel(index);
 	}
-	m_rendererTransferMatrixCombo.SetCurSel(0);
 
 	for (const auto& p : DIRECTSHOW_PRIMARIES_OPTIONS)
 	{
 		int index = m_rendererPrimariesCombo.AddString(p.first);
 		m_rendererPrimariesCombo.SetItemData(index, (int)p.second);
+
+		if (p.second == m_defaultPrimaries)
+			m_rendererPrimariesCombo.SetCurSel(index);
 	}
-	m_rendererPrimariesCombo.SetCurSel(0);
 
 	for (const auto& p : RENDERER_VIDEO_CONVERSION)
 	{
 		int index = m_rendererVideoConversionCombo.AddString(ToString(p));
 		m_rendererVideoConversionCombo.SetItemData(index, (int)p);
+
+		if (p == m_defaultVideoConversionOverride)
+			m_rendererVideoConversionCombo.SetCurSel(index);
 	}
-	m_rendererVideoConversionCombo.SetCurSel(0);
 
 	// Start discovery services
 	m_blackMagicDeviceDiscoverer->Start();
