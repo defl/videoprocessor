@@ -74,9 +74,12 @@ bool HDRData::IsValid() const
 		whitePointX > 0 &&
 		whitePointY > 0 &&
 		masteringDisplayMaxLuminance > 0 &&
-		masteringDisplayMinLuminance > 0 &&
-		maxCll > 0 &&
-		maxFall > 0;
+
+		// These are soft checks, zero might or might not be appropriate but it helps to accept some edge cases
+		// of missing or very enthousiatically set metadata
+		masteringDisplayMinLuminance >= 0 &&
+		maxCll >= 0 &&
+		maxFall >= 0;
 }
 
 
